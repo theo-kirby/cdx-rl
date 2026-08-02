@@ -1,0 +1,322 @@
+run dir   /home/theo/cadex-jobs/stand-task-20260802-200109
+task      /home/theo/cadex-jobs/stand-task-20260802-200109/stand-task.json
+          sha256 21fe4171a5499258379e20e04a091fd33c8e1a04b5f2d19acb27264140a7f235
+model     /home/theo/cadex-jobs/stand-task-20260802-200109/model-model.xml
+          sha256 e3511559eeb3d5ab3a369852a6c7d7e5fcfc256a259f1f4f41284ffb2cef0ae1  (matches the bundle's own)
+seeds     12  (0…11)   budget 600 steps
+motors    10 × ±86 N·mm
+wall      5.8 s
+
+same-file-twice (ADR-103 §9)  stand8.best.cxpolicy  24 episodes, one worker
+  PASS — the evaluator reloads the model per episode and its rows do not drift.
+
+survival, and what it cost   (trainer r/s is what the trainer recorded; every other column is measured here)
+  checkpoint                 iter    surv  steps µ   med    tilt    drift    reward  train r/s  termination mix
+  stand8.000050.cxpolicy       49   0/12      21.7    20   0.166     53.2      -9.0    -0.5822  tipped:12
+  stand8.000100.cxpolicy       99   1/12     172.5   118   0.149     83.8      48.2    -0.1027  survived:1 tipped:11
+  stand8.000150.cxpolicy      149   1/12     169.4   116   0.152     73.0      72.7    +0.1760  survived:1 tipped:11
+  stand8.000200.cxpolicy      199   1/12     172.2   116   0.154     75.2      69.8    +0.2279  survived:1 tipped:11
+  stand8.000250.cxpolicy      249   2/12     194.2   114   0.138     75.2      83.7    +0.2370  survived:2 tipped:10
+  stand8.000300.cxpolicy      299   2/12     192.8   114   0.144     74.0      84.9    +0.2811  survived:2 tipped:10
+  stand8.000350.cxpolicy      349   2/12     192.2   112   0.136     70.0      91.9    +0.2679  survived:2 tipped:10
+  stand8.000400.cxpolicy      399   2/12     192.7   114   0.143     69.0      91.4    +0.3095  survived:2 tipped:10
+  stand8.000450.cxpolicy      449   2/12     192.2   112   0.143     67.7      92.5    +0.3267  survived:2 tipped:10
+  stand8.000500.cxpolicy      499   2/12     191.7   112   0.132     66.9      87.7    +0.3061  survived:2 tipped:10
+  stand8.000550.cxpolicy      549   2/12     191.2   110   0.135     65.1      84.4    +0.3183  survived:2 tipped:10
+  stand8.best.cxpolicy        598   2/12     190.6   110   0.138     67.8      82.6    +0.3373  survived:2 tipped:10
+  stand8.000600.cxpolicy      599   2/12     190.8   110   0.140     68.3      82.5    +0.3290  survived:2 tipped:10
+  stand8.000650.cxpolicy      649   1/12     167.8   110   0.150     73.4      56.0    +0.2996  survived:1 tipped:11
+  stand8.000700.cxpolicy      699   1/12     165.8   108   0.146     71.5      51.0    +0.2453  survived:1 tipped:11
+  stand8.000750.cxpolicy      749   1/12     165.8   109   0.151     75.3      48.7    +0.2347  survived:1 tipped:11
+  stand8.000800.cxpolicy      799   1/12     168.2   120   0.150     74.4      40.6    +0.2077  survived:1 tipped:11
+  stand8.000850.cxpolicy      849   1/12     164.4   107   0.148     76.2      38.8    +0.1997  survived:1 tipped:11
+  stand8.000900.cxpolicy      899   1/12     152.7   100   0.152     77.3      30.0    +0.1963  survived:1 tipped:11
+  stand8.000950.cxpolicy      949   1/12     152.7    99   0.146     78.3      30.8    +0.1802  survived:1 tipped:11
+  stand8.001000.cxpolicy      999   1/12     165.5   108   0.148     73.6      39.5    +0.1735  survived:1 tipped:11
+  stand8.001050.cxpolicy     1049   1/12     153.4    98   0.150     83.1      29.3    +0.1866  survived:1 tipped:11
+  stand8.001100.cxpolicy     1099   2/12     204.2   110   0.131     92.0      29.0    +0.1637  survived:2 tipped:10
+  stand8.001150.cxpolicy     1149   3/12     255.0   173   0.119     82.8      34.3    +0.1798  survived:3 tipped:9
+  stand8.001200.cxpolicy     1199   2/12     205.2   111   0.136     80.6      40.4    +0.2006  survived:2 tipped:10
+  stand8.001250.cxpolicy     1249   2/12     218.3   112   0.135     73.5      31.0    +0.1847  survived:2 tipped:10
+  stand8.001300.cxpolicy     1299   3/12     246.2   111   0.126     81.0      39.3    +0.1809  survived:3 tipped:9
+  stand8.001350.cxpolicy     1349   2/12     203.6   128   0.135     94.7      26.9    +0.1806  survived:2 tipped:10
+  stand8.001400.cxpolicy     1399   4/12     309.3   249   0.106    103.7      34.0    +0.1864  survived:4 tipped:8
+  stand8.001450.cxpolicy     1449   3/12     285.9   250   0.124    107.6      24.2    +0.1927  survived:3 tipped:9
+  stand8.001500.cxpolicy     1499   6/12     354.4   419   0.083    119.6      39.9    +0.2072  survived:6 tipped:6
+  stand8.001550.cxpolicy     1549   3/12     244.2   112   0.116     95.3      38.6    +0.2058  survived:3 tipped:9
+  stand8.001600.cxpolicy     1599   5/12     313.7   200   0.092    112.3      45.5    +0.2091  survived:5 tipped:7
+  stand8.001650.cxpolicy     1649   5/12     331.7   271   0.097    108.0      54.7    +0.2181  survived:5 tipped:7
+  stand8.001700.cxpolicy     1699   7/12     401.2   600   0.067    130.4      11.0    +0.2138  survived:7 tipped:5
+  stand8.001750.cxpolicy     1749   4/12     302.2   256   0.104     94.1      18.7    +0.2127  survived:4 tipped:8
+  stand8.001800.cxpolicy     1799   5/12     331.5   281   0.092    136.3       5.4    +0.2319  survived:5 tipped:7
+  stand8.001850.cxpolicy     1849   6/12     357.1   432   0.083     98.7      53.7    +0.2251  survived:6 tipped:6
+  stand8.001900.cxpolicy     1899   6/12     359.2   432   0.083    107.2      53.2    +0.2223  survived:6 tipped:6
+  stand8.001950.cxpolicy     1949   6/12     371.4   434   0.081    118.7      37.4    +0.2094  survived:6 tipped:6
+  stand8.002000.cxpolicy     1999   5/12     333.2   254   0.096    106.3      59.3    +0.1996  survived:5 tipped:7
+  stand8.002050.cxpolicy     2049   5/12     316.0   210   0.092     96.1      65.9    +0.1589  survived:5 tipped:7
+  stand8.002100.cxpolicy     2099   4/12     291.8   196   0.109    103.4      51.0    +0.1440  survived:4 tipped:8
+  stand8.002150.cxpolicy     2149   5/12     330.5   272   0.097    115.4      36.6    +0.1203  survived:5 tipped:7
+  stand8.002200.cxpolicy     2199   6/12     358.1   443   0.083    131.0      35.0    +0.0606  survived:6 tipped:6
+  stand8.002250.cxpolicy     2249   5/12     319.8   210   0.094    131.6      17.9    +0.0738  survived:5 tipped:7
+  stand8.002300.cxpolicy     2299   4/12     278.3   138   0.107    118.6      20.9    +0.1081  survived:4 tipped:8
+  stand8.002350.cxpolicy     2349   4/12     281.2   136   0.106    121.4      22.6    +0.1264  survived:4 tipped:8
+  stand8.002400.cxpolicy     2399   6/12     365.1   446   0.082    116.1      45.4    +0.1349  survived:6 tipped:6
+  stand8.002450.cxpolicy     2449   4/12     277.8   138   0.108    111.2      44.5    +0.1499  survived:4 tipped:8
+  stand8.cxpolicy            2499   6/12     347.8   370   0.081    113.5      60.9    +0.1461  survived:6 tipped:6
+  tilt is the task's own `tipped` expression on the last observation; it terminates above 0.15.
+  drift is the task's own `drift` reward expression, in mm, evaluated through compile_reward.
+
+peak torque per motor, N·mm   (the worst instant any of the seeds saw)
+  checkpoint               hip_ro hip_ro hip_pi hip_pi knee_l knee_r ankle_ ankle_ ankle_ ankle_
+  limit N·mm                   86     86     86     86     86     86     86     86     86     86
+  stand8.000050.cxpolicy     61.0   59.8   53.0   51.4   15.2   14.5   43.6   41.7   43.6   56.7
+  stand8.000100.cxpolicy     68.1   73.7   37.8   27.5   37.0   33.3   69.9   66.9   53.2   64.8
+  stand8.000150.cxpolicy     70.7   72.3   54.1   56.4   44.4   49.9   73.7   76.1   59.3   72.1
+  stand8.000200.cxpolicy     74.1   71.5   54.0   59.8   60.6   55.3   77.2   79.0   60.3   74.2
+  stand8.000250.cxpolicy     71.6   67.5   56.4   70.1   58.7   51.7   78.3   82.7   64.0   74.4
+  stand8.000300.cxpolicy     77.4   71.7   65.5   71.1   54.3   49.3   79.1   83.3   67.1   74.7
+  stand8.000350.cxpolicy     79.8   76.4   68.2   74.4   67.2   52.6   82.6   84.1   65.5   78.6
+  stand8.000400.cxpolicy     80.4   75.5   67.1   71.2   70.6   50.4   83.1   84.7   67.0   78.9
+  stand8.000450.cxpolicy     80.5   77.4   68.3   73.3   58.0   60.3   83.1   85.1   64.2   79.9
+  stand8.000500.cxpolicy     79.1   79.6   67.4   71.0   68.9   66.0   83.9   84.9   60.6   79.9
+  stand8.000550.cxpolicy     81.2   79.6   71.3   73.9   67.2   71.5   83.7   85.2   60.5   80.5
+  stand8.best.cxpolicy       81.7   79.9   69.9   73.6   72.4   67.5   84.3   85.2   62.2   79.6
+  stand8.000600.cxpolicy     81.7   79.8   70.2   74.2   72.3   67.4   84.3   85.2   61.1   79.6
+  stand8.000650.cxpolicy     80.3   81.1   71.7   74.6   76.0   74.8   85.1   85.4   62.9   80.0
+  stand8.000700.cxpolicy     83.1   80.9   71.0   78.5   76.8   81.0   85.4   85.6   65.7   77.8
+  stand8.000750.cxpolicy     78.8   81.5   76.5   80.7   76.6   82.9   85.8   85.7   67.5   77.8
+  stand8.000800.cxpolicy     81.5   80.7   77.4   81.6   76.3   82.0   85.8   85.7   68.1   79.5
+  stand8.000850.cxpolicy     81.3   82.0   75.1   79.8   81.3   84.5   85.9   85.8   74.2   80.1
+  stand8.000900.cxpolicy     81.9   81.6   77.5   80.5   83.4   84.8   85.9   85.8   73.5   81.9
+  stand8.000950.cxpolicy     80.5   83.2   79.5   79.5   84.1   83.9   85.9   85.9   71.2   81.9
+  stand8.001000.cxpolicy     82.5   83.0   77.5   77.9   85.0   84.3   85.9   85.9   72.0   82.2
+  stand8.001050.cxpolicy     82.4   83.3   76.9   75.9   85.4   84.5   85.9   85.9   70.8   81.6
+  stand8.001100.cxpolicy     83.6   84.4   75.6   77.8   85.6   85.1   85.9   85.9   70.9   81.9
+  stand8.001150.cxpolicy     84.7   84.4   79.9   77.1   85.7   85.0   85.9   85.9   74.8   82.0
+  stand8.001200.cxpolicy     84.7   84.8   78.8   78.2   85.8   85.4   85.9   85.9   75.7   81.8
+  stand8.001250.cxpolicy     84.9   85.0   80.1   81.1   85.8   85.2   85.9   86.0   72.1   83.1
+  stand8.001300.cxpolicy     84.0   84.9   79.5   80.2   85.7   85.6   85.9   86.0   74.2   82.3
+  stand8.001350.cxpolicy     83.0   85.2   77.7   80.2   85.8   85.6   85.9   86.0   73.7   82.5
+  stand8.001400.cxpolicy     83.4   85.4   78.4   80.2   85.7   85.7   85.9   86.0   77.1   81.8
+  stand8.001450.cxpolicy     84.2   85.3   78.5   78.9   85.9   85.8   85.9   86.0   77.1   82.0
+  stand8.001500.cxpolicy     85.0   85.3   79.2   77.9   85.8   85.8   85.9   86.0   77.0   81.9
+  stand8.001550.cxpolicy     85.0   85.5   78.7   79.3   85.8   85.9   86.0   86.0   76.9   82.2
+  stand8.001600.cxpolicy     83.4   85.3   78.7   81.2   85.7   85.9   86.0   86.0   76.4   82.7
+  stand8.001650.cxpolicy     83.5   85.2   78.7   81.1   85.7   85.8   86.0   86.0   74.7   82.4
+  stand8.001700.cxpolicy     83.7   85.1   79.1   81.3   85.7   85.9   86.0   86.0   76.1   81.7
+  stand8.001750.cxpolicy     84.7   85.3   77.2   81.6   85.8   85.9   86.0   86.0   79.1   82.8
+  stand8.001800.cxpolicy     84.5   85.4   79.1   82.4   85.8   85.9   86.0   86.0   77.6   83.6
+  stand8.001850.cxpolicy     84.8   85.6   79.8   82.7   85.8   85.9   86.0   86.0   78.8   83.7
+  stand8.001900.cxpolicy     84.9   85.7   79.0   81.2   85.8   85.9   86.0   86.0   73.7   83.5
+  stand8.001950.cxpolicy     84.8   85.6   79.5   81.9   85.8   85.9   86.0   86.0   73.6   83.3
+  stand8.002000.cxpolicy     85.0   85.3   77.7   82.0   85.9   85.9   86.0   86.0   75.3   83.7
+  stand8.002050.cxpolicy     85.1   85.4   80.2   83.0   85.9   86.0   86.0   86.0   76.7   83.2
+  stand8.002100.cxpolicy     85.4   85.5   78.7   82.0   85.9   86.0   86.0   86.0   75.8   83.6
+  stand8.002150.cxpolicy     85.7   85.7   80.9   82.0   86.0   86.0   86.0   86.0   76.3   83.5
+  stand8.002200.cxpolicy     85.7   85.8   80.0   82.0   85.7   85.9   86.0   86.0   76.5   83.6
+  stand8.002250.cxpolicy     85.7   85.9   77.7   82.4   85.9   86.0   86.0   86.0   72.6   83.8
+  stand8.002300.cxpolicy     85.8   85.9   81.6   83.0   85.9   85.9   86.0   86.0   73.0   84.1
+  stand8.002350.cxpolicy     85.9   85.9   79.6   82.0   85.9   86.0   86.0   86.0   72.6   83.8
+  stand8.002400.cxpolicy     85.9   85.9   77.9   82.0   85.9   86.0   86.0   86.0   72.5   83.8
+  stand8.002450.cxpolicy     85.9   85.9   79.1   82.2   85.9   86.0   86.0   86.0   73.9   83.8
+  stand8.cxpolicy            85.9   86.0   79.5   82.7   86.0   86.0   86.0   86.0   71.2   84.0
+
+mean |torque| per motor, N·mm   (averaged over frames, then over episodes)
+  checkpoint               hip_ro hip_ro hip_pi hip_pi knee_l knee_r ankle_ ankle_ ankle_ ankle_
+  limit N·mm                   86     86     86     86     86     86     86     86     86     86
+  stand8.000050.cxpolicy     15.2   17.2   25.1   21.8    5.6    4.0   13.7   12.0   14.5   17.9
+  stand8.000100.cxpolicy     17.3   18.6    7.0    6.4   23.1   21.0   15.3   15.9   24.0   19.4
+  stand8.000150.cxpolicy     14.2   17.8    7.8    8.1   22.3   15.7   14.2   16.1   15.3   17.2
+  stand8.000200.cxpolicy     15.8   20.1   11.3   10.4   22.1   16.8   15.9   18.4   15.9   17.0
+  stand8.000250.cxpolicy     16.7   19.9   10.8   15.6   24.6   12.6   17.8   19.8   15.7   16.8
+  stand8.000300.cxpolicy     17.1   18.1   12.4   12.6   22.5    9.7   15.4   18.6   15.1   17.1
+  stand8.000350.cxpolicy     17.7   18.8   10.7   14.0   21.5    8.5   17.6   22.6   16.8   17.6
+  stand8.000400.cxpolicy     17.0   17.7   10.7   11.0   15.6    9.1   18.7   21.6   16.2   19.4
+  stand8.000450.cxpolicy     18.5   17.3   11.0   12.4   13.1   10.5   17.9   22.1   15.6   20.8
+  stand8.000500.cxpolicy     18.6   19.6   13.8   16.0   14.8   11.8   19.2   23.3   15.2   20.5
+  stand8.000550.cxpolicy     19.0   19.5   15.7   20.0   15.0   18.8   23.0   29.0   16.5   20.8
+  stand8.best.cxpolicy       21.3   19.5   18.9   22.6   18.0   20.2   28.4   32.6   15.9   21.2
+  stand8.000600.cxpolicy     21.1   19.2   18.0   22.2   17.8   19.8   27.4   32.4   15.7   21.5
+  stand8.000650.cxpolicy     23.4   22.0   23.9   30.3   26.0   30.3   38.4   44.9   15.4   21.2
+  stand8.000700.cxpolicy     30.9   24.7   24.5   35.0   25.7   36.7   45.6   52.5   18.2   20.6
+  stand8.000750.cxpolicy     31.4   24.9   25.0   35.3   27.8   39.1   48.3   56.5   16.8   19.3
+  stand8.000800.cxpolicy     32.3   26.4   23.7   39.7   28.9   41.2   49.0   56.5   19.9   22.1
+  stand8.000850.cxpolicy     32.1   30.0   23.8   38.7   31.7   45.4   50.5   57.9   21.0   21.4
+  stand8.000900.cxpolicy     34.2   34.1   23.8   39.6   38.0   45.8   55.1   60.9   24.4   21.9
+  stand8.000950.cxpolicy     33.0   36.5   21.6   36.9   40.8   45.7   57.1   63.6   23.3   21.1
+  stand8.001000.cxpolicy     36.5   38.6   24.5   33.9   44.7   44.7   58.6   65.5   23.2   21.0
+  stand8.001050.cxpolicy     39.8   40.4   24.6   29.7   50.2   45.4   59.3   66.1   25.5   22.8
+  stand8.001100.cxpolicy     41.9   46.2   26.8   27.4   54.4   46.3   58.6   65.8   24.9   29.4
+  stand8.001150.cxpolicy     49.0   45.3   27.0   27.2   56.5   49.4   60.4   67.9   28.2   31.5
+  stand8.001200.cxpolicy     45.0   48.5   28.7   27.8   57.1   49.0   63.2   66.1   27.7   33.7
+  stand8.001250.cxpolicy     43.1   51.5   28.4   30.0   54.4   46.9   61.3   66.4   26.4   34.5
+  stand8.001300.cxpolicy     38.7   45.0   30.4   31.2   54.7   50.5   60.8   67.4   24.7   36.2
+  stand8.001350.cxpolicy     38.6   42.7   31.3   31.6   54.7   51.9   60.8   64.7   25.7   35.6
+  stand8.001400.cxpolicy     38.8   43.7   32.9   32.4   53.8   52.5   61.3   64.2   26.0   34.0
+  stand8.001450.cxpolicy     40.4   43.5   29.2   29.6   56.4   53.9   64.1   65.7   27.6   33.8
+  stand8.001500.cxpolicy     33.2   44.3   30.6   29.4   52.6   53.1   62.3   66.0   24.9   30.7
+  stand8.001550.cxpolicy     35.5   47.2   32.5   31.6   55.3   53.2   65.2   66.3   27.1   36.6
+  stand8.001600.cxpolicy     35.5   47.2   37.0   37.4   54.1   56.3   63.1   62.5   23.9   36.0
+  stand8.001650.cxpolicy     35.1   43.2   36.6   37.5   51.8   56.8   62.4   62.4   23.3   33.8
+  stand8.001700.cxpolicy     33.7   43.6   30.9   31.3   50.2   55.4   60.9   63.1   28.2   32.9
+  stand8.001750.cxpolicy     35.2   49.0   27.8   30.6   56.4   58.2   65.1   69.2   30.0   39.7
+  stand8.001800.cxpolicy     36.0   48.1   29.5   31.2   51.5   56.7   61.2   66.5   28.1   37.0
+  stand8.001850.cxpolicy     37.6   44.7   33.1   36.4   51.3   58.7   62.9   64.8   26.1   37.0
+  stand8.001900.cxpolicy     38.0   42.3   35.0   37.6   51.0   59.1   62.2   62.0   24.5   37.1
+  stand8.001950.cxpolicy     42.5   46.2   33.6   36.6   50.8   56.4   58.2   60.4   21.9   33.1
+  stand8.002000.cxpolicy     48.1   50.0   36.8   40.4   53.1   58.3   57.1   58.0   22.5   33.6
+  stand8.002050.cxpolicy     47.4   48.6   38.0   41.5   53.9   58.6   59.5   57.4   24.0   34.4
+  stand8.002100.cxpolicy     50.6   52.5   39.8   44.2   56.5   60.1   59.7   55.5   23.5   33.0
+  stand8.002150.cxpolicy     51.2   53.0   37.5   42.3   55.3   61.9   61.5   56.9   22.3   33.1
+  stand8.002200.cxpolicy     57.9   60.3   39.8   44.8   54.4   65.9   59.6   56.0   20.7   31.5
+  stand8.002250.cxpolicy     52.7   58.0   37.8   43.6   56.0   63.6   60.5   58.7   22.1   34.0
+  stand8.002300.cxpolicy     52.9   58.3   37.7   44.2   58.0   63.9   61.2   61.0   20.3   36.7
+  stand8.002350.cxpolicy     51.9   58.0   36.4   42.2   58.9   63.7   59.9   58.7   19.5   34.7
+  stand8.002400.cxpolicy     52.2   58.2   32.6   38.7   57.5   63.5   55.3   55.1   19.1   32.0
+  stand8.002450.cxpolicy     50.8   57.4   37.0   43.2   59.5   63.4   62.2   57.1   20.2   32.6
+  stand8.cxpolicy            51.2   57.6   32.6   38.4   57.9   60.1   60.7   52.7   22.2   30.9
+
+% of frames above 90 % of limit, per motor   (hazard 15's column: a clean-looking stand can live here)
+  checkpoint               hip_ro hip_ro hip_pi hip_pi knee_l knee_r ankle_ ankle_ ankle_ ankle_
+  stand8.000050.cxpolicy      0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+  stand8.000100.cxpolicy      0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+  stand8.000150.cxpolicy      0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0
+  stand8.000200.cxpolicy      0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.7    0.0    0.0
+  stand8.000250.cxpolicy      0.0    0.0    0.0    0.0    0.0    0.0    0.2    2.5    0.0    0.0
+  stand8.000300.cxpolicy      0.1    0.0    0.0    0.0    0.0    0.0    0.3    2.6    0.0    0.0
+  stand8.000350.cxpolicy      0.3    0.0    0.0    0.0    0.0    0.0    0.7    4.1    0.0    0.0
+  stand8.000400.cxpolicy      0.2    0.0    0.0    0.0    0.0    0.0    0.8    3.5    0.0    0.1
+  stand8.000450.cxpolicy      0.3    0.0    0.0    0.0    0.0    0.0    1.1    7.3    0.0    0.2
+  stand8.000500.cxpolicy      0.3    0.1    0.0    0.0    0.0    0.0    1.4    6.9    0.0    0.6
+  stand8.000550.cxpolicy      0.4    0.2    0.0    0.0    0.0    0.0    1.8    6.8    0.0    0.7
+  stand8.best.cxpolicy        0.5    0.2    0.0    0.0    0.0    0.0    2.2    4.7    0.0    0.4
+  stand8.000600.cxpolicy      0.4    0.2    0.0    0.0    0.0    0.0    2.1    4.9    0.0    0.4
+  stand8.000650.cxpolicy      0.2    1.0    0.0    0.0    0.0    0.0    5.5    7.3    0.0    0.5
+  stand8.000700.cxpolicy      0.3    1.3    0.0    0.1    0.0    1.2    9.5   21.2    0.0    0.1
+  stand8.000750.cxpolicy      0.3    1.1    0.0    0.2    0.0    2.1   15.2   27.4    0.0    0.1
+  stand8.000800.cxpolicy      1.0    0.9    0.1    2.0    0.0    2.8   15.3   27.6    0.0    0.5
+  stand8.000850.cxpolicy      0.2    1.3    0.0    0.5    0.7    9.9   17.7   33.9    0.0    0.7
+  stand8.000900.cxpolicy      1.3    1.1    0.1    0.5    3.9   12.0   26.1   37.4    0.0    2.7
+  stand8.000950.cxpolicy      0.3    2.1    0.2    0.6    5.7   10.0   32.6   46.4    0.0    3.3
+  stand8.001000.cxpolicy      1.9    2.4    0.1    0.1    9.7    9.2   33.6   47.4    0.0    3.2
+  stand8.001050.cxpolicy      3.6    2.8    0.0    0.0   18.2    9.0   34.7   51.0    0.0    3.5
+  stand8.001100.cxpolicy      3.7    6.9    0.0    0.0   25.7   11.0   34.2   51.8    0.0    4.3
+  stand8.001150.cxpolicy     12.4    7.7    0.1    0.0   29.0   15.0   37.4   56.0    0.0    3.7
+  stand8.001200.cxpolicy      6.7   10.5    0.1    0.0   30.3   14.7   45.1   51.2    0.0    4.3
+  stand8.001250.cxpolicy      4.6   12.6    0.2    0.4   26.3   11.8   40.6   51.0    0.0    5.0
+  stand8.001300.cxpolicy      2.2    8.2    0.3    0.0   24.0   17.7   40.2   50.8    0.0    4.7
+  stand8.001350.cxpolicy      1.1    6.8    0.1    0.1   26.3   19.0   39.2   48.6    0.0    6.4
+  stand8.001400.cxpolicy      1.2    6.3    0.2    0.2   24.0   20.7   37.3   45.7    0.0    2.9
+  stand8.001450.cxpolicy      2.4    5.6    0.1    0.0   30.4   24.9   45.5   51.8    0.0    3.6
+  stand8.001500.cxpolicy      0.6    6.0    0.2    0.0   22.1   23.6   41.3   51.2    0.0    4.0
+  stand8.001550.cxpolicy      1.4    9.0    0.0    0.1   27.2   25.6   49.0   52.5    0.0    6.7
+  stand8.001600.cxpolicy      1.5    9.6    0.1    0.4   24.6   29.9   44.5   43.8    0.0    5.8
+  stand8.001650.cxpolicy      1.8    6.4    0.1    0.3   19.9   30.6   40.9   42.7    0.0    5.1
+  stand8.001700.cxpolicy      1.5    4.8    0.1    0.4   19.8   28.0   40.6   46.8    0.0    1.4
+  stand8.001750.cxpolicy      2.3   10.1    0.0    0.3   31.3   35.6   48.2   59.4    0.1    6.0
+  stand8.001800.cxpolicy      2.5   10.0    0.0    0.2   21.8   32.0   39.4   53.1    0.1    6.8
+  stand8.001850.cxpolicy      2.7    9.1    0.1    1.8   19.5   34.8   43.2   49.1    0.2    6.4
+  stand8.001900.cxpolicy      2.3    7.6    0.2    1.4   18.1   37.1   42.9   43.9    0.0    5.6
+  stand8.001950.cxpolicy      4.8    8.6    0.1    2.0   20.4   31.6   34.1   40.2    0.0    5.4
+  stand8.002000.cxpolicy     11.5   11.2    0.0    2.7   25.0   34.8   32.3   36.2    0.0    6.2
+  stand8.002050.cxpolicy     11.5   16.5    0.5    3.9   26.3   36.9   37.1   35.6    0.0    6.4
+  stand8.002100.cxpolicy     12.5   26.2    0.3    5.1   33.5   40.5   39.6   32.2    0.0    6.4
+  stand8.002150.cxpolicy     12.8   28.1    0.5    5.5   28.6   43.4   39.9   34.6    0.0    6.0
+  stand8.002200.cxpolicy     20.7   38.6    0.5    6.7   29.2   52.5   37.0   34.4    0.0    5.9
+  stand8.002250.cxpolicy     14.2   34.9    0.1    9.0   31.3   47.2   40.7   39.2    0.0    7.0
+  stand8.002300.cxpolicy     14.0   33.9    0.3    7.7   35.7   46.9   40.9   40.7    0.0    8.8
+  stand8.002350.cxpolicy     16.6   36.1    0.5    6.1   34.9   44.4   39.3   34.3    0.0    7.1
+  stand8.002400.cxpolicy     15.4   32.5    0.1    5.7   33.3   38.6   31.5   32.2    0.0    5.8
+  stand8.002450.cxpolicy     17.4   33.2    0.5    7.7   38.4   42.6   43.5   38.0    0.0    7.4
+  stand8.cxpolicy            19.4   32.1    0.7    4.7   33.3   36.3   42.9   32.3    0.0    6.2
+
+flags
+  stand8.000650.cxpolicy   hazard 15: a motor's MEAN command is 52% of its limit
+  stand8.000700.cxpolicy   hazard 15: a motor's MEAN command is 61% of its limit
+  stand8.000750.cxpolicy   hazard 15: a motor is above 90% of its limit on 27% of frames
+  stand8.000750.cxpolicy   hazard 15: a motor's MEAN command is 66% of its limit
+  stand8.000800.cxpolicy   hazard 15: a motor is above 90% of its limit on 28% of frames
+  stand8.000800.cxpolicy   hazard 15: a motor's MEAN command is 66% of its limit
+  stand8.000850.cxpolicy   hazard 15: a motor is above 90% of its limit on 34% of frames
+  stand8.000850.cxpolicy   hazard 15: a motor's MEAN command is 67% of its limit
+  stand8.000900.cxpolicy   hazard 15: a motor is above 90% of its limit on 37% of frames
+  stand8.000900.cxpolicy   hazard 15: a motor's MEAN command is 71% of its limit
+  stand8.000950.cxpolicy   hazard 15: a motor is above 90% of its limit on 46% of frames
+  stand8.000950.cxpolicy   hazard 15: a motor's MEAN command is 74% of its limit
+  stand8.001000.cxpolicy   hazard 15: a motor is above 90% of its limit on 47% of frames
+  stand8.001000.cxpolicy   hazard 15: a motor's MEAN command is 76% of its limit
+  stand8.001050.cxpolicy   hazard 15: a motor is above 90% of its limit on 51% of frames
+  stand8.001050.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.001100.cxpolicy   hazard 15: a motor is above 90% of its limit on 52% of frames
+  stand8.001100.cxpolicy   hazard 15: a motor's MEAN command is 76% of its limit
+  stand8.001150.cxpolicy   hazard 15: a motor is above 90% of its limit on 56% of frames
+  stand8.001150.cxpolicy   hazard 15: a motor's MEAN command is 79% of its limit
+  stand8.001200.cxpolicy   hazard 15: a motor is above 90% of its limit on 51% of frames
+  stand8.001200.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.001250.cxpolicy   hazard 15: a motor is above 90% of its limit on 51% of frames
+  stand8.001250.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.001300.cxpolicy   hazard 15: a motor is above 90% of its limit on 51% of frames
+  stand8.001300.cxpolicy   hazard 15: a motor's MEAN command is 78% of its limit
+  stand8.001350.cxpolicy   hazard 15: a motor is above 90% of its limit on 49% of frames
+  stand8.001350.cxpolicy   hazard 15: a motor's MEAN command is 75% of its limit
+  stand8.001400.cxpolicy   hazard 15: a motor is above 90% of its limit on 46% of frames
+  stand8.001400.cxpolicy   hazard 15: a motor's MEAN command is 75% of its limit
+  stand8.001450.cxpolicy   hazard 15: a motor is above 90% of its limit on 52% of frames
+  stand8.001450.cxpolicy   hazard 15: a motor's MEAN command is 76% of its limit
+  stand8.001500.cxpolicy   hazard 15: a motor is above 90% of its limit on 51% of frames
+  stand8.001500.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.001550.cxpolicy   hazard 15: a motor is above 90% of its limit on 52% of frames
+  stand8.001550.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.001600.cxpolicy   hazard 15: a motor is above 90% of its limit on 44% of frames
+  stand8.001600.cxpolicy   hazard 15: a motor's MEAN command is 73% of its limit
+  stand8.001650.cxpolicy   hazard 15: a motor is above 90% of its limit on 43% of frames
+  stand8.001650.cxpolicy   hazard 15: a motor's MEAN command is 73% of its limit
+  stand8.001700.cxpolicy   hazard 15: a motor is above 90% of its limit on 47% of frames
+  stand8.001700.cxpolicy   hazard 15: a motor's MEAN command is 73% of its limit
+  stand8.001750.cxpolicy   hazard 15: a motor is above 90% of its limit on 59% of frames
+  stand8.001750.cxpolicy   hazard 15: a motor's MEAN command is 81% of its limit
+  stand8.001800.cxpolicy   hazard 15: a motor is above 90% of its limit on 53% of frames
+  stand8.001800.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.001850.cxpolicy   hazard 15: a motor is above 90% of its limit on 49% of frames
+  stand8.001850.cxpolicy   hazard 15: a motor's MEAN command is 75% of its limit
+  stand8.001900.cxpolicy   hazard 15: a motor is above 90% of its limit on 44% of frames
+  stand8.001900.cxpolicy   hazard 15: a motor's MEAN command is 72% of its limit
+  stand8.001950.cxpolicy   hazard 15: a motor is above 90% of its limit on 40% of frames
+  stand8.001950.cxpolicy   hazard 15: a motor's MEAN command is 70% of its limit
+  stand8.002000.cxpolicy   hazard 15: a motor is above 90% of its limit on 36% of frames
+  stand8.002000.cxpolicy   hazard 15: a motor's MEAN command is 68% of its limit
+  stand8.002050.cxpolicy   hazard 15: a motor is above 90% of its limit on 37% of frames
+  stand8.002050.cxpolicy   hazard 15: a motor's MEAN command is 69% of its limit
+  stand8.002100.cxpolicy   hazard 15: a motor is above 90% of its limit on 40% of frames
+  stand8.002100.cxpolicy   hazard 15: a motor's MEAN command is 70% of its limit
+  stand8.002150.cxpolicy   hazard 15: a motor is above 90% of its limit on 43% of frames
+  stand8.002150.cxpolicy   hazard 15: a motor's MEAN command is 72% of its limit
+  stand8.002200.cxpolicy   hazard 15: a motor is above 90% of its limit on 52% of frames
+  stand8.002200.cxpolicy   hazard 15: a motor's MEAN command is 77% of its limit
+  stand8.002250.cxpolicy   hazard 15: a motor is above 90% of its limit on 47% of frames
+  stand8.002250.cxpolicy   hazard 15: a motor's MEAN command is 74% of its limit
+  stand8.002300.cxpolicy   hazard 15: a motor is above 90% of its limit on 47% of frames
+  stand8.002300.cxpolicy   hazard 15: a motor's MEAN command is 74% of its limit
+  stand8.002350.cxpolicy   hazard 15: a motor is above 90% of its limit on 44% of frames
+  stand8.002350.cxpolicy   hazard 15: a motor's MEAN command is 74% of its limit
+  stand8.002400.cxpolicy   hazard 15: a motor is above 90% of its limit on 39% of frames
+  stand8.002400.cxpolicy   hazard 15: a motor's MEAN command is 74% of its limit
+  stand8.002450.cxpolicy   hazard 15: a motor is above 90% of its limit on 44% of frames
+  stand8.002450.cxpolicy   hazard 15: a motor's MEAN command is 74% of its limit
+  stand8.cxpolicy          hazard 15: a motor is above 90% of its limit on 43% of frames
+  stand8.cxpolicy          hazard 15: a motor's MEAN command is 71% of its limit
+
+selection, by measured survival (ADR-099 — not by the trainer's scalar)
+  best by survival       stand8.001700.cxpolicy   iteration   1699  survival 58%  steps 401.2
+  longest episodes       stand8.001700.cxpolicy   iteration   1699  survival 58%  steps 401.2
+  best measured reward   stand8.000450.cxpolicy   iteration    449  survival 17%  steps 192.2
+  the trainer's own 'best' file was stand8.best.cxpolicy
+
+correlation over the checkpoints played
+  survival vs iteration            r = 0.827
+  survival vs measured reward/step r = -0.3193
+  survival vs TRAINER reward/step  r = 0.0594   ← ADR-099's claim, on this run (n = 51)
+  (n = 51 checkpoints)
+  from the trainer's peak (iteration 598) onward, n = 40 — the only span a stopping rule acts on:
+    survival vs TRAINER reward/step  r = -0.3402
+    survival vs iteration            r = 0.8156
