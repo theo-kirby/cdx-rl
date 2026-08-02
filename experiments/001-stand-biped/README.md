@@ -245,8 +245,167 @@ answer.
 
 ## 10. What happened
 
-*(Pending — nothing has been run.)*
+### Phase A — 2026-08-02, sb1x, cdx-rl `5a49037`, Cadex `06d1374b` (clean)
+
+No GPU. 612 episodes in **5.9 s** wall on 16 workers, mujoco 3.10.0 through
+`CadexDynamics.evaluate_episode` — the engine's own reference runner, the one
+ADR-099's table came from.
+
+Raw output: [`results/compare-stand8.txt`](results/compare-stand8.txt),
+[`results/supervise-stand8.txt`](results/supervise-stand8.txt),
+[`results/supervise-all-eight.txt`](results/supervise-all-eight.txt), and the
+envelopes beside them.
+
+**The same-file-twice test (ADR-103 §9) passed** — 24 episodes, one worker,
+identical rows — before any other number was looked at.
+`verify_policy` accepted all 52 containers against `task_sha256`
+`21fe4171…`; none was skipped. The model was matched to the bundle's own
+`model.sha256` `e3511559…` by digest rather than by filename.
+
+#### Question A is settled, and the answer is neither candidate
+
+| checkpoint | iteration | survival | mean steps | median | trainer r/s |
+|---|---|---|---|---|---|
+| `stand8.000050` | 49 | **0/12** | 21.7 | 20 | −0.5822 |
+| `stand8.best` (the reward peak) | **598** | **2/12** | 190.6 | 110 | **+0.3373** |
+| `stand8.001700` | **1699** | **7/12** | **401.2** | **600** | +0.1739 |
+| `stand8.001950` | 1949 | 6/12 | 371.4 | 434 | +0.2138 |
+| `stand8` (final) | 2499 | 6/12 | 347.8 | 370 | +0.1461 |
+
+**Best by measured survival is iteration 1699 — not 598, and not ~1800.**
+Its median episode is the full 600 steps; the reward peak's median is 110.
+
+The reward peak is **one of the worst checkpoints in the run after iteration
+100**. 2/12 against 7/12: stopping there would have thrown away three and a
+half times the survival, and the naive supervisor of §6 would have done
+exactly that.
+
+#### The trainer's scalar, measured against survival
+
+| | Pearson r | n |
+|---|---|---|
+| survival vs iteration, whole run | **+0.83** | 51 |
+| survival vs the trainer's `reward_per_step`, whole run | **+0.06** | 51 |
+| survival vs the trainer's `reward_per_step`, from iteration 598 on | **−0.34** | 40 |
+| survival vs iteration, from iteration 598 on | **+0.82** | 40 |
+
+Over the whole run the trainer's scalar carries **essentially no
+information** about survival. After its own peak it carries the **wrong**
+information. What does predict survival is *how long the run has been going*
+— which is the one thing a reward-based stopping rule is designed to cut
+short.
+
+This is ADR-099 again, on a different mechanism, against a post-ADR-106
+task, and it is stronger than "anti-correlated": across the run as a whole,
+r = +0.06 is not a weak signal, it is no signal.
+
+#### Hazard 15 is present, and it is what survival costs
+
+Every checkpoint touches its 86 N·mm ceiling at some instant — peak torque
+is 99–100 % of the limit for all 51, so the **peak** column does not
+discriminate. The **mean** and the **saturation** columns do:
+
+| checkpoint | worst motor's mean | worst motor's % of frames above 90 % of limit |
+|---|---|---|
+| `stand8.best` (598) | 38 % of limit | 5 % |
+| `stand8.001700` (1699) | **73 %** | **47 %** |
+| `stand8` (2499) | **71 %** | **43 %** |
+
+**38 of the 51 checkpoints are flagged**, and the 13 that are not are
+iterations 49 through 599 — everything up to and including the reward peak.
+From iteration 649 onward, every single checkpoint holds at least one motor
+above 90 % of its rating on 27–59 % of frames.
+
+So the policy that survives best is also the one **bracing hardest**, and the
+two facts are the same fact. 86 N·mm is ADR-086's re-rating of what a real
+motor has to produce; a mean command at 73 % of it, sustained for six
+seconds, is not a number a servo of this class holds.
+
+#### `collapsed` never fired. Not once.
+
+Across all 612 episodes the termination mix is **454 `tipped`, 158 survived,
+0 `collapsed`**.
+
+ADR-106's revision set the `collapsed` floor at `com_z < 72.105` mm
+(0.5 × Z0). No episode ever reached it: this machine always tips past
+`pel_qx² + pel_qy² > 0.15` first. Half the termination design has never run,
+which is precisely the shape of failure ADR-106 was written about — and this
+time it is on the revised task rather than the one it diagnosed.
+
+#### The supervisor, over all eight runs
+
+`supervise --report-only` read all eight directories in
+`/home/theo/cadex-jobs`, read-only, and reproduced this run exactly: best
+598 at 0.3373 with mean episode 277.7, final 2499 at 0.1461 with 370.7, wall
+14 050 s, witness 2.820e-07 at 355× — above the 100× floor, so hazard 13
+does not apply. `device: "gpu"` throughout.
+
+It flagged `job-task-20260801-155047` as **STALE**: `state: "training"` at
+iteration 748 of 4000, process dead for 33 hours.
+
+Two things the build corrected in §6's table, both from the log rather than
+from the sample:
+
+* The **episode-length peak is at iteration 1908 (542.5 steps)**, not 1800.
+  Iteration 1800 does read 468.1 exactly as §6 quotes — that row was a
+  sampled point, not the maximum. The gap between the reward peak and the
+  survival peak is **1 310 iterations**, wider than §6 assumed.
+* Four of the eight runs log an episode length at iteration 0 **above their
+  own 600-step horizon** (1343.0, 1365.3, 1280.0, 1412.4). Whatever that
+  first statistic is, it is not a mean episode length. Left in, it wins the
+  peak search and the report announces those runs peaked at iteration 0.
 
 ## 11. What it means
 
-*(Pending.)*
+### Question A: answered
+
+The best checkpoint of `stand-task-20260802-200109` is
+**`stand8.001700.cxpolicy`, iteration 1699, at 7/12 survival** — measured by
+playing it, which is the only way it could have been known.
+
+**Pass criterion 3 resolves the second way, and that is the result.** No
+reward-based stopping rule would have kept it. Its trainer reward is 0.1739
+against the peak's 0.3373 — 52 % of it — so any rule of the form *stop when
+reward has not improved for N iterations* stops at 598 + N and, for any N
+small enough to save compute, stops before 1699. The rule that would have
+worked on this run is *do not stop*, which is not a rule.
+
+What the numbers support instead, stated as provisional (§9's last risk
+stands — one run is not a pattern):
+
+* **A supervisor should stop on divergence, device and liveness, and not on
+  reward patience.** Those three catch runs that are broken. Reward patience
+  catches runs that are working.
+* **Selection must be by `compare`, always.** This run cost 3.9 GPU-hours;
+  choosing correctly from within it cost 5.9 CPU-seconds. The ratio is
+  2 400:1 and it is the cheapest instrument in the repository.
+* **Episode length is the better live proxy**, if a live proxy is wanted —
+  it is monotone with survival here where reward is not (r = +0.83 vs
+  +0.06 against iteration). It is still a proxy, and it is still not a
+  selection.
+
+### What Phase A does *not* mean
+
+* **It does not mean the run should have gone longer.** Survival is 7/12 at
+  1699 and 6/12 at 2499; the curve is noisy and flat-ish past ~1500, not
+  climbing. Nothing here says iteration 4000 would be better.
+* **It does not mean 1699 is a good policy.** 7/12 is a coin flip with a
+  limp, and it is bought with motors held at 73 % of their rating for six
+  seconds. Hazard 15 says this policy is not buildable as specified.
+* **It does not settle question B.** That every death is `tipped` and none is
+  `collapsed` is suggestive — the machine tips rather than sinks — but
+  whether the 0.3–0.8 N band is in range is Phase B's measurement, not an
+  inference from Phase A's.
+
+### What changes because of it
+
+1. `compare` runs before any checkpoint is named "the" policy. It is now
+   cheap enough that not running it is a choice.
+2. The `collapsed` termination on this task is **dead code**. Either the
+   floor moves up or it should be dropped rather than left to look like a
+   safeguard that has never fired.
+3. Hazard 15 is a live constraint on this mechanism, not a hypothetical.
+   Torque cost belongs in the reward or the actuator limit belongs in the
+   task — and that is a decision to take before the next dispatch, not after.
+
+*Phase B follows in §10 below once the capability sweep has run.*

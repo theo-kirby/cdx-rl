@@ -1,0 +1,118 @@
+run       /home/theo/cadex-jobs/stand-task-20260802-200109
+label     stand8   device gpu   state done
+progress  iteration 2499 of 2500   wall 14050 s (3.90 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 8394
+
+liveness
+  pid            324195  alive=False
+  progress.json  2026-08-02T21:57:07Z  age 6141 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0      -0.9412      85.3  0.4002      134.6  
+        250       0.2505     189.2  0.3645      28.55  
+        500       0.3128     258.4  0.3445      30.21  
+        598       0.3373     277.7  0.3407      33.33  best reward
+        750       0.2411     209.0  0.3352      49.21  
+       1000       0.1731     222.6  0.3300      42.64  
+       1250       0.1832     245.3  0.3319      39.78  
+       1500       0.2161     407.6  0.3330      26.65  
+       1750       0.2164     431.2  0.3377      23.63  
+       1908       0.2418     542.5  0.3392       24.1  longest episode
+       2000       0.1899     487.6  0.3382      28.68  
+       2250       0.0768     382.8  0.3374      21.56  
+       2499       0.1461     370.7  0.3375      18.95  final
+  (2500 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  best reward          iteration    598   reward/step 0.3373   episode 277.7
+  best episode length  iteration   1908   reward/step 0.2418   episode 542.5
+  final                iteration   2499   reward/step 0.1461   episode 370.7
+
+trend from the reward peak to the end: survival-diverges
+  reward -0.1912 while episode length +93.0 steps.
+  Survival rose while the trainer's scalar fell. This is NOT a
+  regression by the metric this repository cares about, and a
+  supervisor that stopped at the reward peak would have thrown
+  the longer-surviving policy away. compare settles it.
+
+witness   (1 margin(s) recorded, floor 100x)
+  2.820e-07  355x inside tolerance
+
+checkpoints  (60 records over 50 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         49   000050      -0.5822     88383 ef2294ac  ok
+         49     best      -0.5822     88347 f43038ed  superseded
+         99   000100      -0.1027     95822 9a677ba3  ok
+         99     best      -0.1027     95827 f43038ed  superseded
+        149   000150       0.1760    103154 c785123a  ok
+        149     best       0.1760    103213 f43038ed  superseded
+        199   000200       0.2279    110557 4cd0e48f  ok
+        199     best       0.2279    110583 f43038ed  superseded
+        249   000250       0.2370    117987 cd0ae53f  ok
+        243     best       0.2745    117990 f43038ed  superseded
+        299   000300       0.2811    125377 33f3f820  ok
+        293     best       0.2900    125383 f43038ed  superseded
+        349   000350       0.2679    132721 f9642dab  ok
+        345     best       0.2941    132759 f43038ed  superseded
+        399   000400       0.3095    140183 68696617  ok
+        395     best       0.3155    140088 f43038ed  superseded
+        449   000450       0.3267    147498 78f8c7f5  ok
+        449     best       0.3267    147541 f43038ed  superseded
+        499   000500       0.3061    154910 1081a00f  ok
+        549   000550       0.3183    162292 9de3b45d  ok
+        511     best       0.3367    162299 f43038ed  superseded
+        599   000600       0.3290    169696 e7fbbec0  ok
+        598     best       0.3373    169671 f43038ed  ok
+        649   000650       0.2996    176950 c994b337  ok
+        699   000700       0.2453    184383 a0480a1d  ok
+        749   000750       0.2347    191722 82b3f588  ok
+        799   000800       0.2077    199047 56893811  ok
+        849   000850       0.1997    206536 369b79f8  ok
+        899   000900       0.1963    213818 8e442fc1  ok
+        949   000950       0.1802    221268 8962095f  ok
+        999   001000       0.1735    228683 d9b0d856  ok
+       1049   001050       0.1866    235979 bdd3722d  ok
+       1099   001100       0.1637    243603 871b14bf  ok
+       1149   001150       0.1798    251042 0079f17a  ok
+       1199   001200       0.2006    258414 96672eb9  ok
+       1249   001250       0.1847    265818 4cae48cf  ok
+       1299   001300       0.1809    273340 a3eac651  ok
+       1349   001350       0.1806    280685 4793d717  ok
+       1399   001400       0.1864    288059 d1738c3f  ok
+       1449   001450       0.1927    295435 077c2e2b  ok
+       1499   001500       0.2072    302897 61918868  ok
+       1549   001550       0.2058    310357 15cb6772  ok
+       1599   001600       0.2091    317655 09d5c17c  ok
+       1649   001650       0.2181    325116 d10d1f24  ok
+       1699   001700       0.2138    332469 f69b772d  ok
+       1749   001750       0.2127    339960 0107ee12  ok
+       1799   001800       0.2319    347336 b40448c6  ok
+       1849   001850       0.2251    354867 7e4360bc  ok
+       1899   001900       0.2223    362271 dc6ebbe1  ok
+       1949   001950       0.2094    369724 22917f34  ok
+       1999   002000       0.1996    377051 0bf27d84  ok
+       2049   002050       0.1589    384481 1a5862b3  ok
+       2099   002100       0.1440    392006 3e7b65bc  ok
+       2149   002150       0.1203    399409 6b7cde40  ok
+       2199   002200       0.0606    406835 c3fb2ea0  ok
+       2249   002250       0.0738    414242 bf8694d4  ok
+       2299   002300       0.1081    421638 d91e2093  ok
+       2349   002350       0.1264    429032 60868ed1  ok
+       2399   002400       0.1349    436508 460296d1  ok
+       2449   002450       0.1499    444059 f3d64691  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand8.best.cxpolicy       best by the trainer's own reward (iteration 598)
+  stand8.001900.cxpolicy     nearest the episode-length peak (542.5 steps at iteration 1908)
+  stand8.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260802-200109 --task /home/theo/cadex-jobs/stand-task-20260802-200109/stand-task.json --seeds 12

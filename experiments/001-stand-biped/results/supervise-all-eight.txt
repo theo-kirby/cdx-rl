@@ -1,0 +1,761 @@
+run       /home/theo/cadex-jobs/job-task-20260801-154657
+label     job-task-20260801-154657   device gpu   state done
+progress  iteration 49 of 50   wall 109 s (0.03 h)
+artifacts bundle job-task.json   model job-model.xml   parameters 4929
+
+liveness
+  pid            3244586  alive=False
+  progress.json  2026-08-01T13:49:33Z  age 121795 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0       0.3000 — —      2.315  best reward
+          5       0.2989 — —      2.351  
+         10       0.2989 — —      2.344  
+         15       0.2989 — —      2.325  
+         20       0.2989 — —      2.287  
+         25       0.2989 — —      2.212  
+         30       0.2989 — —      2.086  
+         35       0.2989 — —      1.889  
+         40       0.2989 — —      1.633  
+         45       0.2989 — —      1.356  
+         49       0.2989 — —      1.135  final
+  (50 iterations parsed from train.log)
+
+peaks   (episode budget 50 steps)
+  best reward          iteration      0   reward/step 0.3000   episode —
+  best episode length  —  (this trainer logged none)
+  final                iteration     49   reward/step 0.2989   episode —
+
+trend from the reward peak to the end: unknown
+  this trainer logged no episode length; the reward column cannot be read on its own
+
+witness   (0 margin(s) recorded, floor 100x)
+  none in train.log. The trainer prints one when it finishes;
+  a run without one did not get that far.
+
+checkpoints  (5 records over 5 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+          9   000010       0.2989     30817 119520a8  ok
+          0     best       0.3000     30852 4dff9a0d  ok
+         19   000020       0.2989     31606 05dd629d  ok
+         29   000030       0.2989     32384 4d98f1e8  ok
+         39   000040       0.2989     33154 e9b3d129  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  shoved.best.cxpolicy       best by the trainer's own reward (iteration 0)
+  shoved.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/job-task-20260801-154657 --task /home/theo/cadex-jobs/job-task-20260801-154657/job-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/job-task-20260801-155047
+label     job-task-20260801-155047   device gpu   state training
+progress  iteration 748 of 4000   wall 638 s (0.18 h)
+artifacts bundle job-task.json   model job-model.xml   parameters —
+
+liveness
+  pid            3250375  alive=False
+  progress.json  2026-08-01T14:02:00Z  age 121048 s
+  state          training  terminal=False
+  STALE — this run claims to be training and nothing is running it.
+          A stale progress.json is indistinguishable from a live
+          one without this check; do not wait on it.
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0       0.3000 — —       2.32  best reward
+         74       0.2989 — —     0.2509  
+        148       0.2989 — —   0.001786  
+        222       0.2989 — —  3.608e-05  
+        296       0.2989 — —  0.0001453  
+        370       0.2989 — —  0.0004853  
+        444       0.2989 — — -0.0006987  
+        518       0.2989 — —  0.0001011  
+        592       0.2989 — — -0.0003025  
+        666       0.2989 — —  0.0006394  
+        740       0.2989 — —  0.0003397  
+        748       0.2989 — —  0.0007868  final
+  (749 iterations parsed from train.log)
+
+peaks   (episode budget 50 steps)
+  best reward          iteration      0   reward/step 0.3000   episode —
+  best episode length  —  (this trainer logged none)
+  final                iteration    748   reward/step 0.2989   episode —
+
+trend from the reward peak to the end: unknown
+  this trainer logged no episode length; the reward column cannot be read on its own
+
+witness   (0 margin(s) recorded, floor 100x)
+  none in train.log. The trainer prints one when it finishes;
+  a run without one did not get that far.
+
+checkpoints  (30 records over 30 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         24   000025       0.2989     31985 bf4d8dce  ok
+          0     best       0.3000     32027 9b936a52  ok
+         49   000050       0.2989     33977 f068b285  ok
+         74   000075       0.2989     36001 8b7f71b9  ok
+         99   000100       0.2989     38056 e4d08005  ok
+        124   000125       0.2989     40111 c95cd4bb  ok
+        149   000150       0.2989     42146 1bc1a80c  ok
+        174   000175       0.2989     44227 6b6daca0  ok
+        199   000200       0.2989     46354 cfebaec9  ok
+        224   000225       0.2989     48492 d49363d6  ok
+        249   000250       0.2989     50632 1c8944cc  ok
+        274   000275       0.2989     52788 45feeb7b  ok
+        299   000300       0.2989     54884 9e28e7bc  ok
+        324   000325       0.2989     56981 1ebf114e  ok
+        349   000350       0.2989     59103 156fcae1  ok
+        374   000375       0.2989     61221 03701399  ok
+        399   000400       0.2989     63375 ca7765e0  ok
+        424   000425       0.2989     65457 de9004e8  ok
+        449   000450       0.2989     67599 bfa2b987  ok
+        474   000475       0.2989     69699 2cc97723  ok
+        499   000500       0.2989     71824 b0f86d3d  ok
+        524   000525       0.2989     73956 a7b6200b  ok
+        549   000550       0.2989     76042 62d090e2  ok
+        574   000575       0.2989     78192 4868c6b2  ok
+        599   000600       0.2989     80279 758a6e2b  ok
+        624   000625       0.2989     82441 e3a47167  ok
+        649   000650       0.2989     84548 dfffbb8e  ok
+        674   000675       0.2989     86698 d885748a  ok
+        699   000700       0.2989     88813 4bbc9fb6  ok
+        724   000725       0.2989     90925 0d7eb858  ok
+
+worth playing
+  long.best.cxpolicy         best by the trainer's own reward (iteration 0)
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/job-task-20260801-155047 --task /home/theo/cadex-jobs/job-task-20260801-155047/job-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/stand-task-20260801-182851
+label     stand-task-20260801-182851   device gpu   state done
+progress  iteration 499 of 500   wall 2682 s (0.74 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 7688
+
+liveness
+  pid            3453254  alive=False
+  progress.json  2026-08-01T17:15:57Z  age 109411 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0       0.0909 — —      2.902  
+         50      -0.0871 — —      9.474  
+        100       0.0283 — —       9.57  
+        150       0.0716 — —       10.1  
+        200       0.1086 — —      12.36  
+        250       0.1194 — —      13.85  
+        300       0.1443 — —      12.59  
+        350       0.1426 — —      11.92  
+        400       0.1670 — —      10.92  
+        450       0.1829 — —      12.29  
+        493       0.2149 — —      12.79  best reward
+        499       0.2076 — —       13.3  final
+  (500 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  best reward          iteration    493   reward/step 0.2149   episode —
+  best episode length  —  (this trainer logged none)
+  final                iteration    499   reward/step 0.2076   episode —
+
+trend from the reward peak to the end: unknown
+  this trainer logged no episode length; the reward column cannot be read on its own
+
+witness   (0 margin(s) recorded, floor 100x)
+  none in train.log. The trainer prints one when it finishes;
+  a run without one did not get that far.
+
+checkpoints  (32 records over 20 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         24   000025      -0.2284     72198 f1395507  ok
+          0     best       0.0909     72355 c0800e07  superseded
+         49   000050      -0.0926     74253 77fe770a  ok
+         74   000075       0.0239     76336 fa3d9e7e  ok
+         99   000100       0.0200     78384 1e60f149  ok
+        124   000125       0.0482     80370 98002b0d  ok
+        149   000150       0.0598     82447 780cfa5f  ok
+        174   000175       0.0712     84451 b1aa09ad  ok
+        199   000200       0.1080     86639 90bd347a  ok
+        199     best       0.1080     86631 c0800e07  superseded
+        224   000225       0.1051     88578 a59a4396  ok
+        210     best       0.1138     88451 c0800e07  superseded
+        249   000250       0.1268     90592 ae6c978c  ok
+        246     best       0.1325     90676 c0800e07  superseded
+        274   000275       0.1308     92626 1170ffa9  ok
+        254     best       0.1420     92686 c0800e07  superseded
+        299   000300       0.1369     94755 8b89ad98  ok
+        291     best       0.1518     94734 c0800e07  superseded
+        324   000325       0.1519     96774 7195489c  ok
+        316     best       0.1558     96798 c0800e07  superseded
+        349   000350       0.1478     98719 627e15ec  ok
+        374   000375       0.1577    100824 b928e584  ok
+        368     best       0.1754    100776 c0800e07  superseded
+        399   000400       0.1743    102816 8c46b024  ok
+        388     best       0.1800    102817 c0800e07  superseded
+        424   000425       0.1853    104857 03411984  ok
+        418     best       0.1855    104837 c0800e07  superseded
+        449   000450       0.1871    106904 58c32154  ok
+        445     best       0.1957    106865 c0800e07  superseded
+        474   000475       0.1996    108864 517b692e  ok
+        460     best       0.1996    108875 c0800e07  superseded
+        493     best       0.2149    110951 c0800e07  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand3.best.cxpolicy       best by the trainer's own reward (iteration 493)
+  stand3.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260801-182851 --task /home/theo/cadex-jobs/stand-task-20260801-182851/stand-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/stand-task-20260801-210806
+label     stand-task-20260801-210806   device gpu   state done
+progress  iteration 499 of 500   wall 2585 s (0.72 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 7688
+
+liveness
+  pid            3594955  alive=False
+  progress.json  2026-08-01T19:53:43Z  age 99945 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0       0.0909    1343.0 —      2.902  
+         50      -0.1253      80.4 —       9.15  
+        100       0.0034     105.4 —      6.979  
+        150       0.0467     116.4 —      8.028  
+        200       0.0635     125.8 —       9.34  
+        250       0.0776     134.1 —      10.14  
+        258       0.1015     160.6 —      10.57  longest episode
+        300       0.0982     131.7 —      10.28  
+        350       0.1252     139.8 —      10.25  
+        400       0.1366     138.8 —      8.721  
+        450       0.1429     138.4 —      9.769  
+        499       0.1751     148.9 —      10.34  best reward, final
+  (500 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  1 point(s) logged an episode length above that budget — iteration(s) 0.
+  An episode cannot outrun the horizon it is truncated at, so
+  those are not mean episode lengths and are excluded from the
+  peak search. Reported rather than dropped quietly.
+  best reward          iteration    499   reward/step 0.1751   episode 148.9
+  best episode length  iteration    258   reward/step 0.1015   episode 160.6
+  final                iteration    499   reward/step 0.1751   episode 148.9
+
+trend from the reward peak to the end: too-short
+  no post-peak span to read
+
+witness   (1 margin(s) recorded, floor 100x)
+  1.112e-07  899x inside tolerance
+
+checkpoints  (29 records over 20 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         24   000025      -0.2614     73015 f8408d28  ok
+          0     best       0.0909     73236 59b2e2e8  superseded
+         49   000050      -0.1295     75883 2db8d596  ok
+         74   000075       0.0119     78812 e62e27ec  ok
+         99   000100      -0.0145     81740 9dc0b16e  ok
+        124   000125       0.0421     84578 93d5b34d  ok
+        149   000150       0.0465     87571 a3befc8d  ok
+        174   000175       0.0546     90480 a9895ddc  ok
+        199   000200       0.0681     93366 b3ba0c71  ok
+        224   000225       0.0770     96120 743fa671  ok
+        222     best       0.0943     96157 59b2e2e8  superseded
+        249   000250       0.0810     99003 9e110be9  ok
+        231     best       0.1038     99033 59b2e2e8  superseded
+        274   000275       0.0737    101837 b49ce62d  ok
+        299   000300       0.1095    104761 b734cd5b  ok
+        288     best       0.1129    104839 59b2e2e8  superseded
+        324   000325       0.1198    107739 5b346d97  ok
+        306     best       0.1230    107713 59b2e2e8  superseded
+        349   000350       0.1344    110520 9de28bc2  ok
+        344     best       0.1400    110569 59b2e2e8  superseded
+        374   000375       0.1261    113479 dc9986bd  ok
+        399   000400       0.1369    116412 09e972aa  ok
+        387     best       0.1504    116432 59b2e2e8  superseded
+        424   000425       0.1447    119240 58068dc1  ok
+        421     best       0.1642    119289 59b2e2e8  superseded
+        449   000450       0.1436    122146 0b3e422a  ok
+        474   000475       0.1730    124924 04183bfa  ok
+        474     best       0.1730    124899 59b2e2e8  superseded
+        499     best       0.1751    127810 59b2e2e8  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand4.best.cxpolicy       best by the trainer's own reward (iteration 499)
+  stand4.000250.cxpolicy     nearest the episode-length peak (160.6 steps at iteration 258)
+  stand4.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260801-210806 --task /home/theo/cadex-jobs/stand-task-20260801-210806/stand-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/stand-task-20260802-015931
+label     stand-task-20260802-015931   device gpu   state done
+progress  iteration 499 of 500   wall 3045 s (0.85 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 8202
+
+liveness
+  pid            3796425  alive=False
+  progress.json  2026-08-02T00:52:15Z  age 82033 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0      -0.0787    1365.3  0.2997      3.265  
+         50      -0.1068      69.1  0.2937      5.903  
+        100       0.0854     123.0  0.2834      4.963  
+        150       0.1332     167.5  0.2730      4.323  
+        200       0.1802     210.6  0.2623      5.219  
+        250       0.1958     230.1  0.2532      5.839  
+        299       0.2034     243.8  0.2446      6.607  best reward
+        300       0.1991     222.0  0.2445      6.871  
+        350       0.1866     240.9  0.2353      5.832  
+        400       0.1933     223.8  0.2267      5.586  
+        450       0.1854     238.1  0.2195      5.172  
+        483       0.1836     278.6  0.2156      5.357  longest episode
+        499       0.1852     269.5  0.2136      5.053  final
+  (500 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  1 point(s) logged an episode length above that budget — iteration(s) 0.
+  An episode cannot outrun the horizon it is truncated at, so
+  those are not mean episode lengths and are excluded from the
+  peak search. Reported rather than dropped quietly.
+  best reward          iteration    299   reward/step 0.2034   episode 243.8
+  best episode length  iteration    483   reward/step 0.1836   episode 278.6
+  final                iteration    499   reward/step 0.1852   episode 269.5
+
+trend from the reward peak to the end: survival-diverges
+  reward -0.0182 while episode length +25.7 steps.
+  Survival rose while the trainer's scalar fell. This is NOT a
+  regression by the metric this repository cares about, and a
+  supervisor that stopped at the reward peak would have thrown
+  the longer-surviving policy away. compare settles it.
+
+witness   (0 margin(s) recorded, floor 100x)
+  none in train.log. The trainer prints one when it finishes;
+  a run without one did not get that far.
+
+checkpoints  (30 records over 20 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         24   000025      -0.3251     81960 2a8d2473  ok
+          0     best      -0.0787     82262 5ee3d686  superseded
+         49   000050      -0.1091     85747 aa35b5a5  ok
+         74   000075      -0.1214     89395 ab21ec8c  ok
+         62     best      -0.0554     89401 5ee3d686  superseded
+         99   000100       0.0687     93059 58921c0c  ok
+         97     best       0.0699     93043 5ee3d686  superseded
+        124   000125       0.0940     96803 51ca4380  ok
+        106     best       0.1118     96829 5ee3d686  superseded
+        149   000150       0.1251    100450 809240ac  ok
+        149     best       0.1251    100486 5ee3d686  superseded
+        174   000175       0.1548    104123 a523c419  ok
+        163     best       0.1650    104074 5ee3d686  superseded
+        199   000200       0.1812    107892 fe4565c8  ok
+        199     best       0.1812    107834 5ee3d686  superseded
+        224   000225       0.1775    111544 8c97059a  ok
+        223     best       0.1851    111568 5ee3d686  superseded
+        249   000250       0.1954    115212 f0f1e392  ok
+        241     best       0.2002    115198 5ee3d686  superseded
+        274   000275       0.1888    118830 a69ab2ad  ok
+        256     best       0.2031    118871 5ee3d686  superseded
+        299   000300       0.2034    122626 2220d418  ok
+        299     best       0.2034    122671 5ee3d686  ok
+        324   000325       0.1711    126324 bf78ca4d  ok
+        349   000350       0.1855    130023 63b2e556  ok
+        374   000375       0.1845    133594 a0cd5d63  ok
+        399   000400       0.1918    137367 b9d37e37  ok
+        424   000425       0.1789    141083 278b8e9e  ok
+        449   000450       0.1812    144797 739f4dac  ok
+        474   000475       0.1890    148426 c020f078  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand5.best.cxpolicy       best by the trainer's own reward (iteration 299)
+  stand5.000475.cxpolicy     nearest the episode-length peak (278.6 steps at iteration 483)
+  stand5.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260802-015931 --task /home/theo/cadex-jobs/stand-task-20260802-015931/stand-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/stand-task-20260802-150139
+label     stand6   device gpu   state done
+progress  iteration 1499 of 1500   wall 6631 s (1.84 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 8202
+
+liveness
+  pid            86009  alive=False
+  progress.json  2026-08-02T14:54:06Z  age 31522 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0      -0.0812    1280.0  0.2997      3.284  
+        150       0.1010     129.6  0.2735      5.715  
+        300       0.1237     135.6  0.2460      7.478  
+        450       0.1606     167.2  0.2246      5.786  
+        600       0.1762     171.7  0.2077      6.596  
+        670       0.1771     204.3  0.2009        6.9  longest episode
+        750       0.1141     157.8  0.1940      9.355  
+        900       0.1789     157.8  0.1788      10.67  
+       1050       0.1899     154.0  0.1670      12.16  
+       1200       0.1904     175.8  0.1586      12.52  
+       1350       0.2041     177.7  0.1507      13.29  
+       1393       0.2286     186.6  0.1481      14.66  best reward
+       1499       0.2169     180.0  0.1424      15.06  final
+  (1500 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  1 point(s) logged an episode length above that budget — iteration(s) 0.
+  An episode cannot outrun the horizon it is truncated at, so
+  those are not mean episode lengths and are excluded from the
+  peak search. Reported rather than dropped quietly.
+  best reward          iteration   1393   reward/step 0.2286   episode 186.6
+  best episode length  iteration    670   reward/step 0.1771   episode 204.3
+  final                iteration   1499   reward/step 0.2169   episode 180.0
+
+trend from the reward peak to the end: agreeing
+  reward -0.0118, episode length -6.6 steps — moving together.
+
+witness   (1 margin(s) recorded, floor 100x)
+  1.391e-07  719x inside tolerance
+
+checkpoints  (47 records over 30 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         49   000050      -0.1312     85613 e8687116  ok
+          0     best      -0.0812     85913 103ec976  superseded
+         99   000100       0.0203     93085 ed759df7  ok
+         96     best       0.0211     93101 103ec976  superseded
+        149   000150       0.1057    100629 5fe16985  ok
+        149     best       0.1057    100573 103ec976  superseded
+        199   000200       0.1258    107850 5a06c80e  ok
+        199     best       0.1258    107847 103ec976  superseded
+        249   000250       0.1392    115223 bba03544  ok
+        248     best       0.1392    115280 103ec976  superseded
+        299   000300       0.1248    122575 e40a9b3f  ok
+        253     best       0.1425    122612 103ec976  superseded
+        349   000350       0.1282    129877 7446d414  ok
+        399   000400       0.1425    137308 3cac1c48  ok
+        356     best       0.1496    137329 103ec976  superseded
+        449   000450       0.1603    144787 028668bb  ok
+        441     best       0.1640    144779 103ec976  superseded
+        499   000500       0.1589    152099 a8570764  ok
+        492     best       0.1664    152042 103ec976  superseded
+        549   000550       0.1561    159504 bd9e9c3c  ok
+        542     best       0.1702    159481 103ec976  superseded
+        599   000600       0.1773    166777 a329105c  ok
+        573     best       0.1844    166786 103ec976  superseded
+        649   000650       0.1750    174192 a0345393  ok
+        699   000700       0.1718    181515 eeda3ea0  ok
+        749   000750       0.1224    188955 3b5be40d  ok
+        799   000800       0.1058    196248 3a24500c  ok
+        849   000850       0.1781    203687 7215d0e4  ok
+        899   000900       0.1777    211055 42c10afc  ok
+        895     best       0.1852    211086 103ec976  superseded
+        949   000950       0.1735    218483 4558b756  ok
+        925     best       0.1903    218508 103ec976  superseded
+        999   001000       0.1513    225900 d33b880f  ok
+       1049   001050       0.1883    233455 bbd24015  ok
+       1099   001100       0.2007    240893 91f90d20  ok
+       1077     best       0.2080    240918 103ec976  superseded
+       1149   001150       0.2016    248256 777d7bad  ok
+       1101     best       0.2105    248232 103ec976  superseded
+       1199   001200       0.1848    255871 6e87ff7d  ok
+       1187     best       0.2112    255854 103ec976  superseded
+       1249   001250       0.1994    263310 f30f4d35  ok
+       1299   001300       0.1979    270785 12e59b90  ok
+       1265     best       0.2198    270795 103ec976  superseded
+       1349   001350       0.2020    278269 f3c9cd97  ok
+       1399   001400       0.2068    285768 9e14b440  ok
+       1393     best       0.2286    285714 103ec976  ok
+       1449   001450       0.2030    293219 dfb13daf  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand6.best.cxpolicy       best by the trainer's own reward (iteration 1393)
+  stand6.000650.cxpolicy     nearest the episode-length peak (204.3 steps at iteration 670)
+  stand6.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260802-150139 --task /home/theo/cadex-jobs/stand-task-20260802-150139/stand-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/stand-task-20260802-173843
+label     stand7   device gpu   state done
+progress  iteration 1999 of 2000   wall 8267 s (2.30 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 8202
+
+liveness
+  pid            225543  alive=False
+  progress.json  2026-08-02T17:58:33Z  age 20455 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0      -0.0776    1412.4  0.2997      3.252  
+        200       0.1517     226.9  0.2683      5.482  
+        367       0.1559     285.4  0.2408      7.645  longest episode
+        400       0.1508     252.8  0.2359      6.928  
+        600       0.0793     209.0  0.2082      7.178  
+        800       0.0072     162.9  0.1890      8.504  
+       1000       0.1899     194.1  0.1737      6.539  
+       1200       0.2052     190.1  0.1617      7.876  
+       1400       0.2013     181.6  0.1512      9.246  
+       1600       0.2211     182.4  0.1419      10.47  
+       1800       0.2358     178.9  0.1336      10.61  
+       1896       0.2450     181.6  0.1298      10.47  best reward
+       1999       0.2280     170.3  0.1268      10.68  final
+  (2000 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  1 point(s) logged an episode length above that budget — iteration(s) 0.
+  An episode cannot outrun the horizon it is truncated at, so
+  those are not mean episode lengths and are excluded from the
+  peak search. Reported rather than dropped quietly.
+  best reward          iteration   1896   reward/step 0.2450   episode 181.6
+  best episode length  iteration    367   reward/step 0.1559   episode 285.4
+  final                iteration   1999   reward/step 0.2280   episode 170.3
+
+trend from the reward peak to the end: agreeing
+  reward -0.0170, episode length -11.3 steps — moving together.
+
+witness   (1 margin(s) recorded, floor 100x)
+  1.514e-07  661x inside tolerance
+
+checkpoints  (54 records over 40 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         49   000050      -0.1176     85725 a54d195a  ok
+          0     best      -0.0776     85920 72876c39  superseded
+         99   000100      -0.0248     93058 04b350a5  ok
+         98     best      -0.0236     93095 72876c39  superseded
+        149   000150       0.1133    100529 643d9843  ok
+        149     best       0.1133    100552 72876c39  superseded
+        199   000200       0.1507    107909 3a82a611  ok
+        195     best       0.1588    107901 72876c39  superseded
+        249   000250       0.1571    115373 ae88dcce  ok
+        212     best       0.1630    115386 72876c39  superseded
+        299   000300       0.1767    122621 f0d89fc6  ok
+        285     best       0.1828    122611 72876c39  superseded
+        349   000350       0.1562    129990 f779a4ef  ok
+        399   000400       0.1478    137342 e6ad06b0  ok
+        449   000450       0.1422    144810 1bdfb564  ok
+        499   000500       0.1252    152145 415bb0d8  ok
+        549   000550       0.1083    159579 67944687  ok
+        599   000600       0.0878    166968 bf20ac0c  ok
+        649   000650       0.0691    174381 5484961e  ok
+        699   000700       0.0627    181678 841a2874  ok
+        749   000750       0.0451    189111 946df4f4  ok
+        799   000800       0.0090    196547 413a3d82  ok
+        849   000850       0.0781    203958 2462426a  ok
+        899   000900       0.1462    211398 8fa5cf85  ok
+        949   000950       0.1676    218802 fcc646ab  ok
+        999   001000       0.1914    226157 dece9337  ok
+        998     best       0.1944    226164 72876c39  superseded
+       1049   001050       0.1991    233754 b462e403  ok
+       1028     best       0.2019    233724 72876c39  superseded
+       1099   001100       0.2101    241078 1efb3ac8  ok
+       1098     best       0.2125    241062 72876c39  superseded
+       1149   001150       0.1984    248496 faf74d77  ok
+       1113     best       0.2147    248577 72876c39  superseded
+       1199   001200       0.2099    255913 a425ea88  ok
+       1249   001250       0.1892    263337 13cafcda  ok
+       1299   001300       0.2024    270816 69b8f69f  ok
+       1349   001350       0.2053    278241 db9ce160  ok
+       1399   001400       0.1981    285646 419aefc6  ok
+       1449   001450       0.1978    293109 4d91e115  ok
+       1499   001500       0.2062    300610 7b16dc31  ok
+       1549   001550       0.2070    308002 407414ea  ok
+       1599   001600       0.2252    315392 7dd96803  ok
+       1598     best       0.2266    315412 72876c39  superseded
+       1649   001650       0.2157    322881 bc4bc513  ok
+       1619     best       0.2283    322895 72876c39  superseded
+       1699   001700       0.2221    330357 79058c12  ok
+       1749   001750       0.2226    337741 35baa38f  ok
+       1748     best       0.2293    337744 72876c39  superseded
+       1799   001800       0.2347    345321 e4cfaa71  ok
+       1798     best       0.2372    345317 72876c39  superseded
+       1849   001850       0.2255    352768 222cccce  ok
+       1899   001900       0.2278    360112 e3bce231  ok
+       1896     best       0.2450    360118 72876c39  ok
+       1949   001950       0.2281    367793 ff428446  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand7.best.cxpolicy       best by the trainer's own reward (iteration 1896)
+  stand7.000350.cxpolicy     nearest the episode-length peak (285.4 steps at iteration 367)
+  stand7.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260802-173843 --task /home/theo/cadex-jobs/stand-task-20260802-173843/stand-task.json --seeds 12
+
+================================================================
+
+run       /home/theo/cadex-jobs/stand-task-20260802-200109
+label     stand8   device gpu   state done
+progress  iteration 2499 of 2500   wall 14050 s (3.90 h)
+artifacts bundle stand-task.json   model model-model.xml   parameters 8394
+
+liveness
+  pid            324195  alive=False
+  progress.json  2026-08-02T21:57:07Z  age 6141 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0      -0.9412      85.3  0.4002      134.6  
+        250       0.2505     189.2  0.3645      28.55  
+        500       0.3128     258.4  0.3445      30.21  
+        598       0.3373     277.7  0.3407      33.33  best reward
+        750       0.2411     209.0  0.3352      49.21  
+       1000       0.1731     222.6  0.3300      42.64  
+       1250       0.1832     245.3  0.3319      39.78  
+       1500       0.2161     407.6  0.3330      26.65  
+       1750       0.2164     431.2  0.3377      23.63  
+       1908       0.2418     542.5  0.3392       24.1  longest episode
+       2000       0.1899     487.6  0.3382      28.68  
+       2250       0.0768     382.8  0.3374      21.56  
+       2499       0.1461     370.7  0.3375      18.95  final
+  (2500 iterations parsed from train.log)
+
+peaks   (episode budget 600 steps)
+  best reward          iteration    598   reward/step 0.3373   episode 277.7
+  best episode length  iteration   1908   reward/step 0.2418   episode 542.5
+  final                iteration   2499   reward/step 0.1461   episode 370.7
+
+trend from the reward peak to the end: survival-diverges
+  reward -0.1912 while episode length +93.0 steps.
+  Survival rose while the trainer's scalar fell. This is NOT a
+  regression by the metric this repository cares about, and a
+  supervisor that stopped at the reward peak would have thrown
+  the longer-surviving policy away. compare settles it.
+
+witness   (1 margin(s) recorded, floor 100x)
+  2.820e-07  355x inside tolerance
+
+checkpoints  (60 records over 50 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         49   000050      -0.5822     88383 ef2294ac  ok
+         49     best      -0.5822     88347 f43038ed  superseded
+         99   000100      -0.1027     95822 9a677ba3  ok
+         99     best      -0.1027     95827 f43038ed  superseded
+        149   000150       0.1760    103154 c785123a  ok
+        149     best       0.1760    103213 f43038ed  superseded
+        199   000200       0.2279    110557 4cd0e48f  ok
+        199     best       0.2279    110583 f43038ed  superseded
+        249   000250       0.2370    117987 cd0ae53f  ok
+        243     best       0.2745    117990 f43038ed  superseded
+        299   000300       0.2811    125377 33f3f820  ok
+        293     best       0.2900    125383 f43038ed  superseded
+        349   000350       0.2679    132721 f9642dab  ok
+        345     best       0.2941    132759 f43038ed  superseded
+        399   000400       0.3095    140183 68696617  ok
+        395     best       0.3155    140088 f43038ed  superseded
+        449   000450       0.3267    147498 78f8c7f5  ok
+        449     best       0.3267    147541 f43038ed  superseded
+        499   000500       0.3061    154910 1081a00f  ok
+        549   000550       0.3183    162292 9de3b45d  ok
+        511     best       0.3367    162299 f43038ed  superseded
+        599   000600       0.3290    169696 e7fbbec0  ok
+        598     best       0.3373    169671 f43038ed  ok
+        649   000650       0.2996    176950 c994b337  ok
+        699   000700       0.2453    184383 a0480a1d  ok
+        749   000750       0.2347    191722 82b3f588  ok
+        799   000800       0.2077    199047 56893811  ok
+        849   000850       0.1997    206536 369b79f8  ok
+        899   000900       0.1963    213818 8e442fc1  ok
+        949   000950       0.1802    221268 8962095f  ok
+        999   001000       0.1735    228683 d9b0d856  ok
+       1049   001050       0.1866    235979 bdd3722d  ok
+       1099   001100       0.1637    243603 871b14bf  ok
+       1149   001150       0.1798    251042 0079f17a  ok
+       1199   001200       0.2006    258414 96672eb9  ok
+       1249   001250       0.1847    265818 4cae48cf  ok
+       1299   001300       0.1809    273340 a3eac651  ok
+       1349   001350       0.1806    280685 4793d717  ok
+       1399   001400       0.1864    288059 d1738c3f  ok
+       1449   001450       0.1927    295435 077c2e2b  ok
+       1499   001500       0.2072    302897 61918868  ok
+       1549   001550       0.2058    310357 15cb6772  ok
+       1599   001600       0.2091    317655 09d5c17c  ok
+       1649   001650       0.2181    325116 d10d1f24  ok
+       1699   001700       0.2138    332469 f69b772d  ok
+       1749   001750       0.2127    339960 0107ee12  ok
+       1799   001800       0.2319    347336 b40448c6  ok
+       1849   001850       0.2251    354867 7e4360bc  ok
+       1899   001900       0.2223    362271 dc6ebbe1  ok
+       1949   001950       0.2094    369724 22917f34  ok
+       1999   002000       0.1996    377051 0bf27d84  ok
+       2049   002050       0.1589    384481 1a5862b3  ok
+       2099   002100       0.1440    392006 3e7b65bc  ok
+       2149   002150       0.1203    399409 6b7cde40  ok
+       2199   002200       0.0606    406835 c3fb2ea0  ok
+       2249   002250       0.0738    414242 bf8694d4  ok
+       2299   002300       0.1081    421638 d91e2093  ok
+       2349   002350       0.1264    429032 60868ed1  ok
+       2399   002400       0.1349    436508 460296d1  ok
+       2449   002450       0.1499    444059 f3d64691  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  stand8.best.cxpolicy       best by the trainer's own reward (iteration 598)
+  stand8.001900.cxpolicy     nearest the episode-length peak (542.5 steps at iteration 1908)
+  stand8.cxpolicy            the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cadex-jobs/stand-task-20260802-200109 --task /home/theo/cadex-jobs/stand-task-20260802-200109/stand-task.json --seeds 12
+
+================================================================
+
