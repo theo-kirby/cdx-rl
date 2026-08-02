@@ -1,0 +1,56 @@
+# experiments/
+
+One directory per experiment, numbered in the order they were started:
+`NNN-short-name/`.
+
+Numbering is chronological and never reused. An experiment that gets
+superseded keeps its number and its directory; the successor gets a new one
+and says what it supersedes. The point of a research record is that the
+things that did not work are still there.
+
+## What a directory contains
+
+| | |
+|---|---|
+| `README.md` | **required.** The nine sections below. |
+| `rig.py` | the Cadex script, if the experiment authors a mechanism |
+| `task.md` | the task's design, when it is long enough to want its own file |
+| `results/` | tables, envelopes and plots — small text, committed |
+| — | run directories live in `jobs/` (gitignored); checkpoints live there too |
+
+Large binaries do not go in git. The run directory keeps them, the graph node
+carries the ones that matter as artifacts, and the README says which run
+directory.
+
+## The README's nine sections
+
+Written in this order. **Sections 1–7 before any dispatch.** 8 and 9
+afterwards, and visibly separate, so nobody can be unsure which came first.
+
+1. **Question** — one sentence, phrased so that both answers are interesting.
+2. **Metric** — named, defined, and why that one. Decided before dispatch
+   (ADR-097), because the reward curve gets noisier the moment variation goes
+   in and stops being comparable.
+3. **Mechanism** — script, digest, actuator limit, and whether that limit
+   models *the hardware* or *the mechanism*. Both are defensible; only one is
+   what you will build.
+4. **Task** — episode length, control rate, reward terms with weights,
+   terminations, reset variation, disturbance band, **and the capture-point
+   arithmetic that sized it** (ADR-100).
+5. **Gate** — `feasibility`'s six checks and what each said.
+6. **Budget and stopping rule** — iterations, environments, expected wall
+   time, when to stop.
+7. **Pass criteria** — written before the run.
+8. **What happened** — peak and final, `capability`'s sweep, `compare`'s
+   table, the termination mix, the torque columns.
+9. **What it means, and what it does not mean.**
+
+The full protocol is [`../method.md`](../method.md). The graph node mirrors
+these sections; see [`../flywheel.md`](../flywheel.md) §4.
+
+## Current
+
+| | | |
+|---|---|---|
+| [`000-loop-validation`](000-loop-validation/) | prove every link in the chain on a 1-DOF rig | specified; modelling half verified |
+| [`001-stand-biped`](001-stand-biped/) | separate "the policy is bad" from "the task is out of range" | specified |

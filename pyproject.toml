@@ -1,0 +1,32 @@
+[project]
+name = "cdx-rl"
+version = "0.1.0"
+description = "Research repository for reinforcement learning inside Cadex: mechanisms, tasks, policies, and the DAG that records them."
+readme = "README.md"
+requires-python = ">=3.12"
+
+# Deliberately small. This environment exists for cdx-rl's *own* tooling —
+# the cadexd NDJSON client, analysis, plotting and Flywheel glue — and for
+# nothing else.
+#
+# Two things that look like they belong here and do not:
+#
+#   * MuJoCo / JAX. Training runs in /home/theo/cadex-train-venv, whose exact
+#     pins are what makes a run reproducible. cdx-rl references that venv by
+#     path (CADEX_TRAIN_VENV) and never recreates it. A second mujoco pin in
+#     this file would be a second answer to "which simulator produced this
+#     number", which is the question ADR-103 spent a day on.
+#   * The Cadex engine. It is not pip-installable. It is reached by spawning
+#     the staged payload's FreeCADCmd, which carries its own interpreter.
+dependencies = [
+    "numpy>=2.0",
+    "matplotlib>=3.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv]
+package = false

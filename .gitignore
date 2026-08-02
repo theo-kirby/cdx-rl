@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- cdx-rl ---------------------------------------------------------------
+.venv/
+config/env
+jobs/
+projects/
+runs/
+*.cxpolicy
