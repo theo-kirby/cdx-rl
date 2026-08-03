@@ -1,0 +1,173 @@
+{
+  "action_std": 0.21821700036525726,
+  "best_iteration": 194,
+  "best_reward_per_step": -0.049977753311395645,
+  "checkpoints": [
+    {
+      "bytes": 25173,
+      "iteration": 19,
+      "path": "pendulum.000020.cxpolicy",
+      "reward_per_step": -72.9473648071289,
+      "sha256": "0928891b51e5e4c9e1a81a43e1d0225ccf5f6d7b971dd67a50a575dbd129d58c",
+      "tag": "000020"
+    },
+    {
+      "bytes": 25189,
+      "iteration": 0,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -46.656009674072266,
+      "sha256": "8376de26a61a2b4e88beb040215a057d1403be8f71fcfb8ee3343d65815f4067",
+      "tag": "best"
+    },
+    {
+      "bytes": 27798,
+      "iteration": 39,
+      "path": "pendulum.000040.cxpolicy",
+      "reward_per_step": -67.78912353515625,
+      "sha256": "a5127c7aec81ea854da153f9ebc228acac53b4d29da33a8515456f63aca9b2ab",
+      "tag": "000040"
+    },
+    {
+      "bytes": 27803,
+      "iteration": 35,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -15.823201179504395,
+      "sha256": "40fd4cefbc27e89d295446b72669e0b92f7d9110289e08c3c43779e98d67786e",
+      "tag": "best"
+    },
+    {
+      "bytes": 30419,
+      "iteration": 59,
+      "path": "pendulum.000060.cxpolicy",
+      "reward_per_step": -12.693860054016113,
+      "sha256": "014d5f159515ebfba6d8d606cfc12b5996198f6bee9068d920ed2f8d3d98b5d2",
+      "tag": "000060"
+    },
+    {
+      "bytes": 30416,
+      "iteration": 55,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -6.403321266174316,
+      "sha256": "9a93632e43b6bce37acdd50ffe4a1791a4b44bf206e3883c3de4a81d7b65a908",
+      "tag": "best"
+    },
+    {
+      "bytes": 33074,
+      "iteration": 79,
+      "path": "pendulum.000080.cxpolicy",
+      "reward_per_step": -3.9401650428771973,
+      "sha256": "3a25adec92de4c59b456ca2966c2bb58ce742b983b40de90b510f1d368f0bd34",
+      "tag": "000080"
+    },
+    {
+      "bytes": 33074,
+      "iteration": 79,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -3.9401650428771973,
+      "sha256": "3a25adec92de4c59b456ca2966c2bb58ce742b983b40de90b510f1d368f0bd34",
+      "tag": "best"
+    },
+    {
+      "bytes": 35775,
+      "iteration": 99,
+      "path": "pendulum.000100.cxpolicy",
+      "reward_per_step": -1.894732117652893,
+      "sha256": "f113437ab8aab5aafff27137a5a528eabc713482deadcb44ccae9ac1556f89a7",
+      "tag": "000100"
+    },
+    {
+      "bytes": 35777,
+      "iteration": 97,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -1.7968237400054932,
+      "sha256": "2c8145986b148d411c637bf8d1b35628722b50b9f77b1bce5c51bb100708e263",
+      "tag": "best"
+    },
+    {
+      "bytes": 38507,
+      "iteration": 119,
+      "path": "pendulum.000120.cxpolicy",
+      "reward_per_step": -0.759901225566864,
+      "sha256": "518bd8db14678e0fecb3b515ee59c59e65aff247dff99ab0d25975e48bff3ad5",
+      "tag": "000120"
+    },
+    {
+      "bytes": 38494,
+      "iteration": 117,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -0.7350751757621765,
+      "sha256": "f8928d665c80db3173fc090d9b5ed94413d041f58d7db42ca949fa16f374e53f",
+      "tag": "best"
+    },
+    {
+      "bytes": 41239,
+      "iteration": 139,
+      "path": "pendulum.000140.cxpolicy",
+      "reward_per_step": -0.2997414767742157,
+      "sha256": "841ec54469b62a6eb879bdc39f02df2329321280cbe6ef402ea601c530001b2b",
+      "tag": "000140"
+    },
+    {
+      "bytes": 41239,
+      "iteration": 139,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -0.2997414767742157,
+      "sha256": "841ec54469b62a6eb879bdc39f02df2329321280cbe6ef402ea601c530001b2b",
+      "tag": "best"
+    },
+    {
+      "bytes": 43992,
+      "iteration": 159,
+      "path": "pendulum.000160.cxpolicy",
+      "reward_per_step": -0.15600043535232544,
+      "sha256": "949a016eaf00649fc42975d111be638d528b2e148c826feb436c241b3a0a7f26",
+      "tag": "000160"
+    },
+    {
+      "bytes": 43976,
+      "iteration": 156,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -0.13325820863246918,
+      "sha256": "b542514d5213daafb8afeeb4e002af0afed1be91c453644e9d0b103c654d830c",
+      "tag": "best"
+    },
+    {
+      "bytes": 46749,
+      "iteration": 179,
+      "path": "pendulum.000180.cxpolicy",
+      "reward_per_step": -0.09254269301891327,
+      "sha256": "dab5e1eaf84e5b1151663cbb90128865a8ba7bfa7371b8802d61e45039120c81",
+      "tag": "000180"
+    },
+    {
+      "bytes": 46727,
+      "iteration": 174,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -0.07861744612455368,
+      "sha256": "4cba75c17f59f2c33bad9fe05a8662ee3551d18d6f6cd3e577906f287e6d0ded",
+      "tag": "best"
+    },
+    {
+      "bytes": 49481,
+      "iteration": 194,
+      "path": "pendulum.best.cxpolicy",
+      "reward_per_step": -0.049977753311395645,
+      "sha256": "20d88699d7ad9c331402dff4cf43c2a49898c016d59acf782263ea57cf58b9ae",
+      "tag": "best"
+    }
+  ],
+  "device": "cpu",
+  "episode_steps": 20.0,
+  "error": "",
+  "eta_s": 0.0,
+  "iteration": 199,
+  "label": "pendulum",
+  "loss": 2.678410053253174,
+  "out": "pendulum.cxpolicy",
+  "reward_per_step": -0.056407101452350616,
+  "schema": "cadex-training-progress-v1",
+  "started_at": 1785716007.598343,
+  "state": "done",
+  "total": 200,
+  "wall_time_s": 48.31558692455292
+}

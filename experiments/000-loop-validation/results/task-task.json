@@ -1,0 +1,93 @@
+{
+  "actions": [
+    {
+      "actuator": "hinge/motor",
+      "fallback": "0",
+      "high": 2000.0,
+      "index": 0,
+      "joint": "hinge",
+      "kind": "motor",
+      "low": -2000.0,
+      "motion_type": "angular",
+      "scale": 0.001,
+      "source": "torque_limit_nmm",
+      "unit": "nmm"
+    }
+  ],
+  "disturbance": [],
+  "episode": {
+    "control_hz": 50,
+    "control_interval_s": 0.02,
+    "episode_seconds": 2.0,
+    "max_steps": 100,
+    "reset_keyframe": "solved",
+    "reward_stage": "after_step",
+    "solver_step_s": 0.002,
+    "solver_steps_per_action": 10
+  },
+  "functions": [
+    "abs",
+    "arcsin",
+    "arctan",
+    "asin",
+    "cos",
+    "exp",
+    "sin",
+    "sqrt",
+    "tanh"
+  ],
+  "label": "swing",
+  "model": {
+    "bytes": 1259,
+    "mujoco_version": "3.10.0",
+    "output": "model",
+    "path": "outputs/model-model.xml",
+    "sha256": "e6378deb7299486b9c5a9db895b8cc485c0607f4fb1314c90d2f748292907bce"
+  },
+  "mujoco_version": "3.10.0",
+  "observations": [
+    {
+      "adr": 0,
+      "channels": [
+        "hinge"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "hinge",
+      "scale": 57.29577951308232,
+      "sensor": "obs/0",
+      "target": "hinge",
+      "unit": "deg"
+    },
+    {
+      "adr": 1,
+      "channels": [
+        "hinge_rate"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "hinge_rate",
+      "scale": 57.29577951308232,
+      "sensor": "obs/1",
+      "target": "hinge",
+      "unit": "deg/s"
+    }
+  ],
+  "randomisation": [],
+  "reset_variation": [],
+  "reward": [
+    {
+      "expression": "-abs(hinge)",
+      "label": "reward",
+      "weight": 1.0
+    },
+    {
+      "expression": "1.0",
+      "label": "alive",
+      "weight": 1.0
+    }
+  ],
+  "schema": "cadex-training-task-v1",
+  "termination": [],
+  "variation_algorithm": "random.Random(seed) continuing in bundle order after the randomisation draws: for each reset_variation entry uniform(tilt_low_rad, tilt_high_rad), uniform(0, 2*pi) for the azimuth, uniform(height_low_m, height_high_m), three uniform(angular_velocity_low_rad_s, angular_velocity_high_rad_s), then uniform(linear_velocity_low_m_s, linear_velocity_high_m_s) and uniform(0, 2*pi) for its azimuth -- always eight; then for each disturbance entry uniform(newtons_low, newtons_high), uniform(0, 2*pi) mapped onto the declared arc by azimuth_low_rad + drawn * ((azimuth_high_rad - azimuth_low_rad) / (2*pi)) -- the ratio first, so that the full circle multiplies by exactly 1.0 -- and read as an azimuth when horizontal and as a sign when vertical, and uniform(at_low_s, at_high_s) -- always three, the last ignored when sustained"
+}

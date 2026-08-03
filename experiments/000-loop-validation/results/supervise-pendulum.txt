@@ -1,0 +1,76 @@
+run       /home/theo/cdx-rl/jobs/pendulum-20260803-001327
+label     pendulum   device cpu   state done
+progress  iteration 199 of 200   wall 48 s (0.01 h)
+artifacts bundle task-task.json   model model-model.xml   parameters 4417
+
+liveness
+  pid            597984  alive=False
+  progress.json  2026-08-03T00:14:27Z  age 204 s
+  state          done  terminal=True
+
+curve   (episode length is printed beside reward at every point,
+         because reward alone cannot tell surviving from scoring)
+  iteration  reward/step   episode   sigma       loss  mark
+          0     -46.6560    5120.0  0.2996  1.062e+05  
+          4     -85.2180      20.0  0.2995  2.121e+05  longest episode
+         20     -46.2318    5120.0  0.2993  8.598e+04  
+         40     -12.6957    5120.0  0.2949       8665  
+         60      -5.7456    5120.0  0.2903       1555  
+         80      -4.4703    5120.0  0.2824      920.7  
+        100      -1.9591    5120.0  0.2693      140.6  
+        120      -1.0703    5120.0  0.2549      30.11  
+        140      -0.7300    5120.0  0.2426      12.36  
+        160      -0.6855    5120.0  0.2327      11.04  
+        180      -0.7067    5120.0  0.2249      12.25  
+        194      -0.0500      20.0  0.2199      3.052  best reward
+        199      -0.0564      20.0  0.2182      2.678  final
+  (200 iterations parsed from train.log)
+
+peaks   (episode budget 100 steps)
+  160 point(s) logged an episode length above that budget — iteration(s) 0, 1, 2, 3, 5, 6, 7, 8 ….
+  An episode cannot outrun the horizon it is truncated at, so
+  those are not mean episode lengths and are excluded from the
+  peak search. Reported rather than dropped quietly.
+  best reward          iteration    194   reward/step -0.0500   episode 20.0
+  best episode length  iteration      4   reward/step -85.2180   episode 20.0
+  final                iteration    199   reward/step -0.0564   episode 20.0
+
+trend from the reward peak to the end: agreeing
+  reward -0.0064, episode length +0.0 steps — moving together.
+
+witness   (1 margin(s) recorded, floor 100x)
+  8.761e-08  1141x inside tolerance
+
+checkpoints  (19 records over 10 files; a 'best' record names a file the next one overwrites)
+  iteration      tag  reward/step     bytes sha256    digest
+         19   000020     -72.9474     25173 0928891b  ok
+          0     best     -46.6560     25189 20d88699  superseded
+         39   000040     -67.7891     27798 a5127c7a  ok
+         35     best     -15.8232     27803 20d88699  superseded
+         59   000060     -12.6939     30419 014d5f15  ok
+         55     best      -6.4033     30416 20d88699  superseded
+         79   000080      -3.9402     33074 3a25adec  ok
+         79     best      -3.9402     33074 20d88699  superseded
+         99   000100      -1.8947     35775 f113437a  ok
+         97     best      -1.7968     35777 20d88699  superseded
+        119   000120      -0.7599     38507 518bd8db  ok
+        117     best      -0.7351     38494 20d88699  superseded
+        139   000140      -0.2997     41239 841ec544  ok
+        139     best      -0.2997     41239 20d88699  superseded
+        159   000160      -0.1560     43992 949a016e  ok
+        156     best      -0.1333     43976 20d88699  superseded
+        179   000180      -0.0925     46749 dab5e1ea  ok
+        174     best      -0.0786     46727 20d88699  superseded
+        194     best      -0.0500     49481 20d88699  ok
+
+log warnings
+  Failed to import warp: No module named 'warp'
+  Failed to import mujoco_warp: No module named 'warp'
+
+worth playing
+  pendulum.best.cxpolicy     best by the trainer's own reward (iteration 194)
+  pendulum.cxpolicy          the final network
+
+  These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).
+
+  uv run python -m harness compare --dir /home/theo/cdx-rl/jobs/pendulum-20260803-001327 --task /home/theo/cdx-rl/jobs/pendulum-20260803-001327/task-task.json --seeds 12

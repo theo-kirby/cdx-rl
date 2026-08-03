@@ -1,0 +1,51 @@
+{
+  "checks": [
+    {
+      "check": "mjcf_loads_1dof_1actuator_2sensors",
+      "detail": {
+        "mujoco_version": "3.10.0",
+        "nbody": 3,
+        "njnt": 1,
+        "nq": 1,
+        "nsensor": 2,
+        "nu": 1,
+        "nv": 1
+      },
+      "ok": true
+    },
+    {
+      "check": "bundle_names_this_model",
+      "detail": {
+        "declared": "e6378deb7299486b9c5a9db895b8cc485c0607f4fb1314c90d2f748292907bce",
+        "mujoco_version_in_bundle": "3.10.0",
+        "observed": "e6378deb7299486b9c5a9db895b8cc485c0607f4fb1314c90d2f748292907bce",
+        "task_sha256": "a0999c23d51955106e557ca9988572c4ecc04d6b0014a6e94ed9f0d8e0bc4cb7"
+      },
+      "ok": true
+    },
+    {
+      "check": "falls_under_gravity_at_zero_torque",
+      "detail": {
+        "end_rad": 1.5706857146404103,
+        "extreme_rad": 1.704553321808257,
+        "gravity": [
+          0.0,
+          0.0,
+          -9.81
+        ],
+        "keyframe": "solved",
+        "keyframe_found": true,
+        "seconds": 2.0,
+        "solver_timestep_s": 0.002,
+        "start_rad": 0.0,
+        "swept_degrees": 97.664,
+        "threshold_degrees": 5.0
+      },
+      "ok": true
+    }
+  ],
+  "model": "jobs/pendulum-20260803-001327/model-model.xml",
+  "ok": true,
+  "schema": "cdxrl-000-checks-v1",
+  "task": "jobs/pendulum-20260803-001327/task-task.json"
+}

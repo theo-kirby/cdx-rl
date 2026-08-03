@@ -535,7 +535,39 @@ class CadexdClient:
             self.revision = str(
                 script.get("working_revision") or script.get("revision") or ""
             )
+        if not self.revision:
+            # ``open_project``'s reply does not always carry the working
+            # revision — measured on this box, it comes back empty for a
+            # project that has an accepted script. An empty expectation is
+            # accepted by the engine only until something else in the session
+            # observes the script, after which the next write is refused with
+            # STALE_PROGRAM_REVISION. Ask for it explicitly instead.
+            self.refresh_revision()
         return reply
+
+    def refresh_revision(self) -> str:
+        """Re-read the working revision from the engine. Returns it.
+
+        **The guard exists because a mutation that is not a write still moves
+        the revision.** ``put_asset`` copies a file into the project store,
+        and the very next ``write_script`` is refused with
+        ``STALE_PROGRAM_REVISION`` — *"The project script changed after
+        inspection"* — even though the script has not changed at all. That is
+        exactly the shape of experiment 000's step 6: put the trained policy
+        in the store, then declare it in the script. Call this after any op
+        that touches the project and is not itself a script write.
+        """
+
+        value = self.inspect("script").get("value")
+        if isinstance(value, Mapping):
+            revisions = value.get("revisions")
+            if isinstance(revisions, Mapping):
+                self.revision = str(
+                    revisions.get("working_revision")
+                    or revisions.get("accepted_revision")
+                    or self.revision
+                )
+        return self.revision
 
     def _remember_revision(self, reply: Mapping[str, Any]) -> dict[str, Any]:
         """Carry the new revision forward for the next write's guard."""
@@ -647,7 +679,11 @@ class CadexdClient:
         args: dict[str, Any] = {"source_path": str(Path(str(source_path)).resolve())}
         if name:
             args["name"] = name
-        return self.checked("put_asset", args)
+        reply = self.checked("put_asset", args)
+        # Storing an asset counts as touching the project: without this the
+        # next write_script is refused as stale. See :meth:`refresh_revision`.
+        self.refresh_revision()
+        return reply
 
 
 # --------------------------------------------------------------------------

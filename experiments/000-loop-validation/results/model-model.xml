@@ -1,0 +1,38 @@
+<mujoco model="cadex-assembly">
+  <compiler angle="radian" autolimits="false"/>
+
+  <option integrator="implicitfast">
+    <flag island="disable"/>
+  </option>
+
+  <size nkey="1"/>
+
+  <worldbody>
+    <body name="post">
+      <inertial pos="0.02 0.02 0.15" mass="3.768" diaginertia="0.0287624 0.0287624 0.0010048"/>
+      <geom name="post/collision0" size="0.02 0.02 0.15" pos="0.02 0.02 0.15" type="box" conaffinity="2147483647"/>
+      <body name="arm" pos="0.02 0.01 0.28">
+        <inertial pos="0.1 0.01 0.01" quat="0.5 0.5 0.5 0.5" mass="0.216" diaginertia="0.0007272 0.0007272 1.44e-05"/>
+        <joint name="hinge" pos="0 0.01 0.01" axis="0 1 0" limited="true" range="-3.14159 3.14159" damping="0.0286479"/>
+        <geom name="arm/collision0" size="0.1 0.01 0.01" pos="0.1 0.01 0.01" type="box" conaffinity="2147483647"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude name="arm|post" body1="post" body2="arm"/>
+  </contact>
+
+  <actuator>
+    <general name="hinge/motor" joint="hinge" ctrllimited="false" forcelimited="true" forcerange="-2 2"/>
+  </actuator>
+
+  <sensor>
+    <jointpos joint="hinge" name="obs/0"/>
+    <jointvel joint="hinge" name="obs/1"/>
+  </sensor>
+
+  <keyframe>
+    <key name="solved"/>
+  </keyframe>
+</mujoco>

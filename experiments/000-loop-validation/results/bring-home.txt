@@ -1,0 +1,19 @@
+project   /home/theo/cdx-rl/projects/000-loop-validation
+policy    /home/theo/cdx-rl/jobs/pendulum-20260803-001327/pendulum.cxpolicy
+          sha256 e0fc4d4229f4e320e240d4b9f34eaa701603f0097eaa290d1ba36bccccb9484a  (49496 bytes)
+asset     {"bytes": 49496, "name": "pendulum.cxpolicy", "path": null, "sha256": "e0fc4d4229f4e320e240d4b9f34eaa701603f0097eaa290d1ba36bccccb9484a"}
+digest    9a265fb7c6b709ebe855f8509c47ed3a857ef9f81fa90fc28d0fbd4b5e3b20d3
+outputs   post_solid, arm_solid, post, arm, hinge, asm, diag, model, task, policy, rollout
+
+kind                               output             bytes  sha256
+brep                               post_solid          2594  5785d6c154fc
+brep                               arm_solid           2594  360bbfb054ed
+assembly_mjcf_xml                  model               1259  e6378deb7299
+assembly_training_task_json        task                2648  a0999c23d519
+assembly_policy_receipt_json       policy             43023  a8e41096ab6b
+assembly_simulation_json           rollout            18729  1a0a9621a4f9
+
+engine accepted assembly.policy : True
+engine produced a rollout trace : True
+
+ok

@@ -55,9 +55,18 @@ ITERATION_RE = re.compile(
 #: ``witness agrees to 2.820e-07 (355x inside the engine's tolerance)``.
 #: The margin is on the trainer's stderr rather than in ``progress.json``,
 #: which is why the log is tailed for it at all.
+#:
+#: **The comma group is load-bearing.** The trainer thousands-separates the
+#: factor, so a very good margin prints as ``1,141x`` — and a pattern of
+#: ``[\d.]+`` matches only margins under a thousand. Experiment 000's run
+#: reported exactly that, and the first version of this regex silently
+#: reported "no witness margin recorded" for a run whose margin was eleven
+#: times the floor. A check that quietly finds nothing is worse than no
+#: check (``DESIGN.md`` §6), and this one was caught only because the run it
+#: was pointed at happened to be very clean.
 WITNESS_RE = re.compile(
     r"witness agrees to\s+(?P<error>[\d.]+(?:[eE][-+]?\d+)?)\s*"
-    r"\((?P<factor>[\d.]+)x inside"
+    r"\((?P<factor>[\d,.]+)x inside"
 )
 
 #: Hazard 13's floor. Under this the witness is recording what the GPU
@@ -126,7 +135,7 @@ def parse_log(run_dir: str | os.PathLike[str]) -> dict[str, Any]:
             if found:
                 witness.append({
                     "error": float(found.group("error")),
-                    "factor": float(found.group("factor")),
+                    "factor": float(found.group("factor").replace(",", "")),
                 })
                 continue
             stripped = line.strip()

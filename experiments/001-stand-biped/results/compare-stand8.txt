@@ -63,7 +63,7 @@ survival, and what it cost   (trainer r/s is what the trainer recorded; every ot
   stand8.002400.cxpolicy     2399   6/12     365.1   446   0.082    116.1      45.4    +0.1349  survived:6 tipped:6
   stand8.002450.cxpolicy     2449   4/12     277.8   138   0.108    111.2      44.5    +0.1499  survived:4 tipped:8
   stand8.cxpolicy            2499   6/12     347.8   370   0.081    113.5      60.9    +0.1461  survived:6 tipped:6
-  tilt is the task's own `tipped` expression on the last observation; it terminates above 0.15.
+  tilt is the task's own `tipped` expression on the last observation.
   drift is the task's own `drift` reward expression, in mm, evaluated through compile_reward.
 
 peak torque per motor, N·mm   (the worst instant any of the seeds saw)

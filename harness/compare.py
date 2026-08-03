@@ -428,20 +428,38 @@ def report(payload: dict[str, Any]) -> None:
                   f"{row.get('skipped', '')}")
             continue
         trainer = row.get("trainer_reward_per_step")
+        # A task that declares no `tipped` termination and no `drift` reward
+        # term has no such column, and an empty cell must read as "the task
+        # does not define this" rather than as nan — which looks like a
+        # measurement that went wrong.
+        tilt = ("—" if row["final_tipped_mean"] is None
+                else f"{row['final_tipped_mean']:.3f}")
+        drift = "—" if row["drift_mean"] is None else f"{row['drift_mean']:.1f}"
         print(
             f"  {row['name']:<24} {row['iteration']:>6} "
             f"{row['survived']:>3}/{row['episodes']:<3} "
             f"{row['steps_mean']:>8.1f} {row['steps_median']:>5.0f} "
-            f"{(row['final_tipped_mean'] if row['final_tipped_mean'] is not None else float('nan')):>7.3f} "
-            f"{(row['drift_mean'] if row['drift_mean'] is not None else float('nan')):>8.1f} "
+            f"{tilt:>7} {drift:>8} "
             f"{row['reward_mean']:>9.1f} "
             f"{(f'{trainer:+.4f}' if trainer is not None else '—'):>10}"
             f"  {_mix(row['termination_mix'])}"
         )
-    print("  tilt is the task's own `tipped` expression on the last "
-          "observation; it terminates above 0.15.")
-    print("  drift is the task's own `drift` reward expression, in mm, "
-          "evaluated through compile_reward.")
+    tipped = next(
+        (item for row in table for item in (row.get("termination_values") or [])
+         if item.get("label") == "tipped"),
+        None,
+    )
+    if any(row.get("final_tipped_mean") is not None for row in table):
+        bound = (tipped or {}).get("above")
+        print("  tilt is the task's own `tipped` expression on the last "
+              "observation"
+              + (f"; it terminates above {bound}." if bound is not None else "."))
+    if any(row.get("drift_mean") is not None for row in table):
+        print("  drift is the task's own `drift` reward expression, in mm, "
+              "evaluated through compile_reward.")
+    if all(row.get("final_tipped_mean") is None for row in table if row.get("episodes")):
+        print("  tilt and drift are blank: this task declares neither a "
+              "`tipped` termination nor a `drift` reward term.")
 
     motors = payload["actuators"]
     for title, key, scale, note in (

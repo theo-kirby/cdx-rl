@@ -1,0 +1,98 @@
+run dir   /home/theo/cdx-rl/jobs/pendulum-20260803-001327
+task      /home/theo/cdx-rl/jobs/pendulum-20260803-001327/task-task.json
+          sha256 a0999c23d51955106e557ca9988572c4ecc04d6b0014a6e94ed9f0d8e0bc4cb7
+model     /home/theo/cdx-rl/jobs/pendulum-20260803-001327/model-model.xml
+          sha256 e6378deb7299486b9c5a9db895b8cc485c0607f4fb1314c90d2f748292907bce  (matches the bundle's own)
+seeds     12  (0…11)   budget 100 steps
+motors    1 × ±2000 N·mm
+wall      1.0 s
+
+same-file-twice (ADR-103 §9)  pendulum.best.cxpolicy  24 episodes, one worker
+  PASS — the evaluator reloads the model per episode and its rows do not drift.
+
+survival, and what it cost   (trainer r/s is what the trainer recorded; every other column is measured here)
+  checkpoint                 iter    surv  steps µ   med    tilt    drift    reward  train r/s  termination mix
+  pendulum.000020.cxpolicy     19  12/12     100.0   100       —        —   -6818.6   -72.9474  survived:12
+  pendulum.000040.cxpolicy     39  12/12     100.0   100       —        —   -6288.7   -67.7891  survived:12
+  pendulum.000060.cxpolicy     59  12/12     100.0   100       —        —   -1681.6   -12.6939  survived:12
+  pendulum.000080.cxpolicy     79  12/12     100.0   100       —        —    -760.1    -3.9402  survived:12
+  pendulum.000100.cxpolicy     99  12/12     100.0   100       —        —      81.7    -1.8947  survived:12
+  pendulum.000120.cxpolicy    119  12/12     100.0   100       —        —      83.3    -0.7599  survived:12
+  pendulum.000140.cxpolicy    139  12/12     100.0   100       —        —      73.8    -0.2997  survived:12
+  pendulum.000160.cxpolicy    159  12/12     100.0   100       —        —      77.2    -0.1560  survived:12
+  pendulum.000180.cxpolicy    179  12/12     100.0   100       —        —      76.8    -0.0925  survived:12
+  pendulum.best.cxpolicy      194  12/12     100.0   100       —        —      76.8    -0.0500  survived:12
+  pendulum.cxpolicy           199  12/12     100.0   100       —        —      71.6    -0.0564  survived:12
+  tilt and drift are blank: this task declares neither a `tipped` termination nor a `drift` reward term.
+
+peak torque per motor, N·mm   (the worst instant any of the seeds saw)
+  checkpoint                hinge
+  limit N·mm                 2000
+  pendulum.000020.cxpolicy  202.0
+  pendulum.000040.cxpolicy  461.0
+  pendulum.000060.cxpolicy  374.8
+  pendulum.000080.cxpolicy  671.7
+  pendulum.000100.cxpolicy  931.9
+  pendulum.000120.cxpolicy 1420.2
+  pendulum.000140.cxpolicy 1715.4
+  pendulum.000160.cxpolicy 1857.0
+  pendulum.000180.cxpolicy 1888.0
+  pendulum.best.cxpolicy   1879.4
+  pendulum.cxpolicy        1911.1
+
+mean |torque| per motor, N·mm   (averaged over frames, then over episodes)
+  checkpoint                hinge
+  limit N·mm                 2000
+  pendulum.000020.cxpolicy   64.3
+  pendulum.000040.cxpolicy  204.8
+  pendulum.000060.cxpolicy  208.0
+  pendulum.000080.cxpolicy  403.9
+  pendulum.000100.cxpolicy  653.2
+  pendulum.000120.cxpolicy 1129.2
+  pendulum.000140.cxpolicy 1398.6
+  pendulum.000160.cxpolicy 1540.8
+  pendulum.000180.cxpolicy 1557.8
+  pendulum.best.cxpolicy   1566.3
+  pendulum.cxpolicy        1583.9
+
+% of frames above 90 % of limit, per motor   (hazard 15's column: a clean-looking stand can live here)
+  checkpoint                hinge
+  pendulum.000020.cxpolicy    0.0
+  pendulum.000040.cxpolicy    0.0
+  pendulum.000060.cxpolicy    0.0
+  pendulum.000080.cxpolicy    0.0
+  pendulum.000100.cxpolicy    0.0
+  pendulum.000120.cxpolicy    0.0
+  pendulum.000140.cxpolicy    0.0
+  pendulum.000160.cxpolicy    6.0
+  pendulum.000180.cxpolicy   44.0
+  pendulum.best.cxpolicy     47.0
+  pendulum.cxpolicy          45.0
+
+flags
+  pendulum.000120.cxpolicy hazard 15: a motor's MEAN command is 56% of its limit
+  pendulum.000140.cxpolicy hazard 15: a motor's MEAN command is 70% of its limit
+  pendulum.000160.cxpolicy hazard 15: a motor's MEAN command is 77% of its limit
+  pendulum.000180.cxpolicy hazard 15: a motor is above 90% of its limit on 44% of frames
+  pendulum.000180.cxpolicy hazard 15: a motor's MEAN command is 78% of its limit
+  pendulum.best.cxpolicy   hazard 15: a motor is above 90% of its limit on 47% of frames
+  pendulum.best.cxpolicy   hazard 15: a motor's MEAN command is 78% of its limit
+  pendulum.cxpolicy        hazard 15: a motor is above 90% of its limit on 45% of frames
+  pendulum.cxpolicy        hazard 15: a motor's MEAN command is 79% of its limit
+
+selection, by measured survival (ADR-099 — not by the trainer's scalar)
+  best by survival       pendulum.000020.cxpolicy iteration     19  survival 100%  steps 100.0
+  longest episodes       pendulum.000020.cxpolicy iteration     19  survival 100%  steps 100.0
+  best measured reward   pendulum.000120.cxpolicy iteration    119  survival 100%  steps 100.0
+  the trainer's own 'best' file was pendulum.best.cxpolicy
+
+  ** THE WINNER IS NOT SEPARATED FROM THE RUNNER-UP. **
+  Gap 0 pp against a 2-sigma bound of 41 pp at 12 seeds (survival is binomial; at n=12 the standard error of a difference is worst-case 20 pp).
+  Indistinguishable at this seed count: pendulum.000020.cxpolicy, pendulum.000040.cxpolicy, pendulum.000060.cxpolicy, pendulum.000080.cxpolicy, pendulum.000100.cxpolicy, pendulum.000120.cxpolicy, pendulum.000140.cxpolicy, pendulum.000160.cxpolicy, pendulum.000180.cxpolicy, pendulum.best.cxpolicy, pendulum.cxpolicy
+  Raise --seeds before treating the top row as the answer.
+
+correlation over the checkpoints played
+  survival vs iteration            r = None
+  survival vs measured reward/step r = None
+  survival vs TRAINER reward/step  r = None   ← ADR-099's claim, on this run (n = 11)
+  (n = 11 checkpoints)
