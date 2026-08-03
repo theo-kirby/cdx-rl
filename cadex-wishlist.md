@@ -312,6 +312,49 @@ and `witness_tolerance` are already in the terminal JSON blob — put the
 factor there too, or put the margin in `progress.json` where a supervisor can
 act on it while the run is still going rather than after it ends.
 
+## 11. `--init-from`: start training from an existing policy
+
+**Status: open.** Blocks experiment **B9** outright.
+
+`cadex_train.py` has no resume and no initialise-from-policy option, so every
+run starts from a fresh network. Experiment 003's "what to do next" proposes
+B9, a warm-start curriculum that walks the disturbance band
+0.8 → 1.2 → 1.8 → 2.5 N across four short runs, each initialised from the
+last — and that is the thing ADR-100 concluded was unavailable when it
+decided a curriculum could not be scheduled. It was right about the
+capability and the capability is one flag.
+
+**cdx-rl cannot add it.** `cadex_train.py` lives at
+`/home/theo/cadex/training/cadex_train.py`, inside the read-only tree, so
+invariant 1 forbids it. 003's README calls the change "contained", which is
+true of the diff and not of who is allowed to make it.
+
+**Wanted:** `--init-from <policy.cxpolicy>`, loading the weights out of the
+container and into the initial network, leaving the optimiser state fresh.
+Fresh optimiser state is the conservative choice and probably the right one:
+each leg of a curriculum is a different task, so a carried-over Adam moment
+is describing a gradient landscape that no longer exists.
+
+**Why the workaround is unsatisfying:** copying the trainer out of the tree
+to patch it would break the one thing that makes runs comparable. `train.py`
+pins the trainer by sha256 (`--require-trainer`) precisely because ADR-104
+established that the same seed and the same hyperparameters mean nothing if
+the update rule differs. A patched copy is a different update rule, and every
+comparison to 001, 002 and 003 would have to be re-argued.
+
+**Note also**, and separately from the flag: 003's README says
+`tasks/stand-b8/stand10.001150.cxpolicy` "is committed as that starting
+network". **It is not committed** — `tasks/stand-b8/` holds `stand-task.json`,
+`model-model.xml` and `README.md` only, and no `.cxpolicy` has ever been
+tracked in this repository.
+
+The weights do exist on this box, at
+`/home/theo/cadex-jobs/stand-task-20260803-140221/` — B8 seed 0's 25
+checkpoints, trained on `sb1x`, on a `stand-task.json` and `model-model.xml`
+whose digests are identical to the committed ones. So B9 lacks the flag, not
+the network. Note the location is the **read-only** jobs directory of
+invariant 3: read from it freely, write to it never.
+
 ---
 
 ## Withdrawn
