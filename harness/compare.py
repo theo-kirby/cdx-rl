@@ -474,6 +474,91 @@ def report(payload: dict[str, Any]) -> None:
                   f"{after['survival_vs_iteration']}")
 
 
+def tabulate(payload: dict[str, Any]) -> tuple[list[str], list[list[Any]]]:
+    """The table as columns and rows, once, for both serialisations.
+
+    The prose report is for reading and the envelope is for a program; this
+    is for neither, and it exists because a *table* artifact should be one.
+    One row per checkpoint, one column per motor per torque measure, so the
+    per-motor detail survives into a spreadsheet rather than only into JSON.
+
+    **Flywheel validates uploaded bytes against the declared
+    ``artifact_type``, and ``table`` means JSON.** Measured on 2026-08-02:
+    an array of row objects and a ``{columns, rows}`` document are both
+    accepted; CSV and TSV are both refused with *"uploaded artifact bytes
+    are not valid for requested artifact type"*. Hence two writers over one
+    builder — :func:`write_table` for the graph, :func:`write_csv` for a
+    spreadsheet.
+    """
+
+    motors = [name.split("/")[0] for name in payload["actuators"]]
+    header = [
+        "checkpoint", "iteration", "role", "episodes", "survived", "survival",
+        "steps_mean", "steps_median", "steps_min", "steps_max", "max_steps",
+        "final_tipped_mean", "drift_mean", "reward_mean", "reward_per_step_mean",
+        "trainer_reward_per_step", "term_survived", "term_tipped", "term_collapsed",
+        "peak_frac_of_limit", "mean_frac_of_limit", "saturation_worst", "flags",
+    ]
+    header += [f"peak_nmm[{name}]" for name in motors]
+    header += [f"mean_nmm[{name}]" for name in motors]
+    header += [f"above90pct[{name}]" for name in motors]
+
+    rows: list[list[Any]] = []
+    for row in payload.get("table") or []:
+        if not row.get("episodes"):
+            rows.append([row["name"], row["iteration"], row.get("role", ""), 0]
+                        + [None] * 18 + [row.get("skipped", "skipped")]
+                        + [None] * (3 * len(motors)))
+            continue
+        mix = row["termination_mix"]
+        rows.append([
+            row["name"], row["iteration"], row.get("role", ""),
+            row["episodes"], row["survived"], round(row["survival"], 4),
+            round(row["steps_mean"], 2), row["steps_median"],
+            row["steps_min"], row["steps_max"], row["max_steps"],
+            None if row["final_tipped_mean"] is None else round(row["final_tipped_mean"], 5),
+            None if row["drift_mean"] is None else round(row["drift_mean"], 3),
+            round(row["reward_mean"], 3), round(row["reward_per_step_mean"], 5),
+            row.get("trainer_reward_per_step"),
+            mix.get("survived", 0), mix.get("tipped", 0), mix.get("collapsed", 0),
+            round(row["peak_frac_of_limit"], 4),
+            round(row["mean_frac_of_limit"], 4),
+            round(row["saturation_worst"], 5),
+            "; ".join(row.get("flags") or []),
+        ] + list(row["peak_torque_nmm"])
+          + list(row["mean_torque_nmm"])
+          + list(row["frac_above_90pct"]))
+    return header, rows
+
+
+def write_table(payload: dict[str, Any], path: Path) -> None:
+    """``{columns, rows}`` JSON — the shape a Flywheel ``table`` artifact takes."""
+
+    columns, rows = tabulate(payload)
+    document = {
+        "schema": "cdxrl-compare-table-v1",
+        "run_dir": payload["run_dir"],
+        "task_sha256": payload["task_sha256"],
+        "seeds": len(payload["seeds"]),
+        "columns": columns,
+        "rows": rows,
+    }
+    path.write_text(json.dumps(document, indent=1, sort_keys=False) + "\n",
+                    encoding="utf-8")
+
+
+def write_csv(payload: dict[str, Any], path: Path) -> None:
+    """The same table, for a spreadsheet rather than for the graph."""
+
+    import csv
+
+    columns, rows = tabulate(payload)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(columns)
+        writer.writerows(rows)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="harness compare",
@@ -492,6 +577,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Play only these checkpoint filenames. Repeatable.",
     )
     parser.add_argument("--json", action="store_true", help="Emit the envelope.")
+    parser.add_argument(
+        "--csv", metavar="PATH",
+        help="Also write the table as CSV, one row per checkpoint and one "
+             "column per motor per torque measure.",
+    )
+    parser.add_argument(
+        "--table", metavar="PATH",
+        help="Also write the table as a {columns, rows} JSON document — the "
+             "shape a Flywheel `table` artifact must be in (CSV is refused).",
+    )
     return parser
 
 
@@ -499,6 +594,12 @@ def main(argv: list[str] | None = None) -> int:
     load_env_file()
     args = build_parser().parse_args(argv)
     code, payload = run(args)
+    if args.csv and payload.get("table"):
+        write_csv(payload, Path(args.csv).expanduser())
+        print(f"csv written to {args.csv}", file=sys.stderr)
+    if args.table and payload.get("table"):
+        write_table(payload, Path(args.table).expanduser())
+        print(f"table written to {args.table}", file=sys.stderr)
     if args.json:
         json.dump(envelope("compare", code == EXIT_OK, payload),
                   sys.stdout, indent=2, sort_keys=True)
