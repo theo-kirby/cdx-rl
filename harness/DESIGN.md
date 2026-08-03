@@ -20,7 +20,7 @@ one says so, rather than failing with an argparse error: "not built yet" and
 
 ## What the build changed about this specification
 
-Eight things. Each is here because it was wrong or missing in the text above,
+Ten things. Each is here because it was wrong or missing in the text above,
 and each was found by running the driver rather than by reading it.
 
 1. **`episodes.py` was not specified and is load-bearing.** `compare` and
@@ -73,6 +73,46 @@ and each was found by running the driver rather than by reading it.
    `compare` printed `nan` in both columns and quoted the biped's `0.15`
    threshold in the footnote. An empty cell has to say "the task does not
    define this".
+
+9. **A dispatcher that passes *some* hyperparameters silently substitutes an
+   algorithm.** `tools/train.py` passed `--iterations --envs
+   --checkpoint-every --seed` and let the other ten fall back to
+   `cadex_train.py`'s defaults. **Six of those differ from what
+   `stand-task-20260802-200109` ran** — `unroll` 20 vs 40, `epochs` 4 vs 5,
+   `discount` 0.97 vs 0.995, `gae_lambda` 0.95 vs 0.97, `entropy` 1e-3 vs
+   2e-3, `initial_std` 0.3 vs 0.4, plus `envs` 256 vs 2048. Experiment 002 is
+   a *replication*, so dispatched as written it would have compared four
+   seeds of one algorithm against a recorded run of another, and **nothing in
+   any output would have shown it**: the trainer records the hyperparameters
+   it was given, so the header would have looked perfectly self-consistent.
+   The generalisation is the trap: **a partial passthrough is more dangerous
+   than none**, because it looks like control. All fourteen are now explicit,
+   defaulting to that run's values, and the resolved set is written to
+   `hyperparameters.json` in the run directory so a README's §6 can be
+   checked against what ran. Recovered, in the end, from the run's own
+   `.cxpolicy` header — see the correction to `cadex-wishlist.md` #6.
+
+10. **`os.kill(pid, 0)` cannot tell a live process from a zombie**, and three
+    checks were built on it. `cadex_train.py` is a *child* of `train.py`,
+    which reaps it only after `watch()` returns, so a terminated trainer sits
+    unreaped and signallable. `_stop` burned its full 60 s grace and recorded
+    `"exited": false` about a dead process; `watch`'s liveness branch could
+    **never fire at all**, so a crash at 02:00 would hold the supervisor
+    until `--timeout` and cost a seed its whole three-hour cap for a run that
+    was not running; and `liveness.stale` read `pid_alive: True` for exactly
+    the case it exists to catch. `runlog.process_gone()` reads
+    `/proc/<pid>/stat` — state letter after the **last** `)`, so a process
+    name containing parentheses cannot fool it.
+
+    This was found by obeying §6's own rule — *every check must be able to
+    fail, and must have been made to fail once on purpose* — via
+    `tools/fire_divergence_guard.py`. It is the **second** check in this
+    harness caught failing *quietly*; the first was `WITNESS_RE` reporting
+    "no witness margin recorded" for a margin of `1,141x` because the
+    trainer thousands-separates the number. Both were silent, both were
+    caught only by aiming the check at something it should have caught, and
+    neither would have been found by reading the code. **The rule is
+    earning its place.**
 
 And one in the spine rather than in a driver: **`put_asset` moves the project
 revision without being a script write**, so the next `write_script` is

@@ -172,28 +172,48 @@ than only into the log at exit. A supervisor needs it while the run is alive
 — to refuse a bundle that is not the one it thinks it is dispatching — and a
 run that dies never writes the terminal line at all.
 
-**The series.** `progress.json` is rewritten every iteration and keeps only
-the current point plus the `checkpoints` list, so **there is no reward curve
-in it** — only the latest sample and a per-checkpoint reward every N
-iterations. The full per-iteration series *is* in `train.log`:
+**The series — this half was wrong, and is corrected here.**
 
+What this section used to say: *"the curve exists only as prose in
+`train.log`, so reading it requires regex over a 210 KB log"*, and it asked
+for an append-only `progress.jsonl`.
+
+**The first clause is false.** Every `.cxpolicy` carries the complete
+per-iteration series in its header, as structured JSON:
+
+```python
+header["training"]["reward_curve"]      # 2 500 entries for 200109's final policy
+# {"iteration": 0, "reward_per_step": -0.9412031, "episode_steps": 85.33,
+#  "action_std": 0.40019885, "loss": 134.64029}
 ```
-iteration  598  reward/step +0.337279  loss +32.9  episode 277.7  sigma 0.3407
-```
 
-which means reading the curve requires regex over a 210 KB log. That works,
-and it is what cdx-rl will do — but the log is prose whose format nothing
-promises, and the artifact that gets attached to a graph node is the JSON.
+— along with `hyperparameters`, `seed`, `device`, `trainer_sha256`,
+`wall_time_s`, `versions` and `randomisation`. 395 KB of the 451 KB file, on
+a constant 33 KB of weights: **the header is what grows, not the network.**
+The container is `CXPOLICY1\n`, a little-endian `uint64` header length, the
+JSON, then the weights.
 
-**Wanted:** an append-only `progress.jsonl` beside `progress.json`, one
-object per iteration. Cheap, and it makes the curve a first-class artifact
-instead of a parse.
+So the curve is already a first-class artifact, in every checkpoint, and
+`progress.jsonl` would duplicate it. This was found while planning experiment
+002, which needs 200109's `reward_curve[0:1500]` to check a replication
+against — and got it out of the header in three lines.
+
+**What is still true, and is what remains wanted:** the curve is only in a
+*written checkpoint*. While a run is alive, the newest curve is as old as the
+last `--checkpoint-every`, and a run that dies before its first checkpoint
+has no curve anywhere but the log. `progress.json` still holds one sample.
+
+**Narrowed wish:** the identity block above, written into `progress.json` at
+startup; and the series available *during* the run — either the same
+`reward_curve` array in `progress.json`, or the admission that a supervisor
+should read the newest `.cxpolicy` rather than the log.
 
 **Why this matters more than it sounds:** the episode-length column is the
 one that revealed that `stand-task-20260802-200109`'s reward peak at
 iteration 598 (episode 277.7 of 600) was *not* its survival peak (468.1 at
-iteration 1800). That is a conclusion that changes what a supervisor should
-do, and it was only reachable by parsing the log.
+iteration 1800). That conclusion changes what a supervisor should do — and it
+was reachable from the checkpoint header all along, not only by parsing the
+log.
 
 ## 7. Print the termination mix by default
 
