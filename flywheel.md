@@ -205,12 +205,14 @@ Two mechanics worth knowing before you write a loop:
 * **Tags are defined on the root and are graph-wide.** `create_node_tag`
   takes `root_node_id`, and every tag becomes visible in `graph_tags` on
   *every* node in the graph. `tag_ids` is the per-node assignment.
-* **`expected_revision` for tag operations is the *graph* revision, not the
-  node's**, and every tag create or assignment anywhere bumps it. So they
-  cannot be parallelised, and a 409 is normal when you guess — the error
-  states the current value (`Revision conflict: expected 12, current is 11`),
-  so read it and retry. An unknown tag id is a **422**, listing what it did
-  not recognise.
+* **`expected_revision` differs between the two tag calls, and this cost a
+  409.** For `create_node_tag` it is the **graph** revision (the call takes
+  `root_node_id`, and every tag create anywhere bumps it). For
+  `set_node_tag_assignments` it is the **node's own** revision — passing the
+  graph revision to a freshly committed node returns
+  `Revision conflict: expected 12, current is 0`, where `0` is the new
+  node's revision, not the graph's. Read the number out of the error and
+  retry; an unknown tag id is a **422**, listing what it did not recognise.
 
 Created on the cdx-rl root as of 2026-08-02: `type/insight`,
 `type/empirical`, `type/decision`, `mechanism/pendulum`,
@@ -471,7 +473,8 @@ cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
 ├── sb1x environment and topology | black-cell-1407
 ├── stand-task-20260802-200109: reward peaked at 598, episode length at ~1800 | restless-mode-0384
 │   └── 001 Phase A: the best checkpoint is iteration 1699 | bold-violet-5086
-│       └── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
+│       ├── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
+│       └── 002: the reward peak is not the best checkpoint in 2 of 2 fresh seeds | holy-recipe-7414
 └── 000: the loop closes, on CPU in 62 s | calm-bird-4796
 ```
 

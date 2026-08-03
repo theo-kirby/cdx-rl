@@ -53,4 +53,5 @@ these sections; see [`../flywheel.md`](../flywheel.md) §4.
 | | | |
 |---|---|---|
 | [`000-loop-validation`](000-loop-validation/) | prove every link in the chain on a 1-DOF rig | specified; modelling half verified |
-| [`001-stand-biped`](001-stand-biped/) | separate "the policy is bad" from "the task is out of range" | specified |
+| [`001-stand-biped`](001-stand-biped/) | separate "the policy is bad" from "the task is out of range" | Phases A and B measured |
+| [`002-seed-replication`](002-seed-replication/) | does 001's shape replicate across seeds? | 2 of 4 seeds measured |

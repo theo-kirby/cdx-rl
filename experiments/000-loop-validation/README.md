@@ -212,6 +212,7 @@ it:
 |---|---|
 | device | **cpu** |
 | iterations | 200 of 200, exit 0 |
+| hyperparameters | **the trainer's own defaults**, all fourteen |
 | wall | **48.3 s** (62.0 s including startup) |
 | reward/step | −46.66 at iteration 0 → **−0.050** at 194 |
 | checkpoints | 19 records over 10 files, plus the final |
@@ -220,6 +221,17 @@ it:
 `supervise --watch` attached live and printed the curve as it ran. It was
 given `--patience 0` deliberately: experiment 001 Phase A found reward
 patience stops runs that are working, and this run has nothing to stop.
+
+> **The hyperparameter row is recorded because the defaults have since
+> moved.** This run took `cadex_train.py`'s own defaults for all fourteen —
+> `envs 256, unroll 20, epochs 4, discount 0.97, gae_lambda 0.95,
+> entropy 1e-3, initial_std 0.3`, and `hidden [64,64], learning_rate 3e-4,
+> clip 0.2, value_weight 0.5, iterations 200, checkpoint_every 20, seed 0`,
+> read back out of its own `.cxpolicy` header. Experiment 002 changed
+> `tools/train.py` to default instead to what `stand-task-20260802-200109`
+> ran, so **re-running the command above with no tuning flags would no longer
+> reproduce this run** — it would use `envs 2048` on CPU. Pass the values
+> above explicitly to repeat it.
 
 **The witness margin exposed a bug in `supervise`.** The trainer
 thousands-separates the factor, so a very good margin prints as `1,141x` —

@@ -127,16 +127,24 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke test passing 13/13 |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ root `rapid-bar-6214`, six nodes, three of them empirical |
+| Flywheel | ✅ root `rapid-bar-6214`, seven nodes, four of them empirical |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability` — via `uv run python -m harness <driver>` |
 | | ❌ `measure`, `feasibility` deferred: both matter only before a *new* dispatch |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
+| Experiment 002 | ✅ 2 of 4 seeds measured and published; seeds 2–3 not run |
 
-**Total GPU-hours spent by this repository: zero.** Experiment 000's training
-half ran on CPU in 48 s; experiment 001 replayed eight existing runs.
+**Total GPU-hours spent by this repository: ~5.1**, all of them experiment
+002 — two seeds of `stand-task-20260802-200109` retrained from scratch to ask
+whether 001's conclusions were a property of the task or of one run. **They
+replicate.** The sweep was stopped after 2 of 4 seeds because the card was
+needed elsewhere; `experiments/002-seed-replication/results/stopped.md`
+records that, and the dispatch for the missing two.
 
-### What the experiments concluded, in four lines
+Experiment 000's training half ran on CPU in 48 s; experiment 001 replayed
+eight existing runs and spent nothing.
+
+### What the experiments concluded
 
 * The best checkpoint of `stand-task-20260802-200109` is **iteration 1699**
   (7/12 survival). The trainer's reward peak at 598 manages **2/12**.
@@ -150,6 +158,21 @@ half ran on CPU in 48 s; experiment 001 replayed eight existing runs.
   later policies hold a motor at 71 % of its 86 N·mm rating. This policy
   family does not describe a machine that can be built.
 
+**Experiment 002 asked whether any of that was one run's accident. It is
+not** — two fresh seeds, 48 evaluation seeds each:
+
+* The reward peak is **not** the best checkpoint in **2 of 2** seeds, by
+  41.7 pp and 52.1 pp against a 20.4 pp bound. Survival vs the trainer's
+  scalar after its own peak is **−0.71** and **−0.83** (001 measured −0.34).
+  **`--patience 0` is now evidence-backed, not precautionary.**
+* Hazard 15 replicates: **86.6 %** and **63.3 %** of rating with nothing
+  pushing, bracketing 001's 71 % — and mean torque rises monotonically with
+  the checkpoints that survive best. The reward buys survival with torque.
+* **Seed 0 reproduced 200109 in shape but not in value**: same seed, same
+  trainer digest, **0 of 1500 iterations bitwise identical**, yet r = +0.9885
+  and the reward peak four iterations apart. Claims about *shape* survive
+  this card's non-determinism; claims about a *value* would not.
+
 ### Things that will bite the next agent
 
 * **`compare --seeds 12` cannot crown a winner.** Survival is binomial; the
@@ -159,6 +182,16 @@ half ran on CPU in 48 s; experiment 001 replayed eight existing runs.
   as `binary`, not `checkpoint`. See `flywheel.md` §5.
 * **A stage lease is ~60 s** and a full-snapshot `commit_node` of a long node
   does not reliably fit inside one. Acquire → heartbeat → commit.
+* **`expected_revision` means different things to the two tag calls.**
+  `create_node_tag` wants the *graph* revision; `set_node_tag_assignments`
+  wants the *node's own*. See `flywheel.md` §4.
+* **Pass all fourteen hyperparameters, always.** A partial passthrough
+  silently substitutes an algorithm and no output shows it — `tools/train.py`
+  now defaults every one to what 200109 ran and writes the resolved set to
+  `hyperparameters.json` in the run directory.
+* **`os.kill(pid, 0)` succeeds on a zombie**, so it cannot tell a live
+  trainer from a dead one while `train.py` is still its unreaped parent. Use
+  `runlog.process_gone()`.
 
 **Verified on this box, and worth knowing:** the dynamics domain evaluates
 **headlessly**. A 1-DOF pendulum authored through `cadexd` produced both an
