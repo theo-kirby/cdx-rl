@@ -849,10 +849,18 @@ def relaunch_detached(argv: list[str], sweep_dir: Path) -> dict[str, Any]:
         sys.executable, str(Path(__file__).resolve()), *keep,
         "--sweep-dir", str(sweep_dir), "--detached-child",
     ]
+    # PYTHONUNBUFFERED, because the whole point of detaching is that somebody
+    # comes back later and reads the log. CPython block-buffers stdout when it
+    # is a file rather than a tty, so `supervise`'s per-iteration lines sit in
+    # a 8 KB buffer instead of reaching sweep.log — on a 4 h seed that is
+    # hours of `tail -f` showing nothing while the run is perfectly healthy,
+    # which is indistinguishable from a hung dispatch. The trainer's own
+    # train.log was never affected; this is the supervisor's output only.
+    env = dict(os.environ, PYTHONUNBUFFERED="1")
     log_path = sweep_dir / "sweep.log"
     with log_path.open("ab") as log:
         process = subprocess.Popen(
-            command, cwd=str(REPO_ROOT),
+            command, cwd=str(REPO_ROOT), env=env,
             stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
             start_new_session=True,
         )
