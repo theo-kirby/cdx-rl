@@ -285,6 +285,53 @@ So sb9x **is** usable for a seed that must produce a witnessed policy, with
 the caveat that the 1500-iteration case is inferred from a 40-iteration run:
 check the checkpoint count on completion.
 
+## 1b. The third box, and it is where the mechanisms come from
+
+**`macbook` — the macOS laptop.** Not a training box and never will be; it is
+where every `mg-legs` mechanism from M9 through B8 was *authored*, and where
+`~/cdx-mjc` — which `CLAUDE.md` recorded as "gone; searched for" until
+2026-08-03 — has been the whole time.
+
+That miss is worth keeping as a rule rather than an anecdote: **a negative
+search result is a claim about the machines you searched.** Two boxes were
+swept exhaustively for the biped's authoring script and the work had been
+done on a third that was never in scope. Say which hosts a "not found"
+covers.
+
+| | |
+|---|---|
+| role | authoring, rebuilding, evaluation, dispatch. **No training.** |
+| engine | a full Cadex checkout with the pixi environment and the Blender shell — the only box that can *watch* a policy move |
+| mujoco | present, 3.10.0, but **Python 3.14** — not the pinned trainer venv |
+| GPU | none worth using |
+
+**It cannot satisfy `check_pins`, and that is expected rather than broken.**
+The pinned trainer venv is Python 3.12.3 + `mujoco 3.10.0` + `jax 0.7.2`, and
+the laptop's interpreter is 3.14.3. `method.md` §10 says checkpoint
+comparison runs *locally, in stock MuJoCo, in seconds* — so refusing to
+evaluate anything here would make the cheapest instrument in the method
+unavailable on the machine where the mechanism is designed.
+
+So evaluation drivers accept `CDXRL_ALLOW_UNPINNED_EVAL=1`:
+
+```bash
+export CDXRL_ALLOW_UNPINNED_EVAL=1
+uv run python -m harness steps --dir jobs/… --task tasks/stand-b8/stand-task.json
+```
+
+It warns on every invocation and writes the exact drift into the driver's
+JSON envelope (`unpinned_drift`), so a number measured this way carries the
+reason it might differ. **It never applies to training** — `tools/train.py`
+does not consult it, and a run dispatched against unpinned versions would be
+comparable to nothing.
+
+Measured on 2026-08-03: `harness steps` under Python 3.14.3 reproduced all 28
+of experiment 003's checkpoint rows **exactly** — survival, stepping, the
+conjunction, mean episode length to one decimal and longest step to 0.1 mm —
+against the same numbers computed under the pixi environment's 3.12. That is
+one observation about one driver and one mechanism, not a licence to stop
+pinning; it is the reason the escape is `EVAL`-only.
+
 ## 2. How the laptop drives it
 
 `/home/theo/cadex/training/remote_train.sh`:

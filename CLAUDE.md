@@ -37,7 +37,7 @@ Four rules. The first two have cost real time when broken elsewhere.
 | 3 | [`method.md`](method.md) | The research protocol. **Read before any GPU time.** Adapted from `MUJOCO.md` §7, with the measurement discipline made explicit. |
 | 4 | [`flywheel.md`](flywheel.md) | The graph as it actually is — no typed node kinds, mandatory six-key `repo_context`, full-snapshot commits. |
 | 5 | [`cloud.md`](cloud.md) | Compute topology, GPU budgeting, and when bursting off-box is worth it (rarely). |
-| 6 | [`harness/DESIGN.md`](harness/DESIGN.md) | The five drivers and the supervisor, specified. Nothing is built yet. |
+| 6 | [`harness/DESIGN.md`](harness/DESIGN.md) | The drivers, specified. Five built, `measure` and `feasibility` deferred. |
 | 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Wants, captured rather than acted on. |
 
 If you are about to design an experiment, `method.md` §"What a cdx-rl
@@ -60,9 +60,16 @@ cdx-rl/
   uv.lock
   config/env.example   → copy to config/env (gitignored)
 
+  mechanisms/
+    mg-legs/           THE AUTHORING SCRIPT, found 2026-08-03 on the laptop.
+                       Plus its own mechanism-specific drivers, which are
+                       where `feasibility` and `measure` actually exist.
+
   tasks/
-    stand-b2/          the biped's bundle + MJCF — committed because the
-                       authoring project cannot be found on this box
+    stand-b2/          the B2-era bundle + MJCF, whose authoring revision is
+                       still not pinned down
+    stand-b8/          the position-action-space bundle, MJCF and winning
+                       policy — reproducible from mechanisms/mg-legs/
 
   tools/
     cadexd_client.py   the spine: NDJSON client + the artifact resolver
@@ -147,11 +154,13 @@ Other environment facts:
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
 | Flywheel | ✅ root `rapid-bar-6214`, ten nodes; `winter-mouse-1809` the sb9x box, `spring-unit-9051` seed 2 |
-| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability` — via `uv run python -m harness <driver>` |
-| | ❌ `measure`, `feasibility` deferred: both matter only before a *new* dispatch |
+| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, **`steps`** — via `uv run python -m harness <driver>` |
+| | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
+| Mechanism | ✅ **`mg-legs` authoring script recovered and committed** |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
+| Experiment 003 | ✅ imported and re-measured. **Position action space: 17/24 on the conjunction against B6's 6/12, and hazard 15 dissolves.** One seed |
 | sb9x | ✅ engine built (smoke 13/13), trainer hardened and measured. 2 of 3 forty-iteration runs exit 0; the third hit an intermittent jaxlib fault and still left complete, `compare`-able checkpoints (`EXIT_SALVAGEABLE`) |
 
 **Total GPU-hours spent by this repository: ~10.8.**
@@ -174,6 +183,30 @@ Experiment 000's training half ran on CPU in 48 s; experiment 001 replayed
 eight existing runs and spent nothing.
 
 ### What the experiments concluded
+
+**Experiment 003 is the one that changes what to do next.** It moved the
+three things nine `mg-legs` runs never touched — the action space, the reward
+sign convention and the control rate — and:
+
+* **The conjunction (stepped ≥10 mm AND survived) goes to 17/24** against
+  B6's 6/12 on the same criterion and the same task. Every episode the policy
+  survives, it survives **by stepping**: `survived` and `both` are the same
+  number at every late checkpoint, where B6's `best` scored survived 2/12,
+  stepped 2/12, both 1/12.
+* **Hazard 15 dissolves, and it was an artefact of the action space.**
+  002 replicated the bracing 3 of 3 at 63–87 % of rating with nothing
+  pushing. Under position servos the same mechanism holds its stance at
+  **27.0 N·mm peak (31 %)**, with `mj_inverse` putting the static cost at
+  **15.6 %**. Hazard 16 is right that a reward term cannot fix it; the action
+  space can, because a policy whose output *is* torque has no way to say
+  "hold still" except to keep commanding torque.
+* **The untrained policy stands.** Zero action under a torque space falls at
+  0.976 s; under a position space it holds the nominal pose, so PPO stops
+  having to discover gravity compensation for ten joints before it can learn
+  anything about balance. Iteration 0 already beat B7's entire probe.
+* **One seed.** 002's whole lesson applies: do 003 seeds 1 and 2 before
+  building on this.
+
 
 * The best checkpoint of `stand-task-20260802-200109` is **iteration 1699**
   (7/12 survival). The trainer's reward peak at 598 manages **2/12**.
@@ -215,6 +248,26 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
 * **`compare --seeds 12` cannot crown a winner.** Survival is binomial; the
   2σ bound on a difference is 20 pp at n=12. It is enough to *reject* a
   checkpoint. `compare` prints the bound and the tied set; read it.
+* **…and that bound is the WRONG TEST, conservatively.** Checkpoints are
+  played against the *same seeds*, and a seed fixes the reset draw and the
+  whole disturbance schedule, so most episodes agree for reasons unrelated to
+  the policy. The unpaired bound throws that away: experiment 003's three
+  tied checkpoints score 14, 17 and 16 of 24, a spread it cannot separate at
+  any plausible n. `harness steps` prints **McNemar over the discordant
+  seeds** beside it — which said p = 1.000 and p = 0.453, i.e. *the three are
+  indistinguishable*, and that is the honest answer where the point estimates
+  suggested a winner. It was first written up as "1150 wins cleanly"; it does
+  not. `compare` should grow the same test.
+* **Under a POSITION action space the gate's drop test inverts.** Zero action
+  must *stand* — that is the premise — and non-degeneracy has to be measured
+  against the declared task instead. A gate that still demands a fall will
+  fail a healthy setup, and one that drops the question entirely will pass a
+  degenerate one. `method.md` §7 has the table.
+* **A threshold expressed in control steps changes meaning when the control
+  rate does.** `steps` carried "airborne ≥ 3 control steps (30 ms at
+  100 Hz)"; 003 moved to 50 Hz, which would silently have made it 60 ms and
+  made every step count incomparable with the baseline. Express behavioural
+  thresholds as durations.
 * **A `table` artifact on Flywheel must be JSON**, and a `.cxpolicy` uploads
   as `binary`, not `checkpoint`. See `flywheel.md` §5.
 * **A stage lease is ~60 s** and a full-snapshot `commit_node` of a long node
@@ -229,12 +282,23 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
 * **`os.kill(pid, 0)` succeeds on a zombie**, so it cannot tell a live
   trainer from a dead one while `train.py` is still its unreaped parent. Use
   `runlog.process_gone()`.
-* **The biped's authoring script does not exist anywhere on this box.**
-  `~/cdx-mjc/`, which `MUJOCO.md` §7 and ADR-100 both name, is gone; searched
-  for. `model_sha256 e3511559…` is therefore **not reproducible**, and every
-  number in 001 and 002 is a claim about the exact bytes now committed at
-  `tasks/stand-b2/`. Locating or re-authoring that script is the first step
-  of any task change.
+* **~~The biped's authoring script does not exist anywhere on this box.~~
+  FOUND, 2026-08-03 — and the search had been looking on the wrong
+  machines.** `~/cdx-mjc/` was never on a training box: it is on the **macOS
+  laptop**, where every `mg-legs` run from M9 through B8 was authored and
+  dispatched, and it was intact. The script is committed at
+  [`mechanisms/mg-legs/script.py`](mechanisms/mg-legs/script.py) and the
+  mechanism is now changeable rather than a dead end.
+
+  The generalisable lesson, which is worth more than the script:
+  **"searched for and not found" is a claim about the machines you
+  searched.** Two boxes were searched exhaustively and the work had been done
+  on a third that was never in scope. Say which hosts a negative covers.
+
+  `stand-b2`'s `e3511559…` is *still* not reproducible — its authoring
+  revision is between the two kept in `mechanisms/mg-legs/history/` — so 001
+  and 002 remain claims about committed bytes. `stand-b8` is reproducible
+  from source, which is the difference.
 * **Pin the trainer off this box**: `--require-trainer <sha256>`. ADR-104's
   refusal lived only in `remote_train.sh`, which local dispatch never calls,
   so `train.py` recorded the digest and checked nothing.

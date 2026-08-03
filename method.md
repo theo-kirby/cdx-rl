@@ -27,6 +27,28 @@ The metric for anything whose word for success is *balance*, *hold* or
 shoved, **split by shove azimuth**. Aggregate survival averages a mechanism
 limit together with a learning result and reports neither.
 
+> **And survival alone is not enough when the word is *recover*.** Experiment
+> 003 measured the two coming apart: at one checkpoint the policy stepped in
+> 7 of 12 episodes and survived 3, at another it stepped in 4 and survived 4.
+> Scored on survival alone, the winner is a machine that absorbs every shove
+> on its ankles and never moves a foot — which is exactly what five runs of
+> this project produced, each of them scoring well.
+>
+> So for a task that asks for a *step*, the metric is the **conjunction**:
+> *stepped ≥ 10 mm* **and** *survived the full episode*, per seed. Report both
+> marginals beside it, because the relationship between them is the
+> diagnosis: when they are equal, every episode the policy survives it
+> survives by stepping. `harness steps` is the driver, and the step is read
+> off MuJoCo's contact list rather than off a height threshold (ADR-107).
+>
+> **Define the behaviour as a duration, not as a step count.** `steps` first
+> carried "airborne for ≥3 control steps", annotated *"three at 100 Hz is
+> 30 ms"* — and 003 halved the control rate, which would silently have made
+> the same 3 a 60 ms criterion and made its step counts incomparable with the
+> baseline they were being measured against. Any threshold expressed in
+> control steps is a threshold that changes meaning when the control rate
+> does.
+
 ---
 
 ## The order
@@ -69,14 +91,86 @@ not read off the drawing.
 
 ### 5. Choose the actuator honestly, and say which question you are answering
 
-Torque motors rather than position servos, so that zero action is collapse
-and there is no degenerate "hold the setpoint" solution (ADR-092).
+> **This section said the opposite until 2026-08-03, and experiment 003
+> measured it false.** It read: *"Torque motors rather than position servos,
+> so that zero action is collapse and there is no degenerate 'hold the
+> setpoint' solution (ADR-092)."* That rule cost this project nine runs. It
+> is kept here rather than deleted because the reasoning behind it is sound
+> and the conclusion is still wrong, which is the most useful kind of mistake
+> to be able to re-read.
 
-Then decide whether the limit models **the hardware** or **the mechanism**.
-An MG90S stalls at 216 N·mm; a mechanism-derived limit for the same biped was
-750. A policy trained on the second will command torque the bench cannot
-produce. Both are defensible; **only one is what you will build**, and the
-experiment README must say which.
+**Default to position servos: the action is a joint setpoint, not a torque.**
+
+The argument for torque was that a position servo makes "hold the setpoint" a
+degenerate solution — the untrained policy stands, so the task measures
+nothing. Both halves of that are true. The error is in what follows from
+them: **the degeneracy is not in the action space, it is in the task**, and
+it is removed by the disturbance rather than by making the robot harder to
+control.
+
+What the torque action space actually costs, measured:
+
+| | torque | position |
+|---|---|---|
+| what a network output of 0 means | zero torque — the motors are **off** | hold the nominal pose |
+| the untrained policy | **falls at 0.976 s** | **stands** |
+| what PPO must find before it can learn balance | continuous gravity compensation for ten joints, simultaneously, with nothing in the reward naming it | the *deviation* from a stance it already holds |
+| resting torque of the trained policy | **71–87 % of rating with nothing pushing** (hazard 15, 3 of 3 seeds) | **31 % peak, 16 % to hold the stance** |
+
+The last row is the one that matters most, because hazard 15 was this
+project's most-replicated finding and it was **an artefact of the action
+space**. A policy whose output *is* torque has no representation of "hold
+still" except to keep commanding torque, and the cheapest stable answer it
+finds is to brace — which is why `MUJOCO.md` calls the bracing a *resting
+posture* and why "a reward term cannot fix this" (hazard 16) is correct and
+still does not help. Under a PD servo the holding torque is computed by the
+solver, at the solver's rate, and the policy spends its output on the part
+that actually needs a policy.
+
+**The non-degeneracy has to be re-established, not assumed.** With a position
+action space, `feasibility`'s drop test inverts — zero action *must* stand —
+so the question "is there anything to learn here" moves to the task. Ask it
+of the task: run the zero action against the declared reset variation and
+disturbance schedule. Experiment 003 measured `0/12 survived, mean 60.2 of
+300 steps, all tipped`, which is a task with plenty left in it. **A zero
+action that survives the declared task is a degenerate experiment and the
+gate must say so** — see §7 check 5.
+
+Three things the position action space requires, none of them optional:
+
+1. **The joint limits must be symmetric about the nominal pose.** The action
+   range of a position actuator *is* its joint's declared limits
+   (`CadexDynamics._ACTION_SOURCES`), and the trainer maps a network output
+   of 0 to the midpoint (`output_bias = (high + low) / 2`). `mg-legs`'s knee
+   was `[-5, 130]`, whose midpoint is 62.5° — so a zero action would have
+   commanded a deep squat. Symmetric limits are what make zero mean nominal.
+2. **The nominal pose is therefore a design decision, and the literature's
+   answer is a slight crouch.** Humanoids in this field do not stand
+   straight-legged: at a straight leg a symmetric knee range would have to
+   include hyperextension. `mg-legs` uses hip 15°, knee 30°, ankle 15°
+   dorsiflexion — the shallowest crouch for which `[-30, 30]` at the knee
+   spans 0–60° of flexion and never hyperextends.
+3. **Take the softest gains that stand, not the stiffest.** A servo can only
+   ask for `torque_limit` N·mm, so it saturates at an error of `limit / kp`
+   and past that every further degree of setpoint is the same command. At
+   kp 1.0 N·m/rad the `mg-legs` servo saturates at **4.9°**, which would make
+   all but the innermost 5° of a ±30° action range a constant. At 0.3 it
+   saturates at 16.4°, so the middle two thirds of every joint's range is
+   proportional. **Sweep the gains at the nominal pose and report the
+   saturation angle**; `feasibility` check 6 does both.
+
+**Torque is still the right choice for some questions** — anything asking
+what the *mechanism* can do rather than what a policy can learn, and anything
+where the servo's own dynamics would be part of the answer. Say which you
+chose and why in the experiment README.
+
+Then, either way, decide whether the limit models **the hardware** or **the
+mechanism**. An MG90S stalls at 216 N·mm; a mechanism-derived limit for the
+same biped was 750. A policy trained on the second will command torque the
+bench cannot produce. Both are defensible; **only one is what you will
+build**, and the experiment README must say which. Note that this is
+orthogonal to the action space: `mg-legs` kept its 86 N·mm hardware judgment
+across the change, and what moved was *who computes the torque*.
 
 ### 6. Declare what changes between episodes
 
@@ -154,13 +248,46 @@ half-width.
 2. exact gravity compensation by `mj_inverse`,
 3. whether the mechanism can reject the **worst declared shove** in place,
 4. contact sanity,
-5. a drop test that must **fall**,
-6. a hand-written PD that must **hold**.
+5. a zero-action test — see below, because **what it must show depends on the
+   action space**,
+6. a PD that must **hold**.
 
 If a PD can stand it, PPO can. If the gate is red, find out *which check* and
 *why*: hazard 14 is the gate being wrong, hazard 18 is the gate measuring
 nothing, hazard 10 is the gate being right and the machine being unable to do
 the task.
+
+> **Checks 5 and 6 mean different things under the two action spaces, and
+> experiment 003 had to re-specify both.** This file's own earlier text —
+> *"a drop test that must **fall**"* — is only true of a torque action space.
+>
+> **Check 5, the zero action.** The question is always *is there anything
+> here to learn*, and where it must be asked moves:
+>
+> | | torque | position |
+> |---|---|---|
+> | zero action at the reset pose | must **fall**, and report when | must **stand** — a servo that cannot hold its own nominal stance is a gain or a pose error |
+> | non-degeneracy | follows from the fall | must be measured **against the declared task**: the zero action run through the real reset variation and disturbance schedule, over seeds |
+>
+> A position-actuated task where doing nothing survives the declared task is
+> a degenerate experiment, and the gate must fail it. `mg-legs` measured
+> `0/12 survived, mean 60.2 of 300 steps, all tipped` — comfortably not
+> degenerate.
+>
+> **Check 6, the PD.** Under torque control the PD is written *in the gate*
+> and sweeping gains is how you choose them — that is how experiment 003's
+> kp 0.3 / kd 0.01 were picked. Under position control the PD is **in the
+> model**, so a runtime sweep runs the same servo six times and prints six
+> identical rows. It becomes: the model's own servo, one full episode,
+> reporting settle, peak effort against the limit, **and the saturation angle
+> `limit / kp`** — which is the number that says how much of the action range
+> is proportional and how much is a constant. Report it; it is the reason to
+> prefer soft gains (§5).
+>
+> Detect which you are in from the compiled model rather than from the
+> script: a MuJoCo position servo is the affine bias, `biasprm = (0, −kp,
+> −kd)` against `gainprm = kp`, and a plain motor has no bias at all. The
+> script is not what the trainer will be handed.
 
 > **Hazard 18 is the dangerous one, and it happened three times in one
 > afternoon.** `mj_inverse` with an external force applied returns leg
@@ -361,6 +488,78 @@ the untrained network**, which scores well by standing still before the
 disturbance distribution has bitten. Check its peak torque — a policy
 commanding 1–2 N·mm of 86 is not balancing, it is doing nothing.
 
+### The reward's sign convention, and why no run should need a headroom check
+
+> **New in experiment 003, and it removes a class of failure rather than
+> guarding against it.**
+
+Through B7 every `mg-legs` reward was `alive +1.0` minus eleven to thirteen
+costs, so the whole objective was a subtraction that had to come out
+positive. Twice it did not, and the second time cost a run:
+
+| objective, scored on the same states | per-step |
+|---|---|
+| B6 (the best policy this project had) | **+0.0103** |
+| B7 as first written | **−0.2060** |
+
+A negative per-step reward with a termination available means **ending the
+episode beats continuing it**, so the optimal policy is to fall over at once.
+PPO found it in 150 iterations: mean episode length fell monotonically 23.5 →
+8.0 steps while critic loss converged. It did not fail to learn. It learned
+what it was asked. And note B6's column — the best result this project had
+ran on **1 % of headroom**, which is not a margin, it is a coincidence.
+
+The literature does not balance this, it removes it. `legged_gym` ships
+`only_positive_rewards` (`torch.clip(rew_buf, min=0.)`); Booster Gym clips
+the total to zero *"to avoid incentivizing early termination with negative
+rewards"*. Cadex's trainer has no clip and 003 did not add one, because a
+clip is a trainer change that hides the problem at the last moment.
+
+**Make the reward non-negative by construction instead.** Every shaping term
+becomes a bounded positive kernel:
+
+```
+w · exp(−(e/σ)²)     bounded in [0, w],  e = 0 at the nominal pose
+```
+
+so the total is bounded in `[alive, Σw]`, terminating is *always* worse than
+continuing, and no term anyone adds later can recreate the failure. There is
+nothing left to keep balanced.
+
+**The hazard-9 check inverts and stays exactly as diagnostic.** The old rule
+was *every term must read ~0 at the standing pose* (a term that is non-zero
+there charges rent for standing still). The new one is **every term must pay
+its own weight at the standing pose** — because each error is 0 there and
+`exp(0) = 1`. A term that reads anything else is either written against a
+stale measured offset or scaled so narrowly it is already falling off at
+rest. `mg-legs` measured 5.3000 against a 5.3 budget with all nine terms
+exact.
+
+**Two things this buys that were not the point.** A cost that fires during
+the *swing phase* of a recovery — `arrest` on centre-of-mass speed, `swirl`
+on angular momentum — taxes exactly the behaviour it was bought to buy; B7
+measured lifts 35 → 33 and landed steps 13 → 2 after adding them. As positive
+kernels the same two terms simply stop paying during the swing and resume
+when the foot lands, and **no term can make a step negative because no term
+is negative**. And `best`-by-reward landed in the tied top group for the
+first time in this project — one observation, not a claim, but the mechanism
+is plain enough to state: reward and survival stop being anti-correlated when
+the reward cannot pay for dying.
+
+**The one thing to watch is the opposite failure.** Under costs the danger is
+a machine that would rather die than move. Under positive kernels it inverts:
+`upright`, `height`, `posture` and `effort` are all maximised by standing
+perfectly still. In `mg-legs` that is 2.0 of the 5.3, so a motionless stance
+is a real local optimum. **If a run comes back standing rigidly and never
+stepping, the lever is raising the term that asks for the behaviour, not
+adding a cost** — which is the move that produced this whole section.
+
+**Saturation gets worse, not better, and it is the caveat for the next
+band.** `exp(−(e/σ)²)` is *flatter* past σ than `tanh` is, so B7's
+saturated-`capture` defect arrives sooner under kernels. At B6's band ξ tops
+at 39 mm against σ = 50 mm and one kernel is right; at a 2.5 N band it will
+need two scales again.
+
 ### Torque saturation — the bracing hazard (15 and 16)
 
 The `mg-legs` standing policy plays as a clean stand and *is* one: it holds
@@ -373,6 +572,27 @@ by torque.
 
 216 N·mm is a **stall** rating, a momentary number. No real servo holds 98 %
 of it for six seconds.
+
+> **RESOLVED by experiment 003: this is a property of the ACTION SPACE, not
+> of the mechanism or the reward.** Hazard 15 replicated in 3 of 3 of
+> experiment 002's seeds — 86.6 %, 63.3 %, 87.0 % of rating **with nothing
+> pushing** — and hazard 16 says correctly that a reward term cannot fix it.
+> The same mechanism, under position servos, holds its stance at **27.0 N·mm
+> peak (31 % of rating)**, with `mj_inverse` putting the static cost at
+> **13.41 N·mm (15.6 %)**.
+>
+> The reason is structural. A policy whose output *is* torque has no
+> representation of "hold still" other than to keep commanding torque, and
+> bracing is the cheapest *stable* answer available to it — so the reward is
+> not mispricing anything, the action space simply has no cheap way to say
+> the right thing. Under a PD servo the holding torque is computed by the
+> solver at the solver's rate and never passes through the policy at all.
+>
+> **The measurement stays in the method** — `compare` still reports peak and
+> mean torque per motor on every row, and it must. A position action space
+> makes bracing unnecessary, not impossible: a policy can still command
+> setpoints far enough from the pose to saturate, and the `% of frames above
+> 90 % of limit` column is how you would find out.
 
 Nothing in the poses shows this. So:
 

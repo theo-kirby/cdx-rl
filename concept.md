@@ -140,6 +140,32 @@ it does not choose the checkpoint.** See
 [`experiments/001-stand-biped/`](experiments/001-stand-biped/), which exists
 to settle exactly this.
 
+## The thing that turned out to be worth doing
+
+The section above is right and it is not where the result came from.
+
+Experiments 001 and 002 did what they set out to do — the reward peak is not
+the best checkpoint, in 2 of 3 seeds — and along the way they measured
+something they were not looking for and could not act on. **Hazard 15
+replicated 3 of 3**: with nothing pushing at all, every policy in the family
+held a motor at 63–87 % of its rating. 001 wrote the consequence plainly —
+*"this policy family does not describe a machine that can be built"* — and
+`MUJOCO.md` hazard 16 explained why no reward term would fix it.
+
+Both were correct, and both were about the wrong layer. Experiment 003
+changed the **action space** — the policy emits a joint setpoint held by a PD
+servo, instead of emitting torque — and the bracing went to 31 % peak and
+15.6 % static on the same mechanism with the same 86 N·mm limit. A policy
+whose output *is* torque has no way to say "hold still" except to keep
+commanding torque; bracing is the cheapest stable answer available to it, and
+no weighting of a cost changes what the action space can express.
+
+The generalisable form, and the one worth carrying into the next mechanism:
+**when a hazard replicates across every seed and no reward term touches it,
+suspect the interface rather than the objective.** Nine runs moved the
+disturbance five times and the reward three times against a problem that was
+in neither.
+
 ## Success criteria
 
 cdx-rl has done its job when:
