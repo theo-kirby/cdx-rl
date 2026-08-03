@@ -243,3 +243,230 @@ allowed to conclude that they are and produce nothing installable.
 
 *Sections 8 and 9 are written after the run, below this line, and not
 before.*
+
+---
+
+## 8. What happened
+
+**The sweep was stopped after 2 of 4 seeds**, by request, because the GPU was
+needed for other work. ~5.1 GPU-hours of the ~9.4 budgeted. Seeds 0 and 1 ran
+to completion; seed 2 was signalled at iteration 537 and seed 3 never
+dispatched. The full stop record, including how it was stopped and what it
+costs, is [`results/stopped.md`](results/stopped.md).
+
+**So this is a two-seed result and is reported as one.** §7 criterion 5 asked
+"in how many of *four* seeds", and that question is not answered here.
+
+### The seeds that ran
+
+| | seed 0 | seed 1 |
+|---|---|---|
+| iterations | 1500 / 1500, exit 0 | 1500 / 1500, exit 0 |
+| device | `gpu` throughout | `gpu` throughout |
+| wall | 2.12 h | 2.12 h |
+| **witness margin** | **517×** | **588×** |
+| `supervise` trend | `survival-diverges` | `survival-diverges` |
+| same-file-twice | **passes**, 96 episodes | **passes**, 96 episodes |
+| checkpoints played | 16 | 16 |
+
+Criterion 2 holds: both margins are far above the 100× floor (hazard 13).
+Criterion 3 holds: `compare --seeds 48` produced a complete table for each,
+with the determinism check passing on both.
+
+### The headline — criterion 5
+
+**In 2 of 2 seeds the trainer's reward peak is not the best checkpoint by
+measured survival**, and in both the gap clears the separation bound by a
+factor of two:
+
+| seed | reward peak | survival there | best by survival | survival there | gap |
+|---|---|---|---|---|---|
+| 0 | iteration **594** | **16/48 = 0.333** | iteration **1299** | **36/48 = 0.750** | **+41.7 pp** |
+| 1 | iteration **510** | **12/48 = 0.250** | iteration **1499** | **37/48 = 0.771** | **+52.1 pp** |
+
+2σ separation bound at n=48: **20.4 pp**. Both gaps clear it outright.
+
+For comparison, 001 measured the same thing on 200109 at 12 seeds: reward
+peak 598 at 2/12, best 1699 at 7/12. **Same shape, on two runs 001 never
+saw, with four times the seeds.**
+
+#### A correction to §7 criterion 4
+
+§7 says *"48 seeds gives a 2σ bound of ~10 pp"*. **That is wrong**, and the
+number used above is not it. `√(2·0.25/n)` at n=48 is 10.2 pp, but that is
+**one** standard error; 2σ is twice it, 20.4 pp. `harness/compare.py` has
+always used `2 × √(2·0.25/n)` — `separation()` computes exactly that — so the
+analysis is consistent with the harness and the README's figure was the
+outlier. Recorded rather than quietly corrected, because §7 was supposed to
+be the thing that could not move after the fact. **The conclusion is
+unaffected**: 41.7 and 52.1 pp clear the stricter bound, so it would have
+held under either convention.
+
+### The correlation, restated per seed
+
+| | 001 (200109) | seed 0 | seed 1 |
+|---|---|---|---|
+| survival vs trainer reward, whole run | +0.06 | **+0.11** | **+0.12** |
+| survival vs trainer reward, **after its peak** | −0.34 | **−0.71** | **−0.83** |
+| survival vs iteration, whole run | — | **+0.93** | **+0.93** |
+
+The sign replicates in both seeds on both spans, and the post-peak
+anti-correlation is **two to three times stronger** than 001 measured. The
+whole-run figure is near zero for the reason 001 gave: it averages the early
+stretch, where reward and survival climb together because the network is
+going from nothing to something, with the span a stopping rule would actually
+act on.
+
+`survival vs iteration` at +0.93 in both is the plainest statement of it: on
+this task, over this range, **survival just keeps improving with training**,
+while the scalar the trainer optimises turns over at around iteration 500–600
+and declines.
+
+### Criterion 6 — seed 0 against 200109
+
+Full output in [`results/seed0-vs-200109.txt`](results/seed0-vs-200109.txt).
+
+| | |
+|---|---|
+| bitwise identical iterations | **0 of 1500** |
+| first shared iteration | −0.941203 vs −0.940929 — **already differs** |
+| mean \|Δ\| / max \|Δ\| | 0.0398 / 0.1038 |
+| **Pearson r over the shared span** | **+0.9885** |
+| reward peak | 598 vs **594** — four iterations apart |
+
+Same seed, same `trainer_sha256`, same hyperparameters, same card, and not
+one iteration reproduces. The divergence is present at iteration 0, so it is
+not accumulated drift — MJX and XLA reductions on a GPU are not bitwise
+reproducible, and PPO amplifies whatever they differ by.
+
+**But the shape survives it.** r = +0.9885, and the statistic this experiment
+actually uses — where the reward peak falls — lands within four iterations of
+1500. That is the outcome that qualifies the seed-to-seed claims least.
+
+The exception is **episode length**, which is markedly noisier: its peak
+moved from iteration 1497 to 1330 and from 395.7 to 576.9 steps. It is
+printed beside reward in every report, and this says plainly that the two
+columns do not deserve equal confidence.
+
+### Hazard 15 — the resting posture
+
+`capability` on each seed's best-by-survival checkpoint, 48 seeds per row.
+The `no-variation` row is the one that matters: **nothing is pushing at all.**
+
+| | seed 0 (`001300`) | seed 1 (`final`) | 001 |
+|---|---|---|---|
+| **mean torque, nothing pushing** | **86.6 % of limit** | **63.3 % of limit** | 71 % |
+| peak torque, nothing pushing | 99.8 % | 99.3 % | — |
+| survival, nothing pushing | **48/48** | **48/48** | 48/48 |
+
+001's 71 % sits between the two. **The resting posture replicates**: these
+policies stand still by holding motors near their rating, and one of them
+peaks at 99.8 % of an 86 N·mm limit with the robot doing nothing.
+
+It is worse than "a property of the run", because it **tracks the thing we
+selected for**. Mean fraction of limit climbs monotonically with the
+checkpoints that survive best:
+
+```
+seed 0   iteration   99 → survival 0.083, mean torque 0.268 of limit
+         iteration  594 → survival 0.333, mean torque 0.343   (reward peak)
+         iteration 1299 → survival 0.750, mean torque 0.732   (best survival)
+         iteration 1499 → survival 0.750, mean torque 0.828
+```
+
+The checkpoints that recover best are the ones bracing hardest. This is not
+an artefact to be tuned away at the supervisor; it is the task's reward
+buying survival with torque.
+
+### The task is in range — and the tied set
+
+`capability`'s sweep of the declared band, 48 seeds per row:
+
+| scale | seed 0 | seed 1 |
+|---|---|---|
+| no variation | 48/48 | 48/48 |
+| 0.00 (reset variation only) | 0.896 | 0.917 |
+| 0.50 | 0.896 | 0.938 |
+| **1.00 (full declared magnitude)** | **0.750** | **0.771** |
+
+Nothing falls off a cliff, and full magnitude still recovers three times in
+four. §5's claim that the declared band is in range holds against these runs
+as well as against Phase B's.
+
+And, exactly as 001 warned, `compare` **cannot crown a winner even at 48
+seeds**. The best-by-survival checkpoint is statistically indistinguishable
+from the next several in both seeds:
+
+```
+seed 0   tied: 001300, final, 001400, 001200
+seed 1   tied: 001300, final, 001400, 001200, 001100
+```
+
+What the table supports is *"the late checkpoints, as a group, decisively
+beat the reward peak"* — not *"iteration 1299 is the best one"*.
+
+## 9. What it means, and what it does not mean
+
+**It means 001's first conclusion is no longer resting on one run.** The
+trainer's reward peak was the wrong checkpoint in 200109, in seed 0 and in
+seed 1 — three independent runs, the latter two with 48 evaluation seeds and
+gaps of 42 and 52 pp against a 20.4 pp bound. The supervisor rule 001 derived
+follows from the task, not from an accident: **stop on divergence, device and
+liveness; never on reward patience.** `--patience 0` stays the default, and
+now has evidence behind it rather than one cautionary example.
+
+**It means hazard 15 is a property of this task, not of one policy.** Two
+fresh runs both stand at 63–87 % of an 86 N·mm rating with nothing pushing
+them, bracketing 001's 71 %. Phase B's recommendation — a torque-cost term —
+is not an idea about one bad policy; it is the obvious response to a reward
+function that will buy survival with torque every time it is allowed to.
+
+**It does not mean four seeds agreed, because four seeds did not run.** Two
+did. Two runs plus 001's is a materially weaker claim than the design asked
+for, and criterion 5's question — *in how many of four* — is unanswered. The
+`status/provisional` tag comes **down a notch, not off**: seeds 2 and 3 are a
+4.3-hour dispatch away and the exact command is in `results/stopped.md`.
+
+**It does not mean survival keeps improving forever.** The measured range is
+1 500 iterations. Phase B found survival flat-ish from 1 500 to 2 500 on
+200109, and nothing here contradicts or extends that; `survival vs iteration`
+of +0.93 describes the span that was run and must not be read as a trend line
+to extrapolate.
+
+**It does not mean a checkpoint was selected.** No policy from these runs is
+installable, and §7 said in advance that a better policy is not a pass
+criterion. The tied sets above are the reason: at 48 seeds the top four or
+five checkpoints are indistinguishable, so "play the late ones" is the whole
+of what is supported.
+
+**It does not mean run-to-run comparability is free.** Seed 0 reproduced
+nothing bitwise against its own recorded twin. Every claim here is a claim
+about shape — where a peak falls, which group of checkpoints wins — and shape
+is what survived at r = +0.9885. **A claim about a specific value would not
+have survived**, and none is made.
+
+### Two things worth carrying forward
+
+**The azimuth split is half empty.** §2's metric is recovery rate *split by
+azimuth*, and at full magnitude the two positive-quadrant bins have **n = 0**
+in both seeds — every shove sampled fell in 180°–360°:
+
+```
++x  (0°–90°)     n=0
++y  (90°–180°)   n=0
+-x  (180°–270°)  n=17   survival 0.824
+-y  (270°–360°)  n=31   survival 0.710
+```
+
+So the metric that was fixed before dispatch is being reported on half the
+directions it names, in every experiment that has used it — 001 included.
+Whether that is the disturbance sampler's convention or a genuine gap in the
+task is **not** settled here, and it should be settled before the azimuth
+split is quoted as evidence of anything.
+
+**Episode length is the noisy column.** Criterion 6 showed its peak moving by
+167 iterations and 181 steps between two runs whose reward curves correlate
+at +0.9885. `supervise` prints it beside reward everywhere, for the good
+reason that reward alone cannot tell surviving from scoring — but it should
+not be read with the same confidence, and `results/` now has the numbers to
+say so.

@@ -1,0 +1,1189 @@
+{
+  "declared_newtons": [
+    {
+      "azimuth_high_deg": 330.0,
+      "azimuth_low_deg": 210.0,
+      "high": 0.8,
+      "label": "shove",
+      "low": 0.3,
+      "sustained": false
+    },
+    {
+      "azimuth_high_deg": 360.0,
+      "azimuth_low_deg": 0.0,
+      "high": 0.8,
+      "label": "shove2",
+      "low": 0.3,
+      "sustained": false
+    },
+    {
+      "azimuth_high_deg": 360.0,
+      "azimuth_low_deg": 0.0,
+      "high": 0.06,
+      "label": "wind",
+      "low": 0.0,
+      "sustained": true
+    }
+  ],
+  "driver": "capability",
+  "episodes_planned": 384,
+  "flatness": {
+    "any_informative": false,
+    "per_policy": [
+      {
+        "detail": "survival moves only 15% across the whole sweep. Weak evidence about the band; widen the scales before reading a curve into it.",
+        "max_survival": 0.8958333333333334,
+        "min_survival": 0.75,
+        "policy": "stand9.001300.cxpolicy",
+        "verdict": "nearly-flat"
+      }
+    ]
+  },
+  "max_steps": 600,
+  "model": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/model-model.xml",
+  "model_sha256": "e3511559eeb3d5ab3a369852a6c7d7e5fcfc256a259f1f4f41284ffb2cef0ae1",
+  "ok": true,
+  "policies": [
+    "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy"
+  ],
+  "provenance": {
+    "cadex": {
+      "commit": "06d1374b4ec2d5fb5cf1f7968a93e02ac6112211",
+      "dirty": false,
+      "short": "06d1374b",
+      "subject": "Refuse to dispatch to a box running a different trainer (ADR-104)"
+    },
+    "cdxrl": {
+      "commit": "840bebd5c848e360f113b897f746318a9bb80294",
+      "dirty": true,
+      "short": "840bebd5",
+      "subject": "experiment 002: stopped after 2 of 4 seeds, GPU needed elsewhere"
+    },
+    "host": {
+      "hostname": "sb1x",
+      "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39"
+    },
+    "python": "3.12.3",
+    "timestamp_utc": "2026-08-03T06:22:10Z"
+  },
+  "scales": [
+    0.0,
+    0.15,
+    0.3,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "schema": "cdxrl-envelope-v1",
+  "seeds": 48,
+  "sweep": [
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        }
+      ],
+      "death_time_mean_s": null,
+      "drift_mean": 91.87005634028787,
+      "episodes": 48,
+      "final_tipped_mean": 0.00022130810569378164,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 56% of frames",
+        "hazard 15: a motor's MEAN command is 87% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.065,
+        0.14,
+        0.0,
+        0.00167,
+        0.555,
+        0.32,
+        0.02667,
+        0.09,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.8655523255813954,
+      "mean_torque_nmm": [
+        47.351,
+        45.787,
+        58.576,
+        43.786,
+        74.438,
+        55.62,
+        42.988,
+        45.429,
+        10.921,
+        22.053
+      ],
+      "peak_frac_of_limit": 0.9979523255813952,
+      "peak_torque_nmm": [
+        81.911,
+        83.433,
+        77.196,
+        77.51,
+        85.582,
+        85.824,
+        84.884,
+        85.001,
+        54.283,
+        53.321
+      ],
+      "peak_torque_worst": 85.8239,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 291.6515932527327,
+      "reward_per_step_mean": 0.4860859887545545,
+      "saturation_worst": 0.555,
+      "scale": null,
+      "schedule": [
+        {
+          "episodes": 0,
+          "fraction": null,
+          "label": "shove",
+          "mean_start_s": null,
+          "reached": 0
+        },
+        {
+          "episodes": 0,
+          "fraction": null,
+          "label": "shove2",
+          "mean_start_s": null,
+          "reached": 0
+        },
+        {
+          "episodes": 0,
+          "fraction": null,
+          "label": "wind",
+          "mean_start_s": null,
+          "reached": 0
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 600.0,
+      "steps_median": 600.0,
+      "steps_min": 600,
+      "survival": 1.0,
+      "survived": 48,
+      "termination_mix": {
+        "survived": 48
+      },
+      "variant": "no-variation"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        }
+      ],
+      "death_time_mean_s": 0.422,
+      "drift_mean": 96.09468933863427,
+      "episodes": 48,
+      "final_tipped_mean": 0.013458505644832572,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 47% of frames",
+        "hazard 15: a motor's MEAN command is 78% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.10288,
+        0.19157,
+        0.00285,
+        0.00052,
+        0.46738,
+        0.28802,
+        0.05898,
+        0.12917,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.7793911579457365,
+      "mean_torque_nmm": [
+        50.153,
+        49.012,
+        52.977,
+        42.232,
+        67.028,
+        55.053,
+        42.8,
+        47.008,
+        12.875,
+        23.225
+      ],
+      "peak_frac_of_limit": 0.9996860465116278,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        83.014,
+        79.693,
+        85.701,
+        85.905,
+        85.894,
+        85.973,
+        70.798,
+        69.888
+      ],
+      "peak_torque_worst": 85.973,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 196.33235419680773,
+      "reward_per_step_mean": 0.20302432308434512,
+      "saturation_worst": 0.46737979166666666,
+      "scale": null,
+      "schedule": [
+        {
+          "episodes": 0,
+          "fraction": null,
+          "label": "shove",
+          "mean_start_s": null,
+          "reached": 0
+        },
+        {
+          "episodes": 0,
+          "fraction": null,
+          "label": "shove2",
+          "mean_start_s": null,
+          "reached": 0
+        },
+        {
+          "episodes": 0,
+          "fraction": null,
+          "label": "wind",
+          "mean_start_s": null,
+          "reached": 0
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 541.8958333333334,
+      "steps_median": 600.0,
+      "steps_min": 25,
+      "survival": 0.8958333333333334,
+      "survived": 43,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 43,
+        "tipped": 4
+      },
+      "variant": "reset-variation-only"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 17,
+          "survival": 0.8823529411764706,
+          "survived": 15
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 31,
+          "survival": 0.9032258064516129,
+          "survived": 28
+        }
+      ],
+      "death_time_mean_s": 0.422,
+      "drift_mean": 96.09468933863427,
+      "episodes": 48,
+      "final_tipped_mean": 0.013458505644832572,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 47% of frames",
+        "hazard 15: a motor's MEAN command is 78% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.10288,
+        0.19157,
+        0.00285,
+        0.00052,
+        0.46738,
+        0.28802,
+        0.05898,
+        0.12917,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.7793911579457365,
+      "mean_torque_nmm": [
+        50.153,
+        49.012,
+        52.977,
+        42.232,
+        67.028,
+        55.053,
+        42.8,
+        47.008,
+        12.875,
+        23.225
+      ],
+      "peak_frac_of_limit": 0.9996860465116278,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        83.014,
+        79.693,
+        85.701,
+        85.905,
+        85.894,
+        85.973,
+        70.798,
+        69.888
+      ],
+      "peak_torque_worst": 85.973,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 196.33235419680773,
+      "reward_per_step_mean": 0.20302432308434512,
+      "saturation_worst": 0.46737979166666666,
+      "scale": 0.0,
+      "schedule": [
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove",
+          "mean_start_s": 0.8723317186548809,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove2",
+          "mean_start_s": 2.640108625663862,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 1.0,
+          "label": "wind",
+          "mean_start_s": 0.0,
+          "reached": 48
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 541.8958333333334,
+      "steps_median": 600.0,
+      "steps_min": 25,
+      "survival": 0.8958333333333334,
+      "survived": 43,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 43,
+        "tipped": 4
+      },
+      "variant": "scale-0.00"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 17,
+          "survival": 0.8823529411764706,
+          "survived": 15
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 31,
+          "survival": 0.9032258064516129,
+          "survived": 28
+        }
+      ],
+      "death_time_mean_s": 0.42000000000000004,
+      "drift_mean": 97.89779681682917,
+      "episodes": 48,
+      "final_tipped_mean": 0.013675155443936694,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 46% of frames",
+        "hazard 15: a motor's MEAN command is 77% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.10271,
+        0.19201,
+        0.00309,
+        0.00064,
+        0.45517,
+        0.29271,
+        0.06039,
+        0.13772,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.773991472868217,
+      "mean_torque_nmm": [
+        49.567,
+        48.731,
+        52.893,
+        42.242,
+        66.563,
+        55.226,
+        42.896,
+        47.346,
+        13.155,
+        22.999
+      ],
+      "peak_frac_of_limit": 0.9996825581395349,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        82.732,
+        79.036,
+        85.632,
+        85.912,
+        85.895,
+        85.973,
+        70.795,
+        69.736
+      ],
+      "peak_torque_worst": 85.9727,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 193.27073854399438,
+      "reward_per_step_mean": 0.19841515615157643,
+      "saturation_worst": 0.4551654166666667,
+      "scale": 0.15,
+      "schedule": [
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove",
+          "mean_start_s": 0.8723317186548809,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove2",
+          "mean_start_s": 2.640108625663862,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 1.0,
+          "label": "wind",
+          "mean_start_s": 0.0,
+          "reached": 48
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 541.875,
+      "steps_median": 600.0,
+      "steps_min": 25,
+      "survival": 0.8958333333333334,
+      "survived": 43,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 43,
+        "tipped": 4
+      },
+      "variant": "scale-0.15"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 17,
+          "survival": 0.8823529411764706,
+          "survived": 15
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 31,
+          "survival": 0.9032258064516129,
+          "survived": 28
+        }
+      ],
+      "death_time_mean_s": 0.42000000000000004,
+      "drift_mean": 95.94793415484428,
+      "episodes": 48,
+      "final_tipped_mean": 0.014543128147349038,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 46% of frames",
+        "hazard 15: a motor's MEAN command is 78% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.10576,
+        0.18645,
+        0.00286,
+        0.0014,
+        0.45921,
+        0.3047,
+        0.05939,
+        0.12816,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.7751311531007751,
+      "mean_torque_nmm": [
+        49.7,
+        48.545,
+        53.386,
+        43.356,
+        66.661,
+        55.236,
+        42.364,
+        46.528,
+        13.128,
+        23.223
+      ],
+      "peak_frac_of_limit": 0.9996790697674418,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        82.695,
+        79.037,
+        85.72,
+        85.91,
+        85.895,
+        85.972,
+        70.791,
+        69.57
+      ],
+      "peak_torque_worst": 85.9724,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 198.4434191046948,
+      "reward_per_step_mean": 0.20587124142201488,
+      "saturation_worst": 0.459209375,
+      "scale": 0.3,
+      "schedule": [
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove",
+          "mean_start_s": 0.8723317186548809,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove2",
+          "mean_start_s": 2.640108625663862,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 1.0,
+          "label": "wind",
+          "mean_start_s": 0.0,
+          "reached": 48
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 541.875,
+      "steps_median": 600.0,
+      "steps_min": 25,
+      "survival": 0.8958333333333334,
+      "survived": 43,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 43,
+        "tipped": 4
+      },
+      "variant": "scale-0.30"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 17,
+          "survival": 0.8823529411764706,
+          "survived": 15
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 31,
+          "survival": 0.9032258064516129,
+          "survived": 28
+        }
+      ],
+      "death_time_mean_s": 0.42000000000000004,
+      "drift_mean": 99.35924939204591,
+      "episodes": 48,
+      "final_tipped_mean": 0.013719448695685713,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 46% of frames",
+        "hazard 15: a motor's MEAN command is 78% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.10574,
+        0.18789,
+        0.00331,
+        0.00118,
+        0.45585,
+        0.29318,
+        0.06212,
+        0.1343,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.7765803779069769,
+      "mean_torque_nmm": [
+        49.636,
+        48.803,
+        52.941,
+        42.733,
+        66.786,
+        55.038,
+        42.886,
+        47.249,
+        13.235,
+        23.481
+      ],
+      "peak_frac_of_limit": 0.9996732558139535,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        82.926,
+        79.512,
+        85.635,
+        85.914,
+        85.896,
+        85.972,
+        70.786,
+        70.338
+      ],
+      "peak_torque_worst": 85.9719,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 193.05217000975463,
+      "reward_per_step_mean": 0.19727854417978183,
+      "saturation_worst": 0.45585020833333334,
+      "scale": 0.5,
+      "schedule": [
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove",
+          "mean_start_s": 0.8723317186548809,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove2",
+          "mean_start_s": 2.640108625663862,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 1.0,
+          "label": "wind",
+          "mean_start_s": 0.0,
+          "reached": 48
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 541.875,
+      "steps_median": 600.0,
+      "steps_min": 25,
+      "survival": 0.8958333333333334,
+      "survived": 43,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 43,
+        "tipped": 4
+      },
+      "variant": "scale-0.50"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 17,
+          "survival": 0.8823529411764706,
+          "survived": 15
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 31,
+          "survival": 0.8709677419354839,
+          "survived": 27
+        }
+      ],
+      "death_time_mean_s": 0.4483333333333333,
+      "drift_mean": 111.13848316802802,
+      "episodes": 48,
+      "final_tipped_mean": 0.017871668931252,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 42% of frames",
+        "hazard 15: a motor's MEAN command is 76% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.09799,
+        0.23914,
+        0.00363,
+        0.00215,
+        0.42404,
+        0.26558,
+        0.07024,
+        0.17673,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.7589979651162791,
+      "mean_torque_nmm": [
+        48.974,
+        49.544,
+        49.879,
+        39.14,
+        65.274,
+        54.131,
+        43.853,
+        50.942,
+        14.82,
+        22.922
+      ],
+      "peak_frac_of_limit": 0.9996511627906977,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        82.916,
+        81.783,
+        85.701,
+        85.892,
+        85.897,
+        85.97,
+        70.779,
+        73.689
+      ],
+      "peak_torque_worst": 85.97,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 153.5650327830763,
+      "reward_per_step_mean": 0.11476792230035227,
+      "saturation_worst": 0.42404437500000003,
+      "scale": 0.75,
+      "schedule": [
+        {
+          "episodes": 48,
+          "fraction": 0.875,
+          "label": "shove",
+          "mean_start_s": 0.8723317186548809,
+          "reached": 42
+        },
+        {
+          "episodes": 48,
+          "fraction": 0.875,
+          "label": "shove2",
+          "mean_start_s": 2.640108625663862,
+          "reached": 42
+        },
+        {
+          "episodes": 48,
+          "fraction": 1.0,
+          "label": "wind",
+          "mean_start_s": 0.0,
+          "reached": 48
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 530.6041666666666,
+      "steps_median": 600.0,
+      "steps_min": 24,
+      "survival": 0.875,
+      "survived": 42,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 42,
+        "tipped": 5
+      },
+      "variant": "scale-0.75"
+    },
+    {
+      "azimuth": [
+        {
+          "high": 1.5707963267948966,
+          "label": "+x  (0\u00b0\u201390\u00b0)",
+          "low": 0.0,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 3.141592653589793,
+          "label": "+y  (90\u00b0\u2013180\u00b0)",
+          "low": 1.5707963267948966,
+          "n": 0,
+          "survival": null,
+          "survived": 0
+        },
+        {
+          "high": 4.71238898038469,
+          "label": "-x  (180\u00b0\u2013270\u00b0)",
+          "low": 3.141592653589793,
+          "n": 17,
+          "survival": 0.8235294117647058,
+          "survived": 14
+        },
+        {
+          "high": 6.283185307179586,
+          "label": "-y  (270\u00b0\u2013360\u00b0)",
+          "low": 4.71238898038469,
+          "n": 31,
+          "survival": 0.7096774193548387,
+          "survived": 22
+        }
+      ],
+      "death_time_mean_s": 1.3025,
+      "drift_mean": 123.58809260071963,
+      "episodes": 48,
+      "final_tipped_mean": 0.03737767372636763,
+      "flags": [
+        "hazard 15: a motor is above 90% of its limit on 38% of frames",
+        "hazard 15: a motor's MEAN command is 73% of its limit"
+      ],
+      "frac_above_90pct": [
+        0.09319,
+        0.24117,
+        0.0058,
+        0.00299,
+        0.38227,
+        0.27797,
+        0.08453,
+        0.20141,
+        0.0,
+        0.0
+      ],
+      "limit_nmm": [
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0,
+        86.0
+      ],
+      "max_steps": 600,
+      "mean_frac_of_limit": 0.7321978924418605,
+      "mean_torque_nmm": [
+        47.078,
+        48.871,
+        48.492,
+        38.981,
+        62.969,
+        54.957,
+        43.737,
+        52.101,
+        16.125,
+        22.666
+      ],
+      "peak_frac_of_limit": 0.9996302325581395,
+      "peak_torque_nmm": [
+        85.918,
+        85.966,
+        82.788,
+        81.566,
+        85.781,
+        85.895,
+        85.897,
+        85.968,
+        70.772,
+        75.459
+      ],
+      "peak_torque_worst": 85.9682,
+      "policy": "stand9.001300.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_mean": 103.7862354637718,
+      "reward_per_step_mean": 0.0400320772239472,
+      "saturation_worst": 0.3822729166666667,
+      "scale": 1.0,
+      "schedule": [
+        {
+          "episodes": 48,
+          "fraction": 0.8958333333333334,
+          "label": "shove",
+          "mean_start_s": 0.8723317186548809,
+          "reached": 43
+        },
+        {
+          "episodes": 48,
+          "fraction": 0.8125,
+          "label": "shove2",
+          "mean_start_s": 2.640108625663862,
+          "reached": 39
+        },
+        {
+          "episodes": 48,
+          "fraction": 1.0,
+          "label": "wind",
+          "mean_start_s": 0.0,
+          "reached": 48
+        }
+      ],
+      "steps_max": 600,
+      "steps_mean": 482.5625,
+      "steps_median": 600.0,
+      "steps_min": 24,
+      "survival": 0.75,
+      "survived": 36,
+      "termination_mix": {
+        "collapsed": 1,
+        "survived": 36,
+        "tipped": 11
+      },
+      "variant": "scale-1.00"
+    }
+  ],
+  "task": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand-task.json",
+  "task_sha256": "21fe4171a5499258379e20e04a091fd33c8e1a04b5f2d19acb27264140a7f235",
+  "variants": [
+    "no-variation",
+    "reset-variation-only",
+    "scale-0.00",
+    "scale-0.15",
+    "scale-0.30",
+    "scale-0.50",
+    "scale-0.75",
+    "scale-1.00"
+  ],
+  "verify_refused": [],
+  "wall_seconds": 6.2
+}

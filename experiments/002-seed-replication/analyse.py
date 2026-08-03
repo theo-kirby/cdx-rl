@@ -68,7 +68,9 @@ def two_sigma(n: int) -> float:
     return 2.0 * math.sqrt(2.0 * 0.25 / n)
 
 
-def analyse_seed(run_dir: Path, seeds: int, skip_capability: bool) -> dict[str, Any]:
+def analyse_seed(
+    run_dir: Path, seeds: int, skip_capability: bool, jobs: int | None = None,
+) -> dict[str, Any]:
     label = run_dir.name
     print(f"\n=== {label} " + "=" * (54 - len(label)))
     facts: dict[str, Any] = {"run_dir": str(run_dir), "label": label}
@@ -116,6 +118,7 @@ def analyse_seed(run_dir: Path, seeds: int, skip_capability: bool) -> dict[str, 
         ["uv", "run", "python", "-m", "harness", "compare",
          "--dir", str(run_dir), "--task", str(bundle),
          "--seeds", str(seeds), "--json",
+         *(["--jobs", str(jobs)] if jobs else []),
          "--table", str(RESULTS / f"{label}.compare.table.json"),
          "--csv", str(RESULTS / f"{label}.compare.csv")],
     )
@@ -187,6 +190,7 @@ def analyse_seed(run_dir: Path, seeds: int, skip_capability: bool) -> dict[str, 
                 ["uv", "run", "python", "-m", "harness", "capability",
                  "--policy", str(policy), "--task", str(bundle),
                  "--seeds", str(seeds), "--json",
+                 *(["--jobs", str(jobs)] if jobs else []),
                  "--table", str(RESULTS / f"{label}.capability.table.json")],
             )
             (RESULTS / f"{label}.capability.json").write_text(
@@ -201,6 +205,11 @@ def main() -> int:
     parser.add_argument("--sweep", required=True, help="The sweep directory.")
     parser.add_argument("--seeds", type=int, default=48)
     parser.add_argument("--skip-capability", action="store_true")
+    parser.add_argument(
+        "--jobs", type=int, default=None,
+        help="Worker processes per driver. Left alone, compare uses cores-2; "
+             "cap it when the box is busy with something else.",
+    )
     args = parser.parse_args()
 
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -215,7 +224,7 @@ def main() -> int:
     print(f"  2σ bound on a survival difference at n={args.seeds}: "
           f"{two_sigma(args.seeds) * 100:.1f} pp")
 
-    seeds_facts = [analyse_seed(path, args.seeds, args.skip_capability)
+    seeds_facts = [analyse_seed(path, args.seeds, args.skip_capability, args.jobs)
                    for path in run_dirs if path.is_dir()]
 
     # The cross-seed answer, computed the way §2 said it would be.

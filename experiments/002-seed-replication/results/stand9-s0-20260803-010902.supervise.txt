@@ -1,0 +1,517 @@
+{
+  "best_episode": {
+    "episode_steps": 576.9,
+    "iteration": 1330,
+    "loss": 19.6414,
+    "reward_per_step": 0.230685,
+    "sigma": 0.3177
+  },
+  "best_reward": {
+    "episode_steps": 322.5,
+    "iteration": 594,
+    "loss": 27.0355,
+    "reward_per_step": 0.332744,
+    "sigma": 0.3334
+  },
+  "bundle": "stand-task.json",
+  "checkpoints": [
+    {
+      "declared_bytes": 95819,
+      "declared_sha256": "eeefa5ff44457a3b492816618541a2aca28628705adb38b8a891a30efaa0204d",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 99,
+      "name": "stand9.000100.cxpolicy",
+      "observed_bytes": 95819,
+      "observed_sha256": "eeefa5ff44457a3b492816618541a2aca28628705adb38b8a891a30efaa0204d",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000100.cxpolicy",
+      "reward_per_step": 0.0007921330980025232,
+      "superseded": false,
+      "tag": "000100"
+    },
+    {
+      "declared_bytes": 95846,
+      "declared_sha256": "ecbd5e14e0d82595491de3bf95c244adaa08aa35fe145c616849f5c30b14469d",
+      "digest_matches": null,
+      "exists": true,
+      "iteration": 99,
+      "name": "stand9.best.cxpolicy",
+      "observed_bytes": 169681,
+      "observed_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.best.cxpolicy",
+      "reward_per_step": 0.0007921330980025232,
+      "superseded": true,
+      "tag": "best"
+    },
+    {
+      "declared_bytes": 110704,
+      "declared_sha256": "9ab967727ce1b07c02f9d9ffc595cf2686cccca5311b55c129bb6ca76dd98f3f",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 199,
+      "name": "stand9.000200.cxpolicy",
+      "observed_bytes": 110704,
+      "observed_sha256": "9ab967727ce1b07c02f9d9ffc595cf2686cccca5311b55c129bb6ca76dd98f3f",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000200.cxpolicy",
+      "reward_per_step": 0.2166306972503662,
+      "superseded": false,
+      "tag": "000200"
+    },
+    {
+      "declared_bytes": 110699,
+      "declared_sha256": "ef7622bbba631f962c5fec4d55d8dc2c74d3747ad9581a401f9c0513710fcbdc",
+      "digest_matches": null,
+      "exists": true,
+      "iteration": 199,
+      "name": "stand9.best.cxpolicy",
+      "observed_bytes": 169681,
+      "observed_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.best.cxpolicy",
+      "reward_per_step": 0.2166306972503662,
+      "superseded": true,
+      "tag": "best"
+    },
+    {
+      "declared_bytes": 125452,
+      "declared_sha256": "ed4af85963de33d8d6121ca70b9344581ccdeb6c2e44fc6373bc1fedd71c9751",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 299,
+      "name": "stand9.000300.cxpolicy",
+      "observed_bytes": 125452,
+      "observed_sha256": "ed4af85963de33d8d6121ca70b9344581ccdeb6c2e44fc6373bc1fedd71c9751",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000300.cxpolicy",
+      "reward_per_step": 0.2846166789531708,
+      "superseded": false,
+      "tag": "000300"
+    },
+    {
+      "declared_bytes": 125526,
+      "declared_sha256": "b8a17762dba66c39e36fe39ae88905741c32b91b6fb87bb7511aaca5cc9a5ec9",
+      "digest_matches": null,
+      "exists": true,
+      "iteration": 283,
+      "name": "stand9.best.cxpolicy",
+      "observed_bytes": 169681,
+      "observed_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.best.cxpolicy",
+      "reward_per_step": 0.2850313186645508,
+      "superseded": true,
+      "tag": "best"
+    },
+    {
+      "declared_bytes": 140296,
+      "declared_sha256": "e1c538542fe915e059c6a166cc2cd17c4d2f08797fcbece09de06b21cd39971e",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 399,
+      "name": "stand9.000400.cxpolicy",
+      "observed_bytes": 140296,
+      "observed_sha256": "e1c538542fe915e059c6a166cc2cd17c4d2f08797fcbece09de06b21cd39971e",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000400.cxpolicy",
+      "reward_per_step": 0.3069985806941986,
+      "superseded": false,
+      "tag": "000400"
+    },
+    {
+      "declared_bytes": 140216,
+      "declared_sha256": "80d9186ac49ceb1da42188e66a49a0763c2423c72ee4a627f2457606f1ca91c7",
+      "digest_matches": null,
+      "exists": true,
+      "iteration": 381,
+      "name": "stand9.best.cxpolicy",
+      "observed_bytes": 169681,
+      "observed_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.best.cxpolicy",
+      "reward_per_step": 0.3244732618331909,
+      "superseded": true,
+      "tag": "best"
+    },
+    {
+      "declared_bytes": 154944,
+      "declared_sha256": "ec5ca0fa014b19ad2f7f959af475543263922fdf3d6a59d5e3df59945fc72252",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 499,
+      "name": "stand9.000500.cxpolicy",
+      "observed_bytes": 154944,
+      "observed_sha256": "ec5ca0fa014b19ad2f7f959af475543263922fdf3d6a59d5e3df59945fc72252",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000500.cxpolicy",
+      "reward_per_step": 0.31211772561073303,
+      "superseded": false,
+      "tag": "000500"
+    },
+    {
+      "declared_bytes": 169647,
+      "declared_sha256": "ffdb3e784373c5a0cfe0959eb7231085572f81225a8fa451940a8ad9741e57c9",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 599,
+      "name": "stand9.000600.cxpolicy",
+      "observed_bytes": 169647,
+      "observed_sha256": "ffdb3e784373c5a0cfe0959eb7231085572f81225a8fa451940a8ad9741e57c9",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000600.cxpolicy",
+      "reward_per_step": 0.3184082508087158,
+      "superseded": false,
+      "tag": "000600"
+    },
+    {
+      "declared_bytes": 169681,
+      "declared_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 594,
+      "name": "stand9.best.cxpolicy",
+      "observed_bytes": 169681,
+      "observed_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.best.cxpolicy",
+      "reward_per_step": 0.3327437937259674,
+      "superseded": false,
+      "tag": "best"
+    },
+    {
+      "declared_bytes": 184312,
+      "declared_sha256": "643b857503d32c99100d5fb943c68d124c59b8f4eaac9bba664bbe2365bc0daa",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 699,
+      "name": "stand9.000700.cxpolicy",
+      "observed_bytes": 184312,
+      "observed_sha256": "643b857503d32c99100d5fb943c68d124c59b8f4eaac9bba664bbe2365bc0daa",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000700.cxpolicy",
+      "reward_per_step": 0.30997762084007263,
+      "superseded": false,
+      "tag": "000700"
+    },
+    {
+      "declared_bytes": 198917,
+      "declared_sha256": "3ae4c791a22f18c05a87cb4041913ef0aa2d227e3faef93b867e2252a0044c5c",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 799,
+      "name": "stand9.000800.cxpolicy",
+      "observed_bytes": 198917,
+      "observed_sha256": "3ae4c791a22f18c05a87cb4041913ef0aa2d227e3faef93b867e2252a0044c5c",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000800.cxpolicy",
+      "reward_per_step": 0.29290539026260376,
+      "superseded": false,
+      "tag": "000800"
+    },
+    {
+      "declared_bytes": 213675,
+      "declared_sha256": "2ccd6cf61a5102b5cf16a3b0f25ca17f0d5d3bc036a8db8073f07994264ce628",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 899,
+      "name": "stand9.000900.cxpolicy",
+      "observed_bytes": 213675,
+      "observed_sha256": "2ccd6cf61a5102b5cf16a3b0f25ca17f0d5d3bc036a8db8073f07994264ce628",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.000900.cxpolicy",
+      "reward_per_step": 0.29360082745552063,
+      "superseded": false,
+      "tag": "000900"
+    },
+    {
+      "declared_bytes": 228382,
+      "declared_sha256": "f5226249e12b94cd94f770567f8ac18f1a015cd66ef5d975e039dd44ac3046b3",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 999,
+      "name": "stand9.001000.cxpolicy",
+      "observed_bytes": 228382,
+      "observed_sha256": "f5226249e12b94cd94f770567f8ac18f1a015cd66ef5d975e039dd44ac3046b3",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001000.cxpolicy",
+      "reward_per_step": 0.26578688621520996,
+      "superseded": false,
+      "tag": "001000"
+    },
+    {
+      "declared_bytes": 243087,
+      "declared_sha256": "eb0497c06e03115431be932aa3399ce72b6edf8c0b6c2f4790cc0a815e7a856e",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 1099,
+      "name": "stand9.001100.cxpolicy",
+      "observed_bytes": 243087,
+      "observed_sha256": "eb0497c06e03115431be932aa3399ce72b6edf8c0b6c2f4790cc0a815e7a856e",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001100.cxpolicy",
+      "reward_per_step": 0.197316512465477,
+      "superseded": false,
+      "tag": "001100"
+    },
+    {
+      "declared_bytes": 257995,
+      "declared_sha256": "b9d0341b1acf65d53dad6dbf7246cf53ea0f96c2a42c6849bf4f2389df7f3ef0",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 1199,
+      "name": "stand9.001200.cxpolicy",
+      "observed_bytes": 257995,
+      "observed_sha256": "b9d0341b1acf65d53dad6dbf7246cf53ea0f96c2a42c6849bf4f2389df7f3ef0",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001200.cxpolicy",
+      "reward_per_step": 0.22094383835792542,
+      "superseded": false,
+      "tag": "001200"
+    },
+    {
+      "declared_bytes": 272918,
+      "declared_sha256": "2e3aaf1b02e860807c368cd83a246b8cde790e15d8a2588d2ba8e90709fe7b76",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 1299,
+      "name": "stand9.001300.cxpolicy",
+      "observed_bytes": 272918,
+      "observed_sha256": "2e3aaf1b02e860807c368cd83a246b8cde790e15d8a2588d2ba8e90709fe7b76",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+      "reward_per_step": 0.2141190618276596,
+      "superseded": false,
+      "tag": "001300"
+    },
+    {
+      "declared_bytes": 287746,
+      "declared_sha256": "a52db499a15aa94a407d50712c01acafe8c6e1490187c9751184b0319b8169fe",
+      "digest_matches": true,
+      "exists": true,
+      "iteration": 1399,
+      "name": "stand9.001400.cxpolicy",
+      "observed_bytes": 287746,
+      "observed_sha256": "a52db499a15aa94a407d50712c01acafe8c6e1490187c9751184b0319b8169fe",
+      "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001400.cxpolicy",
+      "reward_per_step": 0.23455820977687836,
+      "superseded": false,
+      "tag": "001400"
+    }
+  ],
+  "checkpoints_mismatched": [],
+  "checkpoints_missing": [],
+  "curve": [
+    {
+      "episode_steps": 85.2,
+      "iteration": 0,
+      "loss": 134.573,
+      "mark": "",
+      "reward_per_step": -0.940929,
+      "sigma": 0.4002
+    },
+    {
+      "episode_steps": 155.2,
+      "iteration": 150,
+      "loss": 28.5135,
+      "mark": "",
+      "reward_per_step": 0.178358,
+      "sigma": 0.377
+    },
+    {
+      "episode_steps": 217.3,
+      "iteration": 300,
+      "loss": 28.3842,
+      "mark": "",
+      "reward_per_step": 0.289023,
+      "sigma": 0.3598
+    },
+    {
+      "episode_steps": 243.8,
+      "iteration": 450,
+      "loss": 24.2543,
+      "mark": "",
+      "reward_per_step": 0.308809,
+      "sigma": 0.3464
+    },
+    {
+      "episode_steps": 322.5,
+      "iteration": 594,
+      "loss": 27.0355,
+      "mark": "best reward",
+      "reward_per_step": 0.332744,
+      "sigma": 0.3334
+    },
+    {
+      "episode_steps": 267.7,
+      "iteration": 600,
+      "loss": 29.0996,
+      "mark": "",
+      "reward_per_step": 0.310281,
+      "sigma": 0.3327
+    },
+    {
+      "episode_steps": 273.1,
+      "iteration": 750,
+      "loss": 33.2003,
+      "mark": "",
+      "reward_per_step": 0.313915,
+      "sigma": 0.3261
+    },
+    {
+      "episode_steps": 267.7,
+      "iteration": 900,
+      "loss": 33.993,
+      "mark": "",
+      "reward_per_step": 0.281499,
+      "sigma": 0.3259
+    },
+    {
+      "episode_steps": 337.1,
+      "iteration": 1050,
+      "loss": 27.7615,
+      "mark": "",
+      "reward_per_step": 0.236279,
+      "sigma": 0.3245
+    },
+    {
+      "episode_steps": 403.5,
+      "iteration": 1200,
+      "loss": 19.4731,
+      "mark": "",
+      "reward_per_step": 0.215867,
+      "sigma": 0.3195
+    },
+    {
+      "episode_steps": 576.9,
+      "iteration": 1330,
+      "loss": 19.6414,
+      "mark": "longest episode",
+      "reward_per_step": 0.230685,
+      "sigma": 0.3177
+    },
+    {
+      "episode_steps": 447.7,
+      "iteration": 1350,
+      "loss": 22.4551,
+      "mark": "",
+      "reward_per_step": 0.228471,
+      "sigma": 0.3172
+    },
+    {
+      "episode_steps": 424.5,
+      "iteration": 1499,
+      "loss": 17.3823,
+      "mark": "final",
+      "reward_per_step": 0.274885,
+      "sigma": 0.3157
+    }
+  ],
+  "device": "gpu",
+  "driver": "supervise",
+  "error": "",
+  "final": {
+    "episode_steps": 424.5,
+    "iteration": 1499,
+    "loss": 17.3823,
+    "reward_per_step": 0.274885,
+    "sigma": 0.3157
+  },
+  "iteration": 1499,
+  "label": "stand9",
+  "liveness": {
+    "iteration": 1499,
+    "live": false,
+    "pid": 653430,
+    "pid_alive": false,
+    "progress_age_s": 11041.4,
+    "progress_mtime": "2026-08-03T03:17:46Z",
+    "stale": false,
+    "state": "done",
+    "terminal": true,
+    "total": 1500
+  },
+  "log_warnings": [
+    "Failed to import warp: No module named 'warp'",
+    "Failed to import mujoco_warp: No module named 'warp'"
+  ],
+  "max_steps": 600,
+  "model": "model-model.xml",
+  "model_sha256": "e3511559eeb3d5ab3a369852a6c7d7e5fcfc256a259f1f4f41284ffb2cef0ae1",
+  "ok": true,
+  "over_budget_iterations": [],
+  "parameters": 8394,
+  "provenance": {
+    "cadex": {
+      "commit": "06d1374b4ec2d5fb5cf1f7968a93e02ac6112211",
+      "dirty": false,
+      "short": "06d1374b",
+      "subject": "Refuse to dispatch to a box running a different trainer (ADR-104)"
+    },
+    "cdxrl": {
+      "commit": "840bebd5c848e360f113b897f746318a9bb80294",
+      "dirty": true,
+      "short": "840bebd5",
+      "subject": "experiment 002: stopped after 2 of 4 seeds, GPU needed elsewhere"
+    },
+    "host": {
+      "hostname": "sb1x",
+      "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39"
+    },
+    "python": "3.12.3",
+    "timestamp_utc": "2026-08-03T06:21:48Z"
+  },
+  "recommendations": {
+    "compare_command": "uv run python -m harness compare --dir /home/theo/cdx-rl/jobs/stand9-s0-20260803-010902 --task /home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand-task.json --seeds 12",
+    "note": "These are candidates to PLAY, not a selection. supervise stops a burn; it never installs a checkpoint. Selection is compare's job, by measured survival (ADR-099: the trainer's reward and real survival were anti-correlated across a whole run).",
+    "play": [
+      {
+        "declared_bytes": 95846,
+        "declared_sha256": "ecbd5e14e0d82595491de3bf95c244adaa08aa35fe145c616849f5c30b14469d",
+        "digest_matches": null,
+        "exists": true,
+        "iteration": 99,
+        "name": "stand9.best.cxpolicy",
+        "observed_bytes": 169681,
+        "observed_sha256": "4469ac03250340ded68373b93fb86429c7d1d7a19352465c28bf73f080362a9a",
+        "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.best.cxpolicy",
+        "reason": "best by the trainer's own reward (iteration 594)",
+        "reward_per_step": 0.0007921330980025232,
+        "superseded": true,
+        "tag": "best"
+      },
+      {
+        "declared_bytes": 272918,
+        "declared_sha256": "2e3aaf1b02e860807c368cd83a246b8cde790e15d8a2588d2ba8e90709fe7b76",
+        "digest_matches": true,
+        "exists": true,
+        "iteration": 1299,
+        "name": "stand9.001300.cxpolicy",
+        "observed_bytes": 272918,
+        "observed_sha256": "2e3aaf1b02e860807c368cd83a246b8cde790e15d8a2588d2ba8e90709fe7b76",
+        "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.001300.cxpolicy",
+        "reason": "nearest the episode-length peak (576.9 steps at iteration 1330)",
+        "reward_per_step": 0.2141190618276596,
+        "superseded": false,
+        "tag": "001300"
+      },
+      {
+        "exists": true,
+        "iteration": 1499,
+        "name": "stand9.cxpolicy",
+        "path": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902/stand9.cxpolicy",
+        "reason": "the final network",
+        "tag": "final"
+      }
+    ]
+  },
+  "run_dir": "/home/theo/cdx-rl/jobs/stand9-s0-20260803-010902",
+  "schema": "cdxrl-envelope-v1",
+  "series_points": 1500,
+  "state": "done",
+  "task_sha256": "21fe4171a5499258379e20e04a091fd33c8e1a04b5f2d19acb27264140a7f235",
+  "total": 1500,
+  "trend": {
+    "episode_delta": 102.0,
+    "episode_from": 322.5,
+    "episode_to": 424.5,
+    "from_iteration": 594,
+    "reward_delta": -0.057858999999999994,
+    "reward_from": 0.332744,
+    "reward_to": 0.274885,
+    "to_iteration": 1499,
+    "verdict": "survival-diverges"
+  },
+  "wall_time_s": 7623.877079376951,
+  "witness": [
+    {
+      "error": 1.934e-07,
+      "factor": 517.0
+    }
+  ],
+  "witness_below_floor": [],
+  "witness_floor": 100.0
+}
