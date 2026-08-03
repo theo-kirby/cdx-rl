@@ -146,7 +146,7 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ root `rapid-bar-6214`, seven nodes, four of them empirical |
+| Flywheel | ✅ root `rapid-bar-6214`, nine nodes; `winter-mouse-1809` carries the sb9x characterisation |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability` — via `uv run python -m harness <driver>` |
 | | ❌ `measure`, `feasibility` deferred: both matter only before a *new* dispatch |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
@@ -154,12 +154,19 @@ Other environment facts:
 | Experiment 002 | ✅ 2 of 4 seeds measured and published; seeds 2–3 not run |
 | sb9x | ✅ engine built (smoke 13/13), trainer hardened and measured. 2 of 3 forty-iteration runs exit 0; the third hit an intermittent jaxlib fault and still left complete, `compare`-able checkpoints (`EXIT_SALVAGEABLE`) |
 
-**Total GPU-hours spent by this repository: ~5.1**, all of them experiment
-002 — two seeds of `stand-task-20260802-200109` retrained from scratch to ask
-whether 001's conclusions were a property of the task or of one run. **They
-replicate.** The sweep was stopped after 2 of 4 seeds because the card was
-needed elsewhere; `experiments/002-seed-replication/results/stopped.md`
-records that, and the dispatch for the missing two.
+**Total GPU-hours spent by this repository: ~6.6.** ~5.1 of them are
+experiment 002 — two seeds of `stand-task-20260802-200109` retrained from
+scratch to ask whether 001's conclusions were a property of the task or of
+one run. **They replicate.** The sweep was stopped after 2 of 4 seeds because
+the card was needed elsewhere;
+`experiments/002-seed-replication/results/stopped.md` records that, and the
+dispatch for the missing two.
+
+The remaining ~1.5 are **sb9x characterisation** on 2026-08-03 — throughput,
+the three runtime settings, and the n=3 base rate for the intermittent
+jaxlib fault. No research question was asked with them; they bought the right
+to trust the box, which `method.md` would otherwise not permit spending
+four hours a seed on.
 
 Experiment 000's training half ran on CPU in 48 s; experiment 001 replayed
 eight existing runs and spent nothing.

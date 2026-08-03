@@ -53,13 +53,20 @@ and the per-box throughput — because **wall-clock numbers in these docs are
 ## Ground rules
 
 `/home/theo/cadex` is **read-only** from here — no commits, no edits, no
-branch changes, no builds. `/home/theo/cadex-train-venv` is referenced and
-never rebuilt. `/home/theo/cadex-jobs` is a read-only input.
+branch changes. `/home/theo/cadex-train-venv` is referenced and never
+rebuilt. `/home/theo/cadex-jobs` is a read-only input.
+
+*Builds* were also on that list until 2026-08-03, when `sb9x` arrived with an
+unbuilt checkout and the operator lifted the rule for that box. It leaves the
+tree clean — everything a build writes (`.pixi`, `build/`) is gitignored, no
+tracked file is touched — but it is a deliberate exception, not a
+reinterpretation. `cloud.md` §1 has the recipe.
 
 ## Status
 
-Environment, spine, documentation, **four of the six drivers, and both
-experiments** — run, measured and published. Zero GPU-hours spent.
+Environment, spine, documentation, **four of the six drivers, both
+experiments, and two boxes** — run, measured and published. **~6.6
+GPU-hours**: 5.1 on experiment 002's two seeds, ~1.5 characterising sb9x.
 
 ```
 uv run python -m harness rebuild    --project … --script … --verify
@@ -90,14 +97,16 @@ training half runs on CPU, because there is no trainer-side CPU guard and
   torque: with *nothing pushing at all*, the later policies hold a motor at
   **71 % of its 86 N·mm rating**. The bracing is the resting posture.
 
-Flywheel root `rapid-bar-6214`, now six nodes deep:
+Flywheel root `rapid-bar-6214`, now nine nodes:
 
 ```
 cdx-rl: reinforcement learning in Cadex          rapid-bar-6214
 ├── Thesis and scope                             blue-wave-6018
 ├── sb1x environment and topology                black-cell-1407
+│   └── sb9x: a second box characterised         winter-mouse-1809
 ├── stand-task-20260802-200109: reward vs length restless-mode-0384
 │   └── 001 Phase A: best is iteration 1699      bold-violet-5086
-│       └── 001 Phase B: the task is in range    mute-shadow-9769
+│       ├── 001 Phase B: the task is in range    mute-shadow-9769
+│       └── 002: the peak is not best, 2 of 2    holy-recipe-7414
 └── 000: the loop closes, on CPU in 62 s         calm-bird-4796
 ```
