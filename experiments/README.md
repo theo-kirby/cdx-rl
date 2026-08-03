@@ -27,6 +27,13 @@ directory.
 Written in this order. **Sections 1–7 before any dispatch.** 8 and 9
 afterwards, and visibly separate, so nobody can be unsure which came first.
 
+**An imported experiment keeps its pre-dispatch plan verbatim.** 003 was run
+before this repository was its home, so its plan and the research note that
+motivated it are committed unedited beside the README —
+`003-position-action-space/plan.md`. Reconstructing sections 1–7 from memory
+after seeing the answer is exactly what ADR-097 forbids; keeping the document
+that chose the metric is what makes the reconstruction checkable.
+
 1. **Question** — one sentence, phrased so that both answers are interesting.
 2. **Metric** — named, defined, and why that one. Decided before dispatch
    (ADR-097), because the reward curve gets noisier the moment variation goes
@@ -54,4 +61,5 @@ these sections; see [`../flywheel.md`](../flywheel.md) §4.
 |---|---|---|
 | [`000-loop-validation`](000-loop-validation/) | prove every link in the chain on a 1-DOF rig | specified; modelling half verified |
 | [`001-stand-biped`](001-stand-biped/) | separate "the policy is bad" from "the task is out of range" | Phases A and B measured |
-| [`002-seed-replication`](002-seed-replication/) | does 001's shape replicate across seeds? | 2 of 4 seeds measured |
+| [`002-seed-replication`](002-seed-replication/) | does 001's shape replicate across seeds? | 3 of 4 seeds measured |
+| [`003-position-action-space`](003-position-action-space/) | does a machine whose zero action *stands* learn what nine runs of one that falls over did not? | measured, imported, one seed |

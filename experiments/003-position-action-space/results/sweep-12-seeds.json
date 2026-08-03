@@ -1,0 +1,468 @@
+{
+  "schema": "cdxrl-envelope-v1",
+  "driver": "steps",
+  "ok": true,
+  "provenance": {
+    "timestamp_utc": "2026-08-03T18:43:22Z",
+    "cadex": {
+      "commit": "560935bd055c9f6d48d4b9803927e714dff2e7b7",
+      "short": "560935bd",
+      "subject": "Define this as a board (ADR-119)",
+      "dirty": false
+    },
+    "cdxrl": {
+      "commit": "6fa9f519ef6b9a6a3109ba285bf8e6b89d712d68",
+      "short": "6fa9f519",
+      "subject": "002 seed 2 on the graph: spring-unit-9051",
+      "dirty": true
+    },
+    "host": {
+      "hostname": "mmini.local",
+      "platform": "macOS-26.0-arm64-arm-64bit"
+    },
+    "python": "3.12.12"
+  },
+  "task": "tasks/stand-b8/stand-task.json",
+  "task_sha256": "5572adf265aa51cb4cfea2c454695c42a4f1c2402a6788bc696c0129f14fc595",
+  "model": "/Users/theo/cdx-rl/tasks/stand-b8/model-model.xml",
+  "profile": "mg-legs",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "metric": "stepped >= step_mm AND survived max_steps",
+  "significance_pp_2sigma": 40.8,
+  "results": {
+    "stand10-probe.000050.cxpolicy": {
+      "episodes": 12,
+      "survived": 2,
+      "stepped": 4,
+      "both": 1,
+      "mean_control_steps": 121.83333333333333,
+      "max_steps": 300,
+      "lifts": 8,
+      "steps": 6,
+      "longest_step_mm": 17.92985195057587,
+      "terminations": {
+        "tipped": 10
+      }
+    },
+    "stand10-probe.best.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 4,
+      "both": 3,
+      "mean_control_steps": 150.16666666666666,
+      "max_steps": 300,
+      "lifts": 12,
+      "steps": 4,
+      "longest_step_mm": 32.10847365143915,
+      "terminations": {
+        "tipped": 8
+      }
+    },
+    "stand10-probe.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 4,
+      "both": 3,
+      "mean_control_steps": 150.16666666666666,
+      "max_steps": 300,
+      "lifts": 12,
+      "steps": 4,
+      "longest_step_mm": 32.10847365143915,
+      "terminations": {
+        "tipped": 8
+      }
+    },
+    "stand10.000050.cxpolicy": {
+      "episodes": 12,
+      "survived": 2,
+      "stepped": 3,
+      "both": 1,
+      "mean_control_steps": 122.16666666666667,
+      "max_steps": 300,
+      "lifts": 8,
+      "steps": 4,
+      "longest_step_mm": 15.295417530456403,
+      "terminations": {
+        "tipped": 10
+      }
+    },
+    "stand10.000100.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 4,
+      "both": 2,
+      "mean_control_steps": 141.33333333333334,
+      "max_steps": 300,
+      "lifts": 8,
+      "steps": 6,
+      "longest_step_mm": 25.974521494089363,
+      "terminations": {
+        "collapsed": 2,
+        "tipped": 7
+      }
+    },
+    "stand10.000150.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 5,
+      "both": 2,
+      "mean_control_steps": 132.16666666666666,
+      "max_steps": 300,
+      "lifts": 13,
+      "steps": 6,
+      "longest_step_mm": 17.623716234758685,
+      "terminations": {
+        "collapsed": 2,
+        "tipped": 7
+      }
+    },
+    "stand10.000200.cxpolicy": {
+      "episodes": 12,
+      "survived": 2,
+      "stepped": 4,
+      "both": 1,
+      "mean_control_steps": 123.83333333333333,
+      "max_steps": 300,
+      "lifts": 10,
+      "steps": 5,
+      "longest_step_mm": 34.25424496475068,
+      "terminations": {
+        "collapsed": 1,
+        "tipped": 9
+      }
+    },
+    "stand10.000250.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 4,
+      "both": 1,
+      "mean_control_steps": 140.16666666666666,
+      "max_steps": 300,
+      "lifts": 20,
+      "steps": 7,
+      "longest_step_mm": 52.76679902151874,
+      "terminations": {
+        "collapsed": 4,
+        "tipped": 5
+      }
+    },
+    "stand10.000300.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 6,
+      "both": 2,
+      "mean_control_steps": 140.25,
+      "max_steps": 300,
+      "lifts": 19,
+      "steps": 8,
+      "longest_step_mm": 27.252565191849275,
+      "terminations": {
+        "collapsed": 3,
+        "tipped": 6
+      }
+    },
+    "stand10.000350.cxpolicy": {
+      "episodes": 12,
+      "survived": 2,
+      "stepped": 5,
+      "both": 1,
+      "mean_control_steps": 124.25,
+      "max_steps": 300,
+      "lifts": 17,
+      "steps": 6,
+      "longest_step_mm": 44.27824833825876,
+      "terminations": {
+        "collapsed": 3,
+        "tipped": 7
+      }
+    },
+    "stand10.000400.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 6,
+      "both": 3,
+      "mean_control_steps": 158.83333333333334,
+      "max_steps": 300,
+      "lifts": 18,
+      "steps": 8,
+      "longest_step_mm": 44.34062551731311,
+      "terminations": {
+        "collapsed": 2,
+        "tipped": 6
+      }
+    },
+    "stand10.000450.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 7,
+      "both": 3,
+      "mean_control_steps": 152.0,
+      "max_steps": 300,
+      "lifts": 16,
+      "steps": 7,
+      "longest_step_mm": 40.44083591453008,
+      "terminations": {
+        "collapsed": 1,
+        "tipped": 7
+      }
+    },
+    "stand10.000500.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 7,
+      "both": 2,
+      "mean_control_steps": 141.33333333333334,
+      "max_steps": 300,
+      "lifts": 15,
+      "steps": 7,
+      "longest_step_mm": 45.70265614047936,
+      "terminations": {
+        "collapsed": 4,
+        "tipped": 5
+      }
+    },
+    "stand10.000550.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 9,
+      "both": 4,
+      "mean_control_steps": 158.83333333333334,
+      "max_steps": 300,
+      "lifts": 15,
+      "steps": 11,
+      "longest_step_mm": 51.03043145224003,
+      "terminations": {
+        "collapsed": 3,
+        "tipped": 5
+      }
+    },
+    "stand10.000600.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 6,
+      "both": 3,
+      "mean_control_steps": 159.25,
+      "max_steps": 300,
+      "lifts": 20,
+      "steps": 6,
+      "longest_step_mm": 48.24502588444401,
+      "terminations": {
+        "collapsed": 4,
+        "tipped": 4
+      }
+    },
+    "stand10.000650.cxpolicy": {
+      "episodes": 12,
+      "survived": 2,
+      "stepped": 9,
+      "both": 2,
+      "mean_control_steps": 123.0,
+      "max_steps": 300,
+      "lifts": 21,
+      "steps": 14,
+      "longest_step_mm": 45.66435385643666,
+      "terminations": {
+        "collapsed": 3,
+        "tipped": 7
+      }
+    },
+    "stand10.000700.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 9,
+      "both": 3,
+      "mean_control_steps": 141.83333333333334,
+      "max_steps": 300,
+      "lifts": 36,
+      "steps": 13,
+      "longest_step_mm": 64.96807248514772,
+      "terminations": {
+        "collapsed": 6,
+        "tipped": 3
+      }
+    },
+    "stand10.000750.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 8,
+      "both": 4,
+      "mean_control_steps": 156.5,
+      "max_steps": 300,
+      "lifts": 34,
+      "steps": 11,
+      "longest_step_mm": 43.32262553854216,
+      "terminations": {
+        "collapsed": 6,
+        "tipped": 2
+      }
+    },
+    "stand10.000800.cxpolicy": {
+      "episodes": 12,
+      "survived": 3,
+      "stepped": 9,
+      "both": 3,
+      "mean_control_steps": 142.33333333333334,
+      "max_steps": 300,
+      "lifts": 32,
+      "steps": 11,
+      "longest_step_mm": 67.77001596613428,
+      "terminations": {
+        "collapsed": 9
+      }
+    },
+    "stand10.000850.cxpolicy": {
+      "episodes": 12,
+      "survived": 4,
+      "stepped": 10,
+      "both": 3,
+      "mean_control_steps": 158.08333333333334,
+      "max_steps": 300,
+      "lifts": 40,
+      "steps": 19,
+      "longest_step_mm": 72.0191160339515,
+      "terminations": {
+        "collapsed": 8
+      }
+    },
+    "stand10.000900.cxpolicy": {
+      "episodes": 12,
+      "survived": 6,
+      "stepped": 11,
+      "both": 6,
+      "mean_control_steps": 196.08333333333334,
+      "max_steps": 300,
+      "lifts": 46,
+      "steps": 25,
+      "longest_step_mm": 44.9364845441407,
+      "terminations": {
+        "collapsed": 6
+      }
+    },
+    "stand10.000950.cxpolicy": {
+      "episodes": 12,
+      "survived": 5,
+      "stepped": 11,
+      "both": 5,
+      "mean_control_steps": 180.91666666666666,
+      "max_steps": 300,
+      "lifts": 47,
+      "steps": 31,
+      "longest_step_mm": 46.6445423878726,
+      "terminations": {
+        "collapsed": 6,
+        "tipped": 1
+      }
+    },
+    "stand10.001000.cxpolicy": {
+      "episodes": 12,
+      "survived": 5,
+      "stepped": 11,
+      "both": 5,
+      "mean_control_steps": 195.25,
+      "max_steps": 300,
+      "lifts": 58,
+      "steps": 34,
+      "longest_step_mm": 76.65523670976546,
+      "terminations": {
+        "collapsed": 6,
+        "tipped": 1
+      }
+    },
+    "stand10.001050.cxpolicy": {
+      "episodes": 12,
+      "survived": 7,
+      "stepped": 11,
+      "both": 7,
+      "mean_control_steps": 230.25,
+      "max_steps": 300,
+      "lifts": 39,
+      "steps": 30,
+      "longest_step_mm": 105.23089654793313,
+      "terminations": {
+        "collapsed": 3,
+        "tipped": 2
+      }
+    },
+    "stand10.001100.cxpolicy": {
+      "episodes": 12,
+      "survived": 6,
+      "stepped": 11,
+      "both": 6,
+      "mean_control_steps": 210.41666666666666,
+      "max_steps": 300,
+      "lifts": 50,
+      "steps": 33,
+      "longest_step_mm": 83.78657307541847,
+      "terminations": {
+        "collapsed": 3,
+        "tipped": 3
+      }
+    },
+    "stand10.001150.cxpolicy": {
+      "episodes": 12,
+      "survived": 7,
+      "stepped": 11,
+      "both": 7,
+      "mean_control_steps": 222.75,
+      "max_steps": 300,
+      "lifts": 47,
+      "steps": 35,
+      "longest_step_mm": 101.36518032804597,
+      "terminations": {
+        "collapsed": 2,
+        "tipped": 3
+      }
+    },
+    "stand10.best.cxpolicy": {
+      "episodes": 12,
+      "survived": 7,
+      "stepped": 11,
+      "both": 7,
+      "mean_control_steps": 226.75,
+      "max_steps": 300,
+      "lifts": 66,
+      "steps": 37,
+      "longest_step_mm": 96.7951808680772,
+      "terminations": {
+        "tipped": 5
+      }
+    },
+    "stand10.cxpolicy": {
+      "episodes": 12,
+      "survived": 6,
+      "stepped": 11,
+      "both": 6,
+      "mean_control_steps": 210.75,
+      "max_steps": 300,
+      "lifts": 47,
+      "steps": 33,
+      "longest_step_mm": 93.42874552991043,
+      "terminations": {
+        "collapsed": 2,
+        "tipped": 4
+      }
+    }
+  },
+  "errors": [],
+  "unpinned_drift": {
+    "/Users/theo/cdx-mjc/.venv/bin/python": {
+      "python": {
+        "found": "3.14.3",
+        "expected": "3.12.3"
+      }
+    }
+  }
+}
