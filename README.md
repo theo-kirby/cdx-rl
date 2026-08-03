@@ -129,6 +129,23 @@ the run. What does not survive is "survival keeps improving with training".
 **Hazard 15 replicates 3 of 3** (86.6 %, 63.3 %, 87.0 % of rating with
 nothing pushing).
 
-Flywheel root `rapid-bar-6214`. See [`flywheel.md`](flywheel.md) §4 for the
-current shape, which now carries the pre-cdx-rl `mg-legs` run history as
-legacy nodes and experiment 003 hanging off the hazard-15 node it answers.
+Flywheel root `rapid-bar-6214`, now twelve nodes:
+
+```
+cdx-rl: reinforcement learning in Cadex          rapid-bar-6214
+├── Thesis and scope                             blue-wave-6018
+├── sb1x environment and topology                black-cell-1407
+│   └── sb9x: a second box characterised         winter-mouse-1809
+├── stand-task-20260802-200109: reward vs length restless-mode-0384
+│   └── 001 Phase A: best is iteration 1699      bold-violet-5086
+│       ├── 001 Phase B: bracing is the resting posture  mute-shadow-9769
+│       │   └── 003: the action space was the problem    broad-fire-8531
+│       └── 002: the peak is not best, 2 of 3    holy-recipe-7414
+│           ├── 002 seed 2: does NOT replicate   spring-unit-9051
+│           └── 003 (second parent)              broad-fire-8531
+├── mg-legs before cdx-rl: nine runs             rapid-voice-5955
+└── 000: the loop closes, on CPU in 62 s         calm-bird-4796
+```
+
+003 hangs off **both** nodes it answers — the one that found the bracing and
+the one that replicated it 3 of 3.

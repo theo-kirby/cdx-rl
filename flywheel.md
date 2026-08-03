@@ -205,6 +205,16 @@ Two mechanics worth knowing before you write a loop:
 * **Tags are defined on the root and are graph-wide.** `create_node_tag`
   takes `root_node_id`, and every tag becomes visible in `graph_tags` on
   *every* node in the graph. `tag_ids` is the per-node assignment.
+* **A tag create returns the ROOT NODE, not the tag, and that cost three
+  duplicate tags.** `flywheel tags:create` succeeds and responds with the
+  graph root's full body; a caller looking for `tag_id` in the response finds
+  nothing, concludes it failed, and retries — three times, in the measured
+  case, leaving three identically named `hazard/action-space` tags that had
+  to be deleted with `tags:delete`. **Confirm a tag by re-reading the root's
+  `graph_tags`, never by parsing the create response.** The same shape
+  applies to `tags:assign`: the per-node assignment comes back as `tag_ids`,
+  not as a `tags` array.
+
 * **`expected_revision` differs between the two tag calls, and this cost a
   409.** For `create_node_tag` it is the **graph** revision (the call takes
   `root_node_id`, and every tag create anywhere bumps it). For
@@ -307,12 +317,27 @@ cdx-rl's mapping:
 | a capability sweep or compare table | `table` |
 | a reward/episode-length plot | `image` |
 
-### Use the MCP flow, not the CLI — the two are different identities
+### Which flow, and it depends on which identity created the node
 
-> **Measured, and it cost a failed upload.** `flywheel artifacts:upload` is
-> ergonomically much nicer than the MCP flow — one shot, prepare + PUT +
-> finalize — and on this machine **it cannot write to nodes created over
-> MCP**:
+> **The rule is not "MCP always". It is "write with the identity that
+> owns the node", and on the laptop that is the CLI.**
+>
+> Measured 2026-08-03: `flywheel artifacts:upload` attached three artifacts
+> to `broad-fire-8531` in two calls, with no 403, because that node was
+> *created* by the CLI on this box — where `flywheel auth:status` reports
+> `user_id be9833b0-…`, which is the same identity the MCP server holds on
+> sb1x and which the 403 below names as `expected_user_id`. The CLI is also
+> the only route available here: **the Flywheel MCP server is not connected
+> on the laptop.**
+>
+> So check `flywheel auth:status` against the node's owner before choosing a
+> flow, rather than assuming either one. The failure below is real and is
+> what happens when they differ.
+
+> **Measured on sb1x, and it cost a failed upload.** `flywheel
+> artifacts:upload` is ergonomically much nicer than the MCP flow — one shot,
+> prepare + PUT + finalize — and there **it cannot write to nodes created
+> over MCP**:
 >
 > ```
 > 403  Only users with write access may perform this operation for this node.
@@ -465,16 +490,21 @@ python3 ~/.claude/skills/flywheel-tree/scripts/render_tree.py \
         --input tree.json --no-color
 ```
 
-As of 2026-08-03, after the harness build and both experiments:
+As of 2026-08-03, after the harness build, three experiments and the import:
 
 ```
 cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
 ├── Thesis and scope | blue-wave-6018
 ├── sb1x environment and topology | black-cell-1407
+│   └── sb9x: a second box characterised | winter-mouse-1809
 ├── stand-task-20260802-200109: reward peaked at 598, episode length at ~1800 | restless-mode-0384
 │   └── 001 Phase A: the best checkpoint is iteration 1699 | bold-violet-5086
 │       ├── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
+│       │   └── 003: the action space was the problem | broad-fire-8531
 │       └── 002: the reward peak is not the best checkpoint in 2 of 2 fresh seeds | holy-recipe-7414
+│           ├── 002 seed 3-of-4: the headline does not replicate — 2 of 3 | spring-unit-9051
+│           └── 003 (second parent) | broad-fire-8531
+├── mg-legs before cdx-rl: nine runs, and the three things none moved | rapid-voice-5955
 └── 000: the loop closes, on CPU in 62 s | calm-bird-4796
 ```
 
@@ -483,6 +513,21 @@ observation that motivated it rather than off the root, and Phase B off Phase
 A, so the chain reads as *observation → measurement → the measurement that
 corrected it*. Experiment 000 hangs off the root because it is nobody's
 consequence — it is the floor.
+
+**003 has two parents, and that is the point of the edge.** It hangs off
+`mute-shadow-9769` — *the bracing is the resting posture* — and off
+`holy-recipe-7414`, which replicated that bracing 3 of 3, because 003 is the
+measurement that answers **both**: the same mechanism under a position action
+space rests at 31 % of rating rather than 63–87 %. A result that refutes two
+nodes should be reachable from either, and `add-parent` is a canonical
+mutation that costs one call.
+
+**`rapid-voice-5955` is a legacy node**, and it is the one kind of node the
+templates in §4 do not cover: it records the nine `mg-legs` runs that predate
+this repository, so that `restless-mode-0384`'s run and B6's 6/12 baseline
+have a stated context rather than appearing out of nowhere. It hangs off the
+root because it is nobody's consequence either — it is the history everything
+in the `stand-biped` subtree is about.
 
 ## 7. Compute — we do not use it
 
