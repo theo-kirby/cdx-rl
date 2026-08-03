@@ -9,12 +9,58 @@ section immediately below records what building them changed about it.
 | `supervise` | ✅ built | `supervise.py` + `runlog.py`, both modes |
 | `compare` | ✅ built | `compare.py` + `episodes.py` + `_episodes.py` |
 | `capability` | ✅ built | `capability.py` |
+| `steps` | ✅ built | `steps.py` + `_steps.py` + `profiles/` — **not in the original six** |
 | `measure` | ❌ deferred | earns its keep only before a *new* dispatch |
-| `feasibility` | ❌ deferred | same |
+| `feasibility` | ❌ deferred | same — but see the note below: a working mg-legs-specific one exists and is worth porting next |
 
 Run them through `uv run python -m harness <driver> …`. Asking for a deferred
 one says so, rather than failing with an argparse error: "not built yet" and
 "you typed it wrong" are different problems.
+
+---
+
+## `steps` — the seventh driver, and why the six were not enough
+
+Not in this specification because nothing in it anticipated the question.
+`compare` and `capability` both reduce an episode to *did it survive*, and
+experiment 003 is the run that showed survival is the wrong target for a task
+whose word is *recover*: the two marginals move independently, so a policy
+that steps and falls and a policy that stands and never moves score the same
+way for opposite reasons.
+
+```
+steps --policy FILE… | --dir RUN --task BUNDLE [--profile NAME] [--seeds N]
+```
+
+Three things about it are worth carrying into the other drivers:
+
+1. **It is parameterized by a mechanism profile**, `harness/profiles/*.json`,
+   naming the feet and ground bodies, the step distance and the airborne
+   duration. There is no default profile: a wrong one resolves a foot to no
+   geom, which reads as one permanent lift rather than as an error, so a
+   profile naming a body the model lacks is refused loudly.
+2. **Its thresholds are physical, not per-step.** See DESIGN's own rule 5
+   about iteration-0 episode lengths — same class of bug, and this one would
+   have been silent.
+3. **It prints a paired test as well as the unpaired bound.** `compare`'s
+   `√(2·0.25/n)` assumes independent samples; checkpoints are played against
+   the *same* seeds, so most episodes agree for reasons unrelated to the
+   policy. Experiment 003's three tied checkpoints are 14, 17 and 16 of 24 —
+   a spread the unpaired bound cannot separate at *any* sample size it is
+   likely to be given. McNemar over the discordant seeds is the test the
+   design supports, and on 003 it says p = 1.000 and p = 0.453: **the three
+   are indistinguishable**, which is the honest answer and not the one the
+   point estimates suggest. `compare` should grow the same thing.
+
+## What experiment 003 owes this file
+
+A working `feasibility` and `measure` exist for `mg-legs`, in the imported
+tree, and they are what gated 003 — including the re-specification of checks
+5 and 6 for a position action space (`method.md` §7). They are **not** ported
+here yet because they are mechanism-specific in the way `steps` deliberately
+is not: hardcoded joint lists, moment arms and geom names. Porting them
+behind the same profile mechanism is the next harness job, and §2 and §3
+below are still the specification for it.
 
 ---
 

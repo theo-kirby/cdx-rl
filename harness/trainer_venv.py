@@ -52,6 +52,11 @@ ROW_SCHEMA = "cdxrl-episode-row-v1"
 
 EPISODES_SCRIPT = Path(__file__).resolve().parent / "_episodes.py"
 
+#: The other far side. ``steps`` needs MuJoCo's contact list per control
+#: step, which no summary carries, so it has its own trainer-side script
+#: rather than widening ``_episodes.py``'s row schema for one caller.
+STEPS_SCRIPT = Path(__file__).resolve().parent / "_steps.py"
+
 #: A pin probe that does **not** import jax. ``importlib.metadata`` reads the
 #: installed distributions' metadata off disk; importing jax initialises CUDA
 #: and costs several seconds, which is a lot to pay before every sweep for a
@@ -100,16 +105,52 @@ def trainer_python(venv: str | os.PathLike[str] | None = None) -> Path:
 _pins_checked: dict[str, dict[str, str]] = {}
 
 
-def check_pins(venv: str | os.PathLike[str] | None = None) -> dict[str, str]:
+#: Pin drift that an evaluation run acknowledged rather than failed on.
+#:
+#: Populated only by ``check_pins(strict=False)``, and every driver that
+#: allows it must copy this into its envelope. See ``UNPINNED_ENV``.
+unpinned_drift: dict[str, dict[str, Any]] = {}
+
+#: The one environment variable that turns the pin check into a warning.
+#:
+#: **It exists because there are three boxes now and only two of them train.**
+#: `mg-legs` is authored on a macOS laptop that has never had — and cannot
+#: usefully be given — the Linux trainer venv's exact pins, and `method.md`
+#: §10 says checkpoint comparison runs *locally*, in stock MuJoCo, in
+#: seconds. Refusing to evaluate anything on the authoring box makes the
+#: cheapest instrument in the method unavailable on the machine where the
+#: mechanism is designed.
+#:
+#: **It never applies to training.** ``tools/train.py`` does not consult it;
+#: a run dispatched against unpinned versions would be comparable to nothing
+#: and the graph would not say so. This only lets a driver *play* a policy.
+#:
+#: The drift is not hidden when it is allowed: it is printed on stderr on
+#: every invocation and it is written into the driver's JSON envelope, so a
+#: number produced this way carries the reason it might differ.
+UNPINNED_ENV = "CDXRL_ALLOW_UNPINNED_EVAL"
+
+
+def check_pins(venv: str | os.PathLike[str] | None = None, *,
+               strict: bool | None = None) -> dict[str, str]:
     """Assert the trainer venv is *the* trainer venv. Returns the versions.
 
     Loud rather than advisory. An evaluator running against mujoco 3.9 and
     reporting a survival number beside runs trained on 3.10 is producing a
     comparison nobody asked for and nothing in the output would say so.
 
+    ``strict`` defaults to *not* ``CDXRL_ALLOW_UNPINNED_EVAL``. When it is
+    false a mismatch warns, records itself in :data:`unpinned_drift`, and
+    proceeds — see :data:`UNPINNED_ENV` for when that is legitimate and when
+    it is not.
+
     Cached per process — the answer cannot change under us mid-sweep, and a
     subprocess spawn per driver invocation is enough.
     """
+
+    if strict is None:
+        strict = os.environ.get(UNPINNED_ENV, "").strip().lower() not in (
+            "1", "true", "yes", "on")
 
     interpreter = trainer_python(venv)
     key = str(interpreter)
@@ -141,7 +182,7 @@ def check_pins(venv: str | os.PathLike[str] | None = None) -> dict[str, str]:
         if found.get(name) != expected
     }
     if wrong:
-        raise TrainerVenvError(
+        message = (
             f"{interpreter} is not the pinned trainer venv: "
             + json.dumps(wrong, sort_keys=True)
             + "\nEvery number in the graph was measured against "
@@ -149,6 +190,14 @@ def check_pins(venv: str | os.PathLike[str] | None = None) -> dict[str, str]:
             + ". Do not rebuild the venv to fix this — find out which venv "
             "this is."
         )
+        if strict:
+            raise TrainerVenvError(message)
+        unpinned_drift[key] = wrong
+        print(f"WARNING: {message}\n"
+              f"Proceeding because {UNPINNED_ENV} is set. This is an "
+              f"EVALUATION-only escape:\nthe drift is recorded in this "
+              f"driver's envelope and any number it produces carries it.",
+              file=sys.stderr)
     _pins_checked[key] = found
     return found
 
@@ -179,7 +228,27 @@ def run_episode_job(
     venv: str | os.PathLike[str] | None = None,
     timeout: float = 7200.0,
 ) -> list[dict[str, Any]]:
-    """Run one episode job under the trainer interpreter; return its rows.
+    """``run_bridge_job`` against ``_episodes.py``. The original entry point."""
+
+    return run_bridge_job(EPISODES_SCRIPT, job, schema=JOB_SCHEMA,
+                          on_row=on_row, venv=venv, timeout=timeout)
+
+
+def run_bridge_job(
+    script: Path,
+    job: Mapping[str, Any],
+    *,
+    schema: str = JOB_SCHEMA,
+    on_row: Callable[[dict[str, Any]], None] | None = None,
+    venv: str | os.PathLike[str] | None = None,
+    timeout: float = 7200.0,
+) -> list[dict[str, Any]]:
+    """Run one job under the trainer interpreter; return its rows.
+
+    ``script`` is the far side — ``_episodes.py`` or ``_steps.py``. Both read
+    one JSON spec on stdin and write NDJSON on stdout, and both are executed
+    as subprocesses and never imported, which is what keeps cdx-rl's own venv
+    free of a second mujoco pin and the LGPL boundary a process boundary.
 
     ``on_row`` is called with each row as it arrives, which is how a driver
     prints progress over a sweep that takes minutes.
@@ -192,13 +261,13 @@ def run_episode_job(
     check_pins(venv)
     interpreter = trainer_python(venv)
     spec = {
-        "schema": JOB_SCHEMA,
+        "schema": schema,
         "module_dir": str(cadex_module_dir()),
         **dict(job),
     }
     try:
         process = subprocess.Popen(
-            [str(interpreter), str(EPISODES_SCRIPT)],
+            [str(interpreter), str(script)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -209,7 +278,7 @@ def run_episode_job(
             env={k: v for k, v in os.environ.items() if k not in ("MUJOCO_GL",)},
         )
     except OSError as exc:
-        raise TrainerVenvError(f"Could not spawn {EPISODES_SCRIPT}: {exc}") from exc
+        raise TrainerVenvError(f"Could not spawn {script}: {exc}") from exc
 
     rows: list[dict[str, Any]] = []
     try:
@@ -245,13 +314,13 @@ def run_episode_job(
 
     if process.returncode != 0:
         raise EpisodeJobFailed(
-            f"{EPISODES_SCRIPT.name} exited {process.returncode}.\n"
+            f"{script.name} exited {process.returncode}.\n"
             f"stderr:\n{stderr[-4000:]}"
         )
     failures = [row for row in rows if row.get("row") == "error"]
     if failures:
         raise EpisodeJobFailed(
-            "The episode job reported errors: "
+            f"{script.name} reported errors: "
             + json.dumps(failures[:5], sort_keys=True)
             + (f"\nstderr:\n{stderr[-2000:]}" if stderr.strip() else "")
         )

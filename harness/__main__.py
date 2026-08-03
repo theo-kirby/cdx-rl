@@ -8,6 +8,7 @@ reader who has learned one has learned all of them. Four loose scripts drift.
     supervise   watch a training run, or read a finished one
     compare     play every checkpoint in a run directory
     capability  sweep the declared disturbance band
+    steps       did it STEP -- and survive doing so
 
 ``measure`` and ``feasibility`` are specified in ``DESIGN.md`` and not built;
 asking for one says so rather than failing with an argparse error, because
@@ -21,7 +22,7 @@ import sys
 
 from harness import EXIT_USAGE
 
-DRIVERS = ("rebuild", "supervise", "compare", "capability")
+DRIVERS = ("rebuild", "supervise", "compare", "capability", "steps")
 DEFERRED = {
     "measure": "specified in harness/DESIGN.md §2; deferred — it earns its "
                "keep before a *new* dispatch, and nothing has dispatched yet.",

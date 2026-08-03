@@ -1,0 +1,40 @@
+{
+  "$comment": [
+    "The mg-legs biped, for the drivers that need to know what a foot is.",
+    "",
+    "A profile rather than constants in a driver, because the alternative is",
+    "a `steps.py` per mechanism and this repository's whole claim is that the",
+    "drivers are parameterized by project rather than copied per project.",
+    "",
+    "Every name here is a BODY in the exported MJCF. A profile that names a",
+    "body the model does not have is refused loudly: a foot that resolves to",
+    "no geom is never in contact, so every episode would report one permanent",
+    "lift rather than an error."
+  ],
+
+  "mechanism": "mg-legs",
+
+  "feet": {
+    "$comment": "The toe is part of the foot ON PURPOSE. It is a separate body with a welded joint, and a machine that has rolled forward onto its toe is still standing on that foot rather than swinging it. Counting the toe as part of the foot is what stops a roll being read as a lift.",
+    "foot_l": ["foot_l", "toe_l"],
+    "foot_r": ["foot_r", "toe_r"]
+  },
+
+  "ground": "ground",
+
+  "step_mm": 10.0,
+  "$step_mm_comment": "Horizontal travel between takeoff and landing past which a lift is called a STEP. 10 mm is about a fifth of this machine's 49 mm half-stance: smaller than that and the foot came down where it left, which is a hop or a shuffle and not a step out.",
+
+  "min_airborne_s": 0.030,
+  "$min_airborne_comment": "How long a foot must be continuously out of contact before the interval counts as a lift at all. 30 ms is longer than any single-step contact chatter the solver produces and far shorter than the 100-300 ms a real swing lasts. A DURATION, not a step count -- see harness/_steps.py:min_airborne_steps for what that cost.",
+
+  "actuator_limit_nmm": 86.0,
+  "$actuator_comment": "MG90S continuous-duty judgment, ~40% of the 216 N*mm stall rating. It models the HARDWARE (method.md section 5). Stated here so a driver can print '% of rating' without a mechanism-specific constant.",
+
+  "support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+  }
+}
