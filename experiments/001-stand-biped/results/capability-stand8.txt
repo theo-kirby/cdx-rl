@@ -1,0 +1,164 @@
+task      /home/theo/cadex-jobs/stand-task-20260802-200109/stand-task.json
+          sha256 21fe4171a5499258379e20e04a091fd33c8e1a04b5f2d19acb27264140a7f235
+model     /home/theo/cadex-jobs/stand-task-20260802-200109/model-model.xml  (digest matches the bundle's own)
+seeds     48 per row   budget 600 steps   wall 13.4 s
+declared disturbance:
+  shove      0.3–0.8 N   azimuth 210.0°–330.0°
+  shove2     0.3–0.8 N   azimuth 0.0°–360.0°
+  wind       0.0–0.06 N   azimuth 0.0°–360.0°  (sustained)
+
+==============================================================================
+stand8.best.cxpolicy
+
+  row                      survival  steps µ   med  death µ s  termination mix
+  no-variation             48/48       600.0   600          —  survived:48
+  reset-variation-only     39/48       493.7   600       0.33  survived:39 tipped:9
+  scale-0.00               39/48       493.7   600       0.33  survived:39 tipped:9
+  scale-0.15               40/48       504.7   600       0.28  survived:40 tipped:8
+  scale-0.30               40/48       504.5   600       0.27  survived:40 tipped:8
+  scale-0.50               40/48       504.7   600       0.28  survived:40 tipped:8
+  scale-0.75               29/48       394.4   600       0.80  survived:29 tipped:19
+  scale-1.00               15/48       263.4   131       1.10  survived:15 tipped:33
+
+  survival by the azimuth of the first shove drawn (n per bin printed, because the bins are sparse)
+  the task draws `shove` over 210.0°–330.0° only, so a bin outside that range is empty BY DESIGN, not unmeasured
+  row                         +x  (0°–90°)    +y  (90°–180°)   -x  (180°–270°)   -y  (270°–360°)
+  no-variation                           —                 —                 —                 —
+  reset-variation-only                   —                 —                 —                 —
+  scale-0.00                             —                 —     16/17     94%     23/31     74%
+  scale-0.15                             —                 —     16/17     94%     24/31     77%
+  scale-0.30                             —                 —     16/17     94%     24/31     77%
+  scale-0.50                             —                 —     16/17     94%     24/31     77%
+  scale-0.75                             —                 —     10/17     59%     19/31     61%
+  scale-1.00                             —                 —      5/17     29%     10/31     32%
+
+  how far into its own disturbance schedule each row got
+  row                                 shove             shove2               wind
+  no-variation                            —                  —                  —
+  reset-variation-only                    —                  —                  —
+  scale-0.00                 39/48      81%     39/48      81%     48/48     100%
+  scale-0.15                 40/48      83%     40/48      83%     48/48     100%
+  scale-0.30                 40/48      83%     40/48      83%     48/48     100%
+  scale-0.50                 40/48      83%     40/48      83%     48/48     100%
+  scale-0.75                 41/48      85%     29/48      60%     48/48     100%
+  scale-1.00                 41/48      85%     19/48      40%     48/48     100%
+  (a window that is never reached measured nothing, however carefully it was declared)
+
+==============================================================================
+stand8.001700.cxpolicy
+
+  row                      survival  steps µ   med  death µ s  termination mix
+  no-variation             48/48       600.0   600          —  survived:48
+  reset-variation-only     43/48       541.2   600       0.36  survived:43 tipped:5
+  scale-0.00               43/48       541.2   600       0.36  survived:43 tipped:5
+  scale-0.15               42/48       537.5   600       1.00  survived:42 tipped:6
+  scale-0.30               42/48       539.9   600       1.20  survived:42 tipped:6
+  scale-0.50               42/48       537.2   600       0.98  survived:42 tipped:6
+  scale-0.75               38/48       502.9   600       1.34  survived:38 tipped:10
+  scale-1.00               23/48       373.4   448       1.65  survived:23 tipped:25
+
+  survival by the azimuth of the first shove drawn (n per bin printed, because the bins are sparse)
+  the task draws `shove` over 210.0°–330.0° only, so a bin outside that range is empty BY DESIGN, not unmeasured
+  row                         +x  (0°–90°)    +y  (90°–180°)   -x  (180°–270°)   -y  (270°–360°)
+  no-variation                           —                 —                 —                 —
+  reset-variation-only                   —                 —                 —                 —
+  scale-0.00                             —                 —     16/17     94%     27/31     87%
+  scale-0.15                             —                 —     15/17     88%     27/31     87%
+  scale-0.30                             —                 —     15/17     88%     27/31     87%
+  scale-0.50                             —                 —     16/17     94%     26/31     84%
+  scale-0.75                             —                 —     14/17     82%     24/31     77%
+  scale-1.00                             —                 —      8/17     47%     15/31     48%
+
+  how far into its own disturbance schedule each row got
+  row                                 shove             shove2               wind
+  no-variation                            —                  —                  —
+  reset-variation-only                    —                  —                  —
+  scale-0.00                 43/48      90%     43/48      90%     48/48     100%
+  scale-0.15                 43/48      90%     43/48      90%     48/48     100%
+  scale-0.30                 43/48      90%     43/48      90%     48/48     100%
+  scale-0.50                 43/48      90%     43/48      90%     48/48     100%
+  scale-0.75                 43/48      90%     42/48      88%     48/48     100%
+  scale-1.00                 42/48      88%     31/48      65%     48/48     100%
+  (a window that is never reached measured nothing, however carefully it was declared)
+
+  torque flags
+    no-variation           hazard 15: a motor is above 90% of its limit on 41% of frames
+    no-variation           hazard 15: a motor's MEAN command is 71% of its limit
+    reset-variation-only   hazard 15: a motor is above 90% of its limit on 43% of frames
+    reset-variation-only   hazard 15: a motor's MEAN command is 73% of its limit
+    scale-0.00             hazard 15: a motor is above 90% of its limit on 43% of frames
+    scale-0.00             hazard 15: a motor's MEAN command is 73% of its limit
+    scale-0.15             hazard 15: a motor is above 90% of its limit on 45% of frames
+    scale-0.15             hazard 15: a motor's MEAN command is 74% of its limit
+    scale-0.30             hazard 15: a motor is above 90% of its limit on 45% of frames
+    scale-0.30             hazard 15: a motor's MEAN command is 74% of its limit
+    scale-0.50             hazard 15: a motor is above 90% of its limit on 44% of frames
+    scale-0.50             hazard 15: a motor's MEAN command is 73% of its limit
+    scale-0.75             hazard 15: a motor is above 90% of its limit on 45% of frames
+    scale-0.75             hazard 15: a motor's MEAN command is 73% of its limit
+    scale-1.00             hazard 15: a motor is above 90% of its limit on 47% of frames
+    scale-1.00             hazard 15: a motor's MEAN command is 74% of its limit
+
+==============================================================================
+stand8.cxpolicy
+
+  row                      survival  steps µ   med  death µ s  termination mix
+  no-variation             48/48       600.0   600          —  survived:48
+  reset-variation-only     43/48       542.5   600       0.48  survived:43 tipped:5
+  scale-0.00               43/48       542.5   600       0.48  survived:43 tipped:5
+  scale-0.15               44/48       553.5   600       0.41  survived:44 tipped:4
+  scale-0.30               44/48       553.4   600       0.41  survived:44 tipped:4
+  scale-0.50               43/48       541.6   600       0.39  survived:43 tipped:5
+  scale-0.75               41/48       521.0   600       0.58  survived:41 tipped:7
+  scale-1.00               27/48       389.9   600       1.20  survived:27 tipped:21
+
+  survival by the azimuth of the first shove drawn (n per bin printed, because the bins are sparse)
+  the task draws `shove` over 210.0°–330.0° only, so a bin outside that range is empty BY DESIGN, not unmeasured
+  row                         +x  (0°–90°)    +y  (90°–180°)   -x  (180°–270°)   -y  (270°–360°)
+  no-variation                           —                 —                 —                 —
+  reset-variation-only                   —                 —                 —                 —
+  scale-0.00                             —                 —     15/17     88%     28/31     90%
+  scale-0.15                             —                 —     15/17     88%     29/31     94%
+  scale-0.30                             —                 —     15/17     88%     29/31     94%
+  scale-0.50                             —                 —     15/17     88%     28/31     90%
+  scale-0.75                             —                 —     14/17     82%     27/31     87%
+  scale-1.00                             —                 —     11/17     65%     16/31     52%
+
+  how far into its own disturbance schedule each row got
+  row                                 shove             shove2               wind
+  no-variation                            —                  —                  —
+  reset-variation-only                    —                  —                  —
+  scale-0.00                 44/48      92%     43/48      90%     48/48     100%
+  scale-0.15                 44/48      92%     44/48      92%     48/48     100%
+  scale-0.30                 44/48      92%     44/48      92%     48/48     100%
+  scale-0.50                 43/48      90%     43/48      90%     48/48     100%
+  scale-0.75                 43/48      90%     41/48      85%     48/48     100%
+  scale-1.00                 43/48      90%     30/48      62%     48/48     100%
+  (a window that is never reached measured nothing, however carefully it was declared)
+
+  torque flags
+    no-variation           hazard 15: a motor is above 90% of its limit on 38% of frames
+    no-variation           hazard 15: a motor's MEAN command is 71% of its limit
+    reset-variation-only   hazard 15: a motor is above 90% of its limit on 41% of frames
+    reset-variation-only   hazard 15: a motor's MEAN command is 71% of its limit
+    scale-0.00             hazard 15: a motor is above 90% of its limit on 41% of frames
+    scale-0.00             hazard 15: a motor's MEAN command is 71% of its limit
+    scale-0.15             hazard 15: a motor is above 90% of its limit on 39% of frames
+    scale-0.15             hazard 15: a motor's MEAN command is 71% of its limit
+    scale-0.30             hazard 15: a motor is above 90% of its limit on 40% of frames
+    scale-0.30             hazard 15: a motor's MEAN command is 71% of its limit
+    scale-0.50             hazard 15: a motor is above 90% of its limit on 39% of frames
+    scale-0.50             hazard 15: a motor's MEAN command is 71% of its limit
+    scale-0.75             hazard 15: a motor is above 90% of its limit on 40% of frames
+    scale-0.75             hazard 15: a motor's MEAN command is 70% of its limit
+    scale-1.00             hazard 15: a motor is above 90% of its limit on 44% of frames
+    scale-1.00             hazard 15: a motor's MEAN command is 71% of its limit
+
+==============================================================================
+DID THIS SWEEP MEASURE ANYTHING?
+  ok  stand8.best.cxpolicy       informative
+      survival runs from 31% to 83% across the sweep, so the band is doing work.
+  ok  stand8.001700.cxpolicy     informative
+      survival runs from 48% to 90% across the sweep, so the band is doing work.
+  ok  stand8.cxpolicy            informative
+      survival runs from 56% to 92% across the sweep, so the band is doing work.

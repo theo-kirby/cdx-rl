@@ -51,6 +51,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import statistics
 import sys
 import time
@@ -259,6 +260,7 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             "trainer_best_file": next(
                 (row["name"] for row in playable if row["role"] == "best"), ""
             ),
+            **separation(playable, len(seeds)),
         }
         # The correlation the whole experiment is about, computed rather than
         # eyeballed off the table.
@@ -311,6 +313,43 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
 
     ok = not refused and bool(playable)
     return (EXIT_OK if ok else EXIT_INFRASTRUCTURE), payload
+
+
+def separation(rows: list[dict[str, Any]], seeds: int) -> dict[str, Any]:
+    """Is the winner actually separated from the runner-up, at this many seeds?
+
+    **Added because the sweep found the answer was no.** ``compare`` at 12
+    seeds ranked iteration 1699 above the final network, 7/12 against 6/12 —
+    a one-episode margin. At 48 seeds the order reverses (23/48 against
+    27/48), and neither gap is significant. Both are decisively above the
+    trainer's reward peak, and that is the whole of what the table supports.
+
+    Survival is a binomial proportion, so the standard error of a difference
+    of two independent ones is at most ``sqrt(2 · 0.25 / n)``. At n = 12 that
+    is 20 percentage points, which is 2.4 episodes: **a 12-seed table cannot
+    tell two checkpoints apart unless they differ by about half their range.**
+    Reporting a winner without saying so invites a 3.9-GPU-hour decision to
+    be made on a coin toss.
+    """
+
+    ranked = sorted(rows, key=lambda row: row["survival"], reverse=True)
+    if len(ranked) < 2 or seeds < 1:
+        return {}
+    best, runner = ranked[0], ranked[1]
+    gap = best["survival"] - runner["survival"]
+    # Worst-case standard error of the difference, at p = 0.5.
+    error = math.sqrt(2.0 * 0.25 / seeds)
+    separated = gap > 2.0 * error
+    tied = [row["name"] for row in ranked if best["survival"] - row["survival"] <= 2.0 * error]
+    return {
+        "separation": {
+            "seeds": seeds,
+            "gap": round(gap, 4),
+            "two_sigma": round(2.0 * error, 4),
+            "separated": separated,
+            "indistinguishable": tied,
+        }
+    }
 
 
 def _pearson(left: list[float], right: list[float]) -> float | None:
@@ -451,6 +490,23 @@ def report(payload: dict[str, Any]) -> None:
                   f"{item['iteration']:>6}  survival "
                   f"{item['survival'] * 100:.0f}%  steps {item['steps_mean']:.1f}")
         print(f"  the trainer's own 'best' file was {selection['trainer_best_file']}")
+        gap = selection.get("separation")
+        if gap:
+            print()
+            if gap["separated"]:
+                print(f"  the winner IS separated from the runner-up: gap "
+                      f"{gap['gap'] * 100:.0f} pp against a 2-sigma bound of "
+                      f"{gap['two_sigma'] * 100:.0f} pp at {gap['seeds']} seeds.")
+            else:
+                print(f"  ** THE WINNER IS NOT SEPARATED FROM THE RUNNER-UP. **")
+                print(f"  Gap {gap['gap'] * 100:.0f} pp against a 2-sigma bound of "
+                      f"{gap['two_sigma'] * 100:.0f} pp at {gap['seeds']} seeds "
+                      f"(survival is binomial; at n={gap['seeds']} the standard "
+                      f"error of a difference is worst-case "
+                      f"{gap['two_sigma'] / 2 * 100:.0f} pp).")
+                print(f"  Indistinguishable at this seed count: "
+                      f"{', '.join(gap['indistinguishable'])}")
+                print("  Raise --seeds before treating the top row as the answer.")
 
     correlation = payload.get("correlation")
     if correlation:

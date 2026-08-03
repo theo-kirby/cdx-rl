@@ -5,7 +5,7 @@ model     /home/theo/cadex-jobs/stand-task-20260802-200109/model-model.xml
           sha256 e3511559eeb3d5ab3a369852a6c7d7e5fcfc256a259f1f4f41284ffb2cef0ae1  (matches the bundle's own)
 seeds     12  (0…11)   budget 600 steps
 motors    10 × ±86 N·mm
-wall      5.9 s
+wall      5.8 s
 
 same-file-twice (ADR-103 §9)  stand8.best.cxpolicy  24 episodes, one worker
   PASS — the evaluator reloads the model per episode and its rows do not drift.
@@ -311,6 +311,11 @@ selection, by measured survival (ADR-099 — not by the trainer's scalar)
   longest episodes       stand8.001700.cxpolicy   iteration   1699  survival 58%  steps 401.2
   best measured reward   stand8.000450.cxpolicy   iteration    449  survival 17%  steps 192.2
   the trainer's own 'best' file was stand8.best.cxpolicy
+
+  ** THE WINNER IS NOT SEPARATED FROM THE RUNNER-UP. **
+  Gap 8 pp against a 2-sigma bound of 41 pp at 12 seeds (survival is binomial; at n=12 the standard error of a difference is worst-case 20 pp).
+  Indistinguishable at this seed count: stand8.001700.cxpolicy, stand8.001500.cxpolicy, stand8.001850.cxpolicy, stand8.001900.cxpolicy, stand8.001950.cxpolicy, stand8.002200.cxpolicy, stand8.002400.cxpolicy, stand8.cxpolicy, stand8.001600.cxpolicy, stand8.001650.cxpolicy, stand8.001800.cxpolicy, stand8.002000.cxpolicy, stand8.002050.cxpolicy, stand8.002150.cxpolicy, stand8.002250.cxpolicy, stand8.001400.cxpolicy, stand8.001750.cxpolicy, stand8.002100.cxpolicy, stand8.002300.cxpolicy, stand8.002350.cxpolicy, stand8.002450.cxpolicy, stand8.001150.cxpolicy, stand8.001300.cxpolicy, stand8.001450.cxpolicy, stand8.001550.cxpolicy
+  Raise --seeds before treating the top row as the answer.
 
 correlation over the checkpoints played
   survival vs iteration            r = 0.827

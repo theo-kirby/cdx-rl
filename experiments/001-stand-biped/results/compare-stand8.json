@@ -479,17 +479,17 @@
       "subject": "Refuse to dispatch to a box running a different trainer (ADR-104)"
     },
     "cdxrl": {
-      "commit": "f13804eacbafa1d9849a153845214c4c363630f1",
+      "commit": "d75c5b8a045bcd5a2b7367158469c558dbd6dda5",
       "dirty": true,
-      "short": "f13804ea",
-      "subject": "harness: supervise, post-mortem mode"
+      "short": "d75c5b8a",
+      "subject": "experiment 001 Phase A: published to the graph"
     },
     "host": {
       "hostname": "sb1x",
       "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39"
     },
     "python": "3.12.3",
-    "timestamp_utc": "2026-08-02T23:39:02Z"
+    "timestamp_utc": "2026-08-03T00:07:47Z"
   },
   "run_dir": "/home/theo/cadex-jobs/stand-task-20260802-200109",
   "schema": "cdxrl-envelope-v1",
@@ -528,6 +528,39 @@
       "role": "checkpoint",
       "steps_mean": 401.25,
       "survival": 0.5833333333333334
+    },
+    "separation": {
+      "gap": 0.0833,
+      "indistinguishable": [
+        "stand8.001700.cxpolicy",
+        "stand8.001500.cxpolicy",
+        "stand8.001850.cxpolicy",
+        "stand8.001900.cxpolicy",
+        "stand8.001950.cxpolicy",
+        "stand8.002200.cxpolicy",
+        "stand8.002400.cxpolicy",
+        "stand8.cxpolicy",
+        "stand8.001600.cxpolicy",
+        "stand8.001650.cxpolicy",
+        "stand8.001800.cxpolicy",
+        "stand8.002000.cxpolicy",
+        "stand8.002050.cxpolicy",
+        "stand8.002150.cxpolicy",
+        "stand8.002250.cxpolicy",
+        "stand8.001400.cxpolicy",
+        "stand8.001750.cxpolicy",
+        "stand8.002100.cxpolicy",
+        "stand8.002300.cxpolicy",
+        "stand8.002350.cxpolicy",
+        "stand8.002450.cxpolicy",
+        "stand8.001150.cxpolicy",
+        "stand8.001300.cxpolicy",
+        "stand8.001450.cxpolicy",
+        "stand8.001550.cxpolicy"
+      ],
+      "seeds": 12,
+      "separated": false,
+      "two_sigma": 0.4082
     },
     "trainer_best_file": "stand8.best.cxpolicy"
   },
@@ -4829,5 +4862,5 @@
   "task": "/home/theo/cadex-jobs/stand-task-20260802-200109/stand-task.json",
   "task_sha256": "21fe4171a5499258379e20e04a091fd33c8e1a04b5f2d19acb27264140a7f235",
   "verify_refused": [],
-  "wall_seconds": 5.85
+  "wall_seconds": 5.87
 }

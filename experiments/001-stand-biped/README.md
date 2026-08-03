@@ -408,4 +408,150 @@ stands — one run is not a pattern):
    Torque cost belongs in the reward or the actuator limit belongs in the
    task — and that is a decision to take before the next dispatch, not after.
 
-*Phase B follows in §10 below once the capability sweep has run.*
+---
+
+## 10b. What happened — Phase B, the capability sweep
+
+Three policies × eight rows × **48 seeds** = 1 152 episodes in **13.5 s**.
+Raw output: [`results/capability-stand8.txt`](results/capability-stand8.txt)
+and [`results/capability-stand8.table.json`](results/capability-stand8.table.json).
+
+48 seeds rather than 12, decided before the run, for two reasons: the azimuth
+split divides each row four ways, and §10's own margin turned out to be
+inside the noise of twelve (see the correction below).
+
+### Survival against the declared band
+
+| row (shove magnitude) | `stand8.best` (598) | `stand8.001700` (1699) | `stand8` (2499) |
+|---|---|---|---|
+| no-variation | **48/48** | **48/48** | **48/48** |
+| reset-variation-only | 81 % | 90 % | 90 % |
+| ×0.00 (schedule runs, zero force) | 81 % | 90 % | 90 % |
+| ×0.15 | 83 % | 88 % | 92 % |
+| ×0.30 | 83 % | 88 % | 92 % |
+| ×0.50 | 83 % | 88 % | 90 % |
+| ×0.75 | 60 % | 79 % | 85 % |
+| **×1.00 (as declared, 0.3–0.8 N)** | **31 %** | **48 %** | **56 %** |
+
+**The curve is not flat, in either direction.** Every policy stands
+indefinitely with nothing pushing it and every policy is knocked over half
+the time at the declared magnitude. That is what a task in range looks like.
+
+### Question B: answered — the task is **not** out of range
+
+The 0.3–0.8 N band lands squarely on the edge of what this mechanism can do:
+100 % survival unshoved, ~50 % at full magnitude. ADR-106's revision worked.
+**"The task is out of range" is ruled out with numbers**, and what remains is
+that the policy is mediocre rather than that the question was unfair.
+
+Two refinements the sweep adds for free:
+
+* **The bottom half of the declared band does nothing.** ×0.15, ×0.30 and
+  ×0.50 are indistinguishable from ×0.00 for all three policies. All the
+  difficulty lives between ×0.75 and ×1.00 — that is, between about 0.6 and
+  0.8 N. Three quarters of the declared range is not being used to
+  discriminate anything.
+* **×0.00 and reset-variation-only agree to the episode** for all three
+  policies (81/81, 90/90, 90/90). Those two rows are computed by different
+  code paths — one scales the force to zero and still runs the schedule, the
+  other deletes the schedule — so their agreement is a working check on the
+  evaluator, not a coincidence.
+
+### Azimuth: no asymmetry worth reporting
+
+| | −x (180°–270°) | −y (270°–360°) |
+|---|---|---|
+| `stand8.001700` at ×1.00 | 47 % (n=17) | 48 % (n=31) |
+| `stand8` at ×1.00 | 65 % (n=17) | 52 % (n=31) |
+
+The `+x` and `+y` quadrants are **empty by design, not unmeasured**: the task
+draws `shove` over 210°–330° only. Within the range it does draw, this
+machine has no meaningful directional weakness — which is what having ankle
+roll was supposed to buy, now confirmed rather than assumed.
+
+### The second shove window is being lost, exactly as ADR-106 warned
+
+Fraction of episodes that lived to see each window, at ×1.00:
+
+| | `shove` (0.3–1.5 s) | `shove2` (1.8–3.6 s) |
+|---|---|---|
+| `stand8.best` | 85 % | **40 %** |
+| `stand8.001700` | 88 % | **65 %** |
+
+At full magnitude the reward-peak policy never reaches the second shove in
+**60 %** of episodes. It is not failing that window; it is not getting there.
+Half the episode's declared design is going unexercised for the majority of
+runs, and no amount of training against it could have been measured.
+
+### Hazard 15, and the thing Phase A could not see
+
+Phase A showed the later checkpoints bracing hard. The sweep shows **why that
+is worse than it looked**:
+
+| policy | mean command, **no variation at all** | at ×1.00 |
+|---|---|---|
+| `stand8.best` (598) | 36 % of limit | 36 % |
+| `stand8.001700` (1699) | **71 %** | 74 % |
+| `stand8` (2499) | **71 %** | 71 % |
+
+**The bracing is the resting posture, not a recovery response.** Standing
+perfectly still, nothing pushing, surviving 48/48, the later policies hold a
+motor at 71 % of its 86 N·mm rating and above 90 % of it on ~40 % of frames.
+The disturbance adds three percentage points. Whatever these policies learned,
+it was not "push back when shoved" — it was "stand rigid at all times".
+
+That is hazard 15 in its pure form, and it is a mechanism-level finding: a
+servo of this class does not hold 61 N·mm indefinitely, so **this policy
+family does not describe a machine that can be built**, regardless of its
+survival number.
+
+### A correction to §10: 12 seeds could not separate the top checkpoints
+
+`compare` at 12 seeds ranked iteration 1699 first at 7/12 against the final
+network's 6/12 — **a one-episode margin**. At 48 seeds under the same
+declared task the order reverses: 23/48 (48 %) for 1699 against 27/48 (56 %)
+for the final.
+
+Neither gap is significant. Survival is a binomial proportion, so the
+worst-case standard error of a difference is `√(2·0.25/n)` — 20 pp at n=12
+and 10 pp at n=48. The 8 pp gap is inside both.
+
+What **is** significant is that both beat the reward peak: 31 % against 48 %
+and 56 % is a 17–25 pp gap at n=48, two to two-and-a-half sigma.
+
+So §10's conclusion survives in the form that matters — *the reward peak is
+decisively not the best checkpoint* — and its specific winner does not.
+`compare` now computes this bound and prints **"THE WINNER IS NOT SEPARATED
+FROM THE RUNNER-UP"** with the list of checkpoints tied at that seed count.
+At 12 seeds on this run, 25 of the 51 are tied.
+
+## 11b. What Phase B means
+
+1. **Question B is closed.** The task is in range. The next dispatch should
+   not re-size the disturbance band downward — if anything the *lower* three
+   quarters of it could be dropped, since ×0.15 through ×0.50 measure nothing
+   this ×0.00 row does not.
+2. **The real limit is the torque, not the task.** A policy that stands at
+   71 % of rating with nothing pushing it has solved the wrong problem. The
+   reward has no torque cost that bites at this scale, and adding one — or
+   lowering the actuator limit until the task forces a cheaper posture — is
+   the change most likely to produce a buildable policy. That is a decision
+   for before the next dispatch.
+3. **`collapsed` is dead code and the second shove window is nearly so.**
+   612 episodes in Phase A and 1 152 in Phase B produced zero `collapsed`
+   terminations, and at full magnitude the reward-peak policy reaches
+   `shove2` in only 40 % of episodes. Both are declared task design that is
+   not running.
+4. **Seed counts need stating with the claim.** 12 seeds is enough to reject
+   a checkpoint and not enough to crown one. The cost of 48 is four seconds.
+
+### What Phase B does not mean
+
+* **Not that the final network is the best checkpoint.** It is nominally
+  ahead and statistically tied with 1699. Choosing between them needs more
+  seeds than either phase spent, and probably is not worth spending.
+* **Not that ×1.00 survival of ~50 % is acceptable.** It is a description of
+  where this policy family sits, not a target that has been met.
+* **Not a verdict on the reward weights.** The sweep varies the disturbance,
+  not the reward. That the policies brace is measured; *why* they brace is
+  inferred, and testing it means training against a modified reward.
