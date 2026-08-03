@@ -25,6 +25,17 @@ set -a; . ./config/env; set +a
 uv run python tools/smoke.py          # 13 checks; must print PASS
 ```
 
+On a box whose Cadex checkout is **not built**, `smoke.py` stops at
+`engine_resolved` and the eight `cadexd` checks never run. Training still
+works — `tools/train.py` goes straight to the trainer venv and never touches
+the engine — but nothing that authors a mechanism does. `cloud.md` §1 has the
+headless build recipe, which is **not** `pixi run build-engine`.
+
+That section also lists the three runtime settings `sb9x` needs, the segfault
+that is **still open** there, why a run that hits it is nonetheless usable,
+and the per-box throughput — because **wall-clock numbers in these docs are
+`sb1x`'s and do not transfer**.
+
 ## Read
 
 **[`CLAUDE.md`](CLAUDE.md) first.** Then:

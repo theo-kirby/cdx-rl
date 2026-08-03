@@ -69,7 +69,10 @@ cdx-rl/
     smoke.py           prove the whole spine end to end
     train.py           dispatch a run or a seed sweep, detached
     cxpolicy.py        read a .cxpolicy header; diff two reward curves
+    trainer_launch.py  run the trainer with the cyclic GC off (sb9x needs it)
     fire_divergence_guard.py   make supervise's guard fail on purpose
+    fire_projection_guard.py   make the wall-cap projection fire on purpose
+    fire_salvage_guard.py      make the salvage classifier decide, both ways
 
   harness/
     DESIGN.md          the five drivers + the supervisor, specified
@@ -123,15 +126,24 @@ Other environment facts:
 * `MUJOCO_GL` is **unset box-wide** and there is no precedent for setting it —
   the trainer is headless MJX and never opens a renderer. If video rollout is
   ever added, set `MUJOCO_GL=egl` at that call site, not in the environment.
-* This box is `sb1x`: RTX 5090 32 GB, Ryzen 9 9950X (32 threads), 60 GB RAM,
-  2.4 TB free, Ubuntu 24.04.
-* Cadex is at `06d1374b`, clean.
+* **There are two boxes now, and they are not interchangeable.** Everything
+  in these docs written as "this box" means `sb1x`: RTX 5090 32 GB, Ryzen 9
+  9950X (32 threads), 60 GB RAM, 2.4 TB free, Ubuntu 24.04, Cadex at
+  `06d1374b`, clean. The second is `sb9x`: **RTX 4070 12 GB**, 16 threads,
+  15 GB RAM, driver 595.84, Cadex at `ae8da6a6`, built 2026-08-03 and clean.
+  It is **~1.6–2.1x slower per steady iteration** and needs three runtime
+  settings sb1x never did. `cloud.md` §1 has the full comparison, the
+  headless build recipe, and the open segfault; do not carry a wall cap or a
+  GPU-hour estimate between them.
+* **Check which box you are on before believing a wall-clock number.**
+  `smoke.py` records the host, `train.py` writes it into `runtime.json` and
+  `sweep.json`, and `platform.node()` is the one-liner.
 
 ## 5. State of the work
 
 | | |
 |---|---|
-| Environment | ✅ `uv` venv, `config/env`, smoke test passing 13/13 |
+| Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
 | Flywheel | ✅ root `rapid-bar-6214`, seven nodes, four of them empirical |
@@ -140,6 +152,7 @@ Other environment facts:
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 2 of 4 seeds measured and published; seeds 2–3 not run |
+| sb9x | ✅ engine built (smoke 13/13), trainer hardened, measured, and salvage-verified — runs exit `-11` at `train()`'s return and their checkpoints are complete and `compare`-able (`EXIT_SALVAGEABLE`) |
 
 **Total GPU-hours spent by this repository: ~5.1**, all of them experiment
 002 — two seeds of `stand-task-20260802-200109` retrained from scratch to ask
@@ -208,6 +221,40 @@ not** — two fresh seeds, 48 evaluation seeds each:
 * **Pin the trainer off this box**: `--require-trainer <sha256>`. ADR-104's
   refusal lived only in `remote_train.sh`, which local dispatch never calls,
   so `train.py` recorded the digest and checked nothing.
+* **A different Cadex commit is not automatically a different trainer.**
+  `sb9x` sits at `ae8da6a6`, ten commits past the pinned `06d1374b`, and
+  `--require-trainer aacfa823…` still passes: all ten are engine-side
+  (`src/Mod/cadex`) and `training/` is byte-identical. Check the digest, not
+  the commit — the commit is the noisier signal in both directions.
+* **On sb9x the trainer segfaults two ways, and one is still open.**
+  `train.py` defaults three runtime settings on and records them in
+  `runtime.json`; `cloud.md` §1 has the tables and the measurements. The
+  tracing overflow is genuinely fixed by a large **finite** `RLIMIT_STACK`
+  (`ulimit -s unlimited` does *not* raise a thread's stack). The other lands
+  **after a checkpoint write** and leaves every checkpoint, no final
+  `.cxpolicy`, no reward curve and no witness — identical to what a SIGTERMed
+  run leaves, so it reads as "stopped early" rather than "crashed". It is
+  **not fixed**: short runs pass, 40 iterations exits `-11`.
+* **A crashed sb9x run is still usable, and `train.py` says so.** Every
+  checkpoint it wrote is complete and witness-checked (`checked_policy` runs
+  the witness *before* writing, so a crash can lose a file but never corrupt
+  one), the `.best` header carries the reward curve, and `compare` was
+  verified to consume them end to end. Only `<label>.cxpolicy` — the final
+  iteration, which ADR-099 says you do not select — is lost. That state
+  returns **`EXIT_SALVAGEABLE` (4)**, distinct from a run that produced
+  nothing. Do not read exit codes as a scale; rank them through `SEVERITY`.
+* **Validate at length, not at three iterations.** Every one of these faults
+  is scale-dependent, and a 1-iteration run reports success for all of them.
+* **Do not blame the 12 GB card without measuring it.** This task peaks at
+  **777 MiB of 12 282**; the 9 131 MiB you see by default is JAX's 75 %
+  preallocation pool, not demand. A memory explanation was written into these
+  docs before it was checked, and it was wrong — what differs from sb1x is
+  the driver and the architecture, not the capacity.
+* **A wall cap does not travel between boxes.** `--timeout 10800` was right
+  on sb1x and would truncate every sb9x seed at roughly iteration 790.
+  `supervise` now projects the finish from measured throughput after
+  iteration 10 and says so; `tools/fire_projection_guard.py` fires it on
+  purpose.
 
 **Verified on this box, and worth knowing:** the dynamics domain evaluates
 **headlessly**. A 1-DOF pendulum authored through `cadexd` produced both an

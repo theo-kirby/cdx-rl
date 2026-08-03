@@ -82,6 +82,39 @@ supervised in turn, with a ``sweep.json`` manifest updated after every run.
 (``cadex_train.py:477``, ``random.Random(base_seed + environment_index)``),
 so each seed is a fully independent replicate of the whole experiment rather
 than a different initialisation of the same one.
+
+### The runtime section, and why a dispatcher owns it
+
+Three settings here are properties of the **box**, not of the experiment:
+:data:`TRAINER_STACK_MB`, :data:`TRAINER_XLA_PREALLOCATE` and the launcher
+shim. None changes a number the trainer computes. All decide whether the
+process lives long enough to write one, and on sb9x at 2048 environments the
+answer without them is no — in two ways that do not look like crashes:
+
+* **during tracing**, before iteration 0, as a bare ``SIGSEGV`` with no
+  traceback and a ``progress.json`` still reading ``state: starting``. The
+  stack limit fixes this one outright; and
+* **after a checkpoint write**, leaving a run directory holding every
+  checkpoint, no final ``.cxpolicy``, no ``reward_curve`` and no witness
+  margin — which is exactly the artefact a SIGTERMed run leaves, so it reads
+  as "stopped early", not "crashed". This one is **still open**.
+
+The second is the dangerous one, and it is why these live in the dispatcher
+rather than in a shell line or a README. A launch recipe that has to be
+remembered is the same shape as the hyperparameter confound above and the
+unchecked ``trainer_sha256`` below it: the fact was known, it was written
+down somewhere, and **nothing enforced it**. The resolved set is written to
+``runtime.json`` beside ``hyperparameters.json``, and into ``sweep.json``
+with the hostname, because "which box" is now a real axis — see
+``tasks/stand-b2/README.md``.
+
+**They are necessary and not sufficient.** With all three on, 2048
+environments completes cleanly at 1 and 3 iterations and still exits ``-11``
+at 40, as ``train()`` returns and before the final policy is written. That is
+open; ``cloud.md`` §1 has the measurements. Do not read a clean short run as
+proof — every one of these faults is scale-dependent, which is exactly how
+the first version of this docstring came to claim more than it had measured,
+and how it also came to blame a 12 GB card for a task that uses 777 MiB.
 """
 
 from __future__ import annotations
@@ -89,6 +122,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
+import resource
 import shutil
 import subprocess
 import sys
@@ -100,7 +135,9 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from harness import EXIT_INFRASTRUCTURE, EXIT_OK, EXIT_USAGE  # noqa: E402
+from harness import (  # noqa: E402
+    EXIT_INFRASTRUCTURE, EXIT_OK, EXIT_SALVAGEABLE, EXIT_USAGE,
+)
 from harness.provenance import load_env_file, sha256_file  # noqa: E402
 from harness.trainer_venv import TrainerVenvError, check_pins, trainer_python  # noqa: E402
 
@@ -133,6 +170,148 @@ HYPERPARAMETERS = (
     "learning_rate", "discount", "gae_lambda", "clip", "entropy",
     "value_weight", "initial_std", "checkpoint_every",
 )
+
+#: How much stack the *trainer* gets, in MiB.
+#:
+#: MJX traces deeply. ``make_constraint`` fans out over every contact pair
+#: through nested ``vmap``, and on a 2048-environment biped that recursion
+#: overflows an 8 MiB stack **during tracing**, before iteration 0 — a bare
+#: ``SIGSEGV`` with no Python traceback and no line in ``progress.json``,
+#: which reads like a broken card rather than a resource limit.
+#:
+#: 8 MiB is the Linux default, and the fix is not ``ulimit -s unlimited``:
+#: glibc reads ``RLIMIT_STACK`` when it *creates a thread*, and for
+#: ``RLIM_INFINITY`` it substitutes its own 8 MiB default. JAX traces on its
+#: worker threads, so "unlimited" leaves the faulting thread exactly as it
+#: was. The limit has to be a large **finite** number for a thread to inherit
+#: it. Measured on sb9x: 8 MiB segfaults, 256 MiB traces clean.
+TRAINER_STACK_MB = 256
+
+#: XLA's BFC allocator grabs 75 % of the card up front. Growing the pool on
+#: demand instead delays sb9x's post-checkpoint ``SIGSEGV`` from the *first*
+#: checkpoint to the last, which is the difference between a run that
+#: produces one checkpoint and a run that produces all of them.
+#:
+#: It is **not a fix**, and the reason first written here — that a 12 GB card
+#: leaves too little outside the pool — was wrong. Peak device usage with
+#: preallocation off is **777 MiB of 12 282**, six per cent of the card; the
+#: 9 131 MiB seen with it on is the pool, not demand. Memory is not the
+#: constraint. See ``cloud.md`` §1 for what is still open.
+TRAINER_XLA_PREALLOCATE = "false"
+
+#: How bad each exit code is, for picking a sweep's verdict from its seeds.
+#:
+#: Needed because the numbers are identifiers, not a scale:
+#: ``EXIT_SALVAGEABLE`` is 4 and ``EXIT_INFRASTRUCTURE`` is 1, but a seed that
+#: crashed *after* writing every checkpoint is a better outcome than one that
+#: died importing jax. ``max()`` over the raw codes would report the whole
+#: sweep as salvageable when one seed produced nothing at all.
+SEVERITY: dict[int, int] = {
+    EXIT_OK: 0,
+    EXIT_SALVAGEABLE: 1,
+    EXIT_INFRASTRUCTURE: 2,
+    EXIT_USAGE: 3,
+}
+
+#: The shim that turns CPython's cyclic collector off for the trainer. A
+#: collection landing mid-trace segfaults on this box; the artefacts survive
+#: but the **exit code** does not, and that is the only signal a sweep has
+#: for "did this seed work". Its docstring has the measurements.
+TRAINER_LAUNCH = REPO_ROOT / "tools" / "trainer_launch.py"
+
+
+def _stack_soft_mb() -> float | None:
+    """This process's soft stack limit in MiB; ``None`` if unlimited."""
+
+    soft, _hard = resource.getrlimit(resource.RLIMIT_STACK)
+    return None if soft == resource.RLIM_INFINITY else soft / (1024 * 1024)
+
+
+def _raise_child_stack(stack_mb: int):
+    """A ``preexec_fn`` that gives the trainer ``stack_mb`` MiB of stack.
+
+    Runs in the forked child, between ``fork`` and ``exec``, so it changes
+    the limit for the trainer alone and leaves this process — and any other
+    seed in the sweep — untouched.
+    """
+
+    def apply() -> None:
+        wanted = stack_mb * 1024 * 1024
+        _soft, hard = resource.getrlimit(resource.RLIMIT_STACK)
+        if hard != resource.RLIM_INFINITY:
+            wanted = min(wanted, hard)
+        resource.setrlimit(resource.RLIMIT_STACK, (wanted, hard))
+
+    return apply
+
+
+def post_mortem(run_dir: Path, out: Path, returncode: int,
+                asked: int) -> dict[str, Any]:
+    """What a non-zero exit actually cost, measured from the run directory.
+
+    sb9x's open fault (``cloud.md`` §1) kills the trainer with ``SIGSEGV`` as
+    ``train()`` returns — *after* every checkpoint is on disk. Judged by exit
+    code alone that is indistinguishable from a run that died importing jax,
+    and the difference is four hours of GPU time and a complete experiment:
+
+    * every ``.cxpolicy`` the trainer wrote is a **complete, witness-checked
+      file**. ``checked_policy`` runs the witness *before* a byte is written,
+      so a checkpoint that exists is a checkpoint that passed;
+    * the ``.best`` header carries the ``reward_curve`` up to its own
+      iteration, and ``train.log`` carries the whole series; and
+    * ``compare`` — which is how a checkpoint gets selected at all
+      (ADR-099) — consumes exactly these files. Verified end to end on a
+      crashed run: it played both checkpoints, measured per-motor torque and
+      the hazard-15 column, and returned a verdict.
+
+    What is genuinely lost is ``<label>.cxpolicy``, the **final iteration's**
+    network — which is not the selection target, because 001 and 002 both
+    measured that the last iteration is not the best checkpoint.
+
+    So this reports rather than guesses, and the caller maps it to a distinct
+    exit code. A run with no checkpoints at all is *not* salvageable and must
+    not be quietly promoted.
+    """
+
+    checkpoints = sorted(
+        p for p in run_dir.glob("*.cxpolicy") if p.name != out.name
+    )
+    final = out.is_file()
+    report: list[str] = []
+    salvageable = False
+
+    if returncode == 0:
+        return {"salvageable": True, "checkpoints": len(checkpoints),
+                "final_policy": final, "report": []}
+
+    if not checkpoints:
+        report.append(f"  no checkpoints — this run produced nothing. "
+                      f"Read {run_dir / 'train.log'}.")
+    else:
+        salvageable = True
+        names = ", ".join(p.name for p in checkpoints[:4])
+        more = "" if len(checkpoints) <= 4 else f", +{len(checkpoints) - 4} more"
+        report.append(f"  SALVAGEABLE: {len(checkpoints)} checkpoint(s) on disk "
+                      f"({names}{more}).")
+        report.append("  Each was witness-checked before it was written, and "
+                      "`compare` reads exactly these.")
+        if final:
+            report.append("  The final policy is present too; only the exit "
+                          "code is wrong.")
+        else:
+            curve_in = (".best header and in train.log"
+                        if any(p.name.endswith(".best.cxpolicy")
+                               for p in checkpoints)
+                        else "train.log (no .best file was written)")
+            report.append(f"  Missing only {out.name} — the LAST iteration's "
+                          f"network, which is not the checkpoint you select "
+                          f"(ADR-099). The reward curve survives in the "
+                          f"{curve_in}.")
+        report.append(f"  Next: uv run python -m harness compare --dir "
+                      f"{run_dir} --task {run_dir / 'stand-task.json'}")
+
+    return {"salvageable": salvageable, "checkpoints": len(checkpoints),
+            "final_policy": final, "iterations_asked": asked, "report": report}
 
 
 def _fresh(path: Path) -> Path:
@@ -259,7 +438,11 @@ def dispatch_one(
 
     out = run_dir / f"{args.label}.cxpolicy"
     command = [
-        str(interpreter), str(trainer), str(staged_bundle),
+        str(interpreter),
+        # The shim only prepends an interpreter setting; the trainer, its
+        # arguments and its digest are untouched. See tools/trainer_launch.py.
+        *([] if args.child_gc else [str(TRAINER_LAUNCH)]),
+        str(trainer), str(staged_bundle),
         "--out", str(out),
         "--label", args.label,
         "--progress", str(run_dir / "progress.json"),
@@ -287,6 +470,24 @@ def dispatch_one(
         env.pop("CUDA_VISIBLE_DEVICES", None)
     env.pop("MUJOCO_GL", None)
 
+    # Neither of these changes an update rule, a draw, or a number the
+    # trainer computes — they change whether the process survives long
+    # enough to write one. Both are recorded anyway, because "the run that
+    # crashed" and "the run that did not" have to be told apart later, and
+    # the constants above say what each is for.
+    if not args.xla_preallocate:
+        env["XLA_PYTHON_CLIENT_PREALLOCATE"] = TRAINER_XLA_PREALLOCATE
+    else:
+        env.pop("XLA_PYTHON_CLIENT_PREALLOCATE", None)
+
+    runtime = {
+        "stack_mb": args.stack_mb,
+        "stack_soft_before_mb": _stack_soft_mb(),
+        "xla_preallocate": bool(args.xla_preallocate),
+        "child_gc": bool(args.child_gc),
+        "host": platform.node(),
+    }
+
     log_path = run_dir / "train.log"
     facts: dict[str, Any] = {
         "run_dir": str(run_dir),
@@ -300,14 +501,24 @@ def dispatch_one(
         "device_requested": "cpu" if args.cpu else "gpu",
         "trainer_pins": pins,
         "hyperparameters": hyperparameters,
+        "runtime": runtime,
         "log": str(log_path),
     }
+    (run_dir / "runtime.json").write_text(
+        json.dumps(runtime, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     print(f"run dir   {run_dir}")
     print(f"seed      {seed if seed is not None else '— (trainer default)'}")
     print(f"bundle    {staged_bundle.name}  {facts['bundle_sha256'][:12]}…")
     print(f"model     {staged_model.name}  {facts['model_sha256'][:12]}…")
     print(f"device    {facts['device_requested']}")
+    inherited = runtime["stack_soft_before_mb"]
+    print(f"runtime   stack {args.stack_mb} MiB for the trainer "
+          f"(this process has {'unlimited' if inherited is None else f'{inherited:.0f} MiB'})"
+          f", XLA preallocate "
+          f"{'on — trainer default' if args.xla_preallocate else TRAINER_XLA_PREALLOCATE}"
+          f", cyclic GC {'on — trainer default' if args.child_gc else 'off'}")
     print(f"command   {' '.join(command)}")
     print()
 
@@ -316,6 +527,7 @@ def dispatch_one(
         process = subprocess.Popen(
             command, cwd=str(run_dir), env=env,
             stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+            preexec_fn=_raise_child_stack(args.stack_mb),
         )
         (run_dir / "train.pid").write_text(str(process.pid), encoding="utf-8")
         facts["pid"] = process.pid
@@ -359,7 +571,15 @@ def dispatch_one(
     print()
     print(f"trainer exited {returncode} after {facts['wall_seconds']:.1f} s "
           f"({facts['wall_seconds'] / 3600:.2f} h)", flush=True)
-    return (EXIT_OK if returncode == 0 else EXIT_INFRASTRUCTURE), facts
+
+    salvage = post_mortem(run_dir, out, returncode, args.iterations)
+    facts["post_mortem"] = salvage
+    for line in salvage["report"]:
+        print(line, flush=True)
+
+    if returncode == 0:
+        return EXIT_OK, facts
+    return (EXIT_SALVAGEABLE if salvage["salvageable"] else EXIT_INFRASTRUCTURE), facts
 
 
 def dispatch(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
@@ -426,6 +646,12 @@ def dispatch(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         "trainer_sha256": trainer_digest,
         "trainer_pins": pins,
         "device_requested": "cpu" if args.cpu else "gpu",
+        "runtime": {
+            "stack_mb": args.stack_mb,
+            "xla_preallocate": bool(args.xla_preallocate),
+            "child_gc": bool(args.child_gc),
+            "host": platform.node(),
+        },
         "runs": [],
     }
     sweep_dir = Path(args.sweep_dir).expanduser() if args.sweep_dir else None
@@ -462,18 +688,26 @@ def dispatch(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         manifest["runs"].append(facts)
         save_manifest()
         if code != EXIT_OK:
-            worst = code
-            print(f"  seed {seed} exited {code}; continuing to the next seed.",
-                  flush=True)
+            if SEVERITY.get(code, 99) > SEVERITY.get(worst, 0):
+                worst = code
+            print(f"  seed {seed} exited {code}"
+                  + ("  (salvageable — checkpoints are on disk)"
+                     if code == EXIT_SALVAGEABLE else "")
+                  + "; continuing to the next seed.", flush=True)
         if not sweep:
             return code, facts
 
     print()
     print(f"sweep complete: {len(manifest['runs'])} run(s)")
     for facts in manifest["runs"]:
+        salvage = facts.get("post_mortem") or {}
+        note = ""
+        if facts.get("returncode") not in (0, None):
+            note = ("  SALVAGEABLE, %d checkpoint(s)" % salvage["checkpoints"]
+                    if salvage.get("salvageable") else "  NOTHING USABLE")
         print(f"  seed {facts.get('seed')}  rc {facts.get('returncode')}  "
               f"{facts.get('wall_seconds', 0) / 3600:.2f} h  "
-              f"{facts.get('run_dir')}")
+              f"{facts.get('run_dir')}{note}")
     return worst, manifest
 
 
@@ -562,6 +796,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="action_std below this is σ collapse; the run is stopped. "
              "Default 0.02 — 200109 decayed 0.4002 → 0.3375 over 2500 "
              "iterations, so this sits far below anything healthy.",
+    )
+    parser.add_argument(
+        "--stack-mb", type=int, default=TRAINER_STACK_MB, metavar="MiB",
+        help=f"Stack limit given to the trainer process. Default "
+             f"{TRAINER_STACK_MB}. MJX traces deeply enough to overflow the "
+             f"8 MiB default at 2048 environments, which segfaults during "
+             f"tracing with no traceback. Note that `ulimit -s unlimited` "
+             f"does NOT fix this — glibc gives threads its own 8 MiB default "
+             f"for RLIM_INFINITY, and JAX traces on threads.",
+    )
+    parser.add_argument(
+        "--xla-preallocate", action="store_true",
+        help="Let XLA preallocate 75%% of the card, as it does by default. "
+             "cdx-rl turns this off because it delays sb9x's "
+             "post-checkpoint SIGSEGV from the first checkpoint to the last. "
+             "It is not a fix, and memory is not the constraint — the task "
+             "peaks at 777 MiB of 12 282. See cloud.md §1.",
+    )
+    parser.add_argument(
+        "--child-gc", action="store_true",
+        help="Leave CPython's cyclic collector on in the trainer. cdx-rl "
+             "turns it off: a collection landing mid-trace segfaults, and "
+             "although the artefacts survive the exit code does not — which "
+             "is the only thing a sweep reads to tell a finished seed from a "
+             "broken one. See tools/trainer_launch.py.",
     )
     parser.add_argument("--json", action="store_true", help="Emit the facts as JSON.")
     return parser

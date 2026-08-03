@@ -76,6 +76,17 @@ CURVE_ROWS = 10
 #: is at least anchored to a run that worked.
 SIGMA_FLOOR = 0.02
 
+#: Iterations to let pass before projecting a finish time from throughput.
+#:
+#: Iteration 0 carries the whole XLA compile — on a 2048-environment biped it
+#: measured 65 s against a ~9 s steady state — so a rate taken from it
+#: overstates badly. The projection therefore measures a **slope** between
+#: two later samples rather than an average from zero, and this constant is
+#: only how long to wait before trusting it. Ten iterations still lands
+#: inside the first few minutes of a multi-hour run, which is the point: a
+#: wall cap that is wrong should be known before the hours are spent.
+PROJECTION_AFTER = 10
+
 
 def quoted_points(run: dict[str, Any]) -> list[dict[str, Any]]:
     """An evenly-spaced sample of the curve, plus the three named points.
@@ -557,6 +568,8 @@ def watch(run_dir: Path, args: argparse.Namespace) -> dict[str, Any]:
     last_iteration = -1
     started = time.monotonic()
     stopped: dict[str, Any] | None = None
+    projected = False
+    baseline: tuple[int, float] | None = None
 
     print(f"watching {run_dir}  (poll {args.poll:g}s"
           + (f", patience {args.patience}" if args.patience else "")
@@ -586,6 +599,61 @@ def watch(run_dir: Path, args: argparse.Namespace) -> dict[str, Any]:
                 f"@{_fmt(progress.get('best_reward_per_step'), '.4f')}  "
                 f"{state}"
             )
+
+        # Will this run finish inside its wall cap? Asked once, from measured
+        # throughput, as early as the measurement means anything.
+        #
+        # A wall cap is copied between boxes far more often than it is
+        # recalculated, and it is silent when wrong: the seed trains normally
+        # for hours and is then terminated mid-run, leaving checkpoints, no
+        # final policy and no witness — which is indistinguishable from the
+        # run having been stopped on purpose. Experiment 002 has one of those
+        # already (`results/stopped.md`), and a 3 h cap carried onto a card
+        # 2.4-3.2x slower than the one it was measured on would have made a
+        # second. Better to say so at iteration 10 than at hour 3.
+        if not projected and args.timeout:
+            total = progress.get("total")
+            wall = progress.get("wall_time_s")
+            if (
+                isinstance(iteration, int) and isinstance(total, int)
+                and isinstance(wall, (int, float)) and wall > 0
+                and baseline is None and iteration >= 1
+            ):
+                # The slope is measured from here, not from the start, so
+                # that iteration 0 — which carries the whole XLA compile, 65 s
+                # against a ~9 s steady state on sb9x — does not inflate it.
+                baseline = (iteration, float(wall))
+            if (
+                isinstance(iteration, int) and iteration >= PROJECTION_AFTER
+                and isinstance(total, int) and total > 0
+                and isinstance(wall, (int, float)) and wall > 0
+            ):
+                projected = True
+                if baseline is not None and iteration > baseline[0]:
+                    per_iteration = (wall - baseline[1]) / (iteration - baseline[0])
+                else:
+                    # No two distinct samples — fall back to the average,
+                    # which includes compile and so reads high. Erring toward
+                    # a warning is the right way to be wrong here: this
+                    # guard warns and never stops.
+                    per_iteration = wall / (iteration + 1)
+                need = per_iteration * total
+                if need > args.timeout:
+                    reach = int(args.timeout / per_iteration)
+                    print(f"  PROJECTION: {per_iteration:.2f} s/iteration over "
+                          f"{iteration + 1} iterations needs {need / 3600:.2f} h "
+                          f"for {total}, but the wall cap is "
+                          f"{args.timeout / 3600:.2f} h. This seed will be "
+                          f"terminated at about iteration {reach}, with no "
+                          f"final policy and no witness.")
+                    events.append({
+                        "event": "wall-cap-too-short",
+                        "seconds_per_iteration": round(per_iteration, 3),
+                        "projected_seconds": round(need, 1),
+                        "timeout": args.timeout,
+                        "reaches_iteration": reach,
+                        "total": total,
+                    })
 
         # Device guard first: a GPU dispatch that fell back to CPU is not a
         # slow run, it is the wrong run, and every minute of it is wasted.

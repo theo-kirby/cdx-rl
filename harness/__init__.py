@@ -37,4 +37,18 @@ EXIT_INFRASTRUCTURE = 1
 EXIT_USAGE = 2
 EXIT_REFUSED = 3
 
-__all__ = ["EXIT_OK", "EXIT_INFRASTRUCTURE", "EXIT_USAGE", "EXIT_REFUSED"]
+#: The trainer died, and the run is still usable.
+#:
+#: Only ``tools/train.py`` returns this, and only when the process exited
+#: non-zero *and* left complete checkpoints behind — sb9x's open ``SIGSEGV``
+#: at ``train()``'s return (``cloud.md`` §1) does exactly that. It is its own
+#: code because the two obvious alternatives are both wrong: reporting ``0``
+#: would hide a real crash and let a sweep treat a truncated run as finished,
+#: and reporting ``1`` puts four hours of witness-checked checkpoints in the
+#: same bucket as a run that died importing jax. A shell can now branch on
+#: "worth running ``compare`` against" without reading prose, which is the
+#: whole point of this list.
+EXIT_SALVAGEABLE = 4
+
+__all__ = ["EXIT_OK", "EXIT_INFRASTRUCTURE", "EXIT_USAGE", "EXIT_REFUSED",
+           "EXIT_SALVAGEABLE"]

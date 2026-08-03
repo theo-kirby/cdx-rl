@@ -52,6 +52,198 @@ results**, not a link in the chain.
 | OS | Ubuntu 24.04, kernel 6.17 |
 | JAX | 0.7.2 + cuda12, `default_backend() == "gpu"`, `cuda:0` |
 
+### The second box: `sb9x`
+
+Everything above described the only box there was. There are now two, and
+they are not interchangeable — the differences are large enough to change
+both what a run costs and whether it survives at all.
+
+| | `sb1x` | `sb9x` |
+|---|---|---|
+| GPU | RTX 5090, 32 607 MiB | **RTX 4070, 12 282 MiB** |
+| driver | 580.159.03 | **595.84** |
+| CPU | 9950X, 32 threads | **16 threads** |
+| RAM | 60 GB | **15 GB** |
+| s/iteration @ 2048, steady | 4.29–5.62 | **8.93** |
+| iteration 0 (XLA compile) | — | **65 s** |
+| a checkpoint | ~1 iteration | **~106 s** |
+| 1500 iterations, 15 checkpoints | 2.34 h | **~4.2 h** |
+
+Measured on 2026-08-03 against `tasks/stand-b2/`, trainer `aacfa823…`, the
+same fourteen hyperparameters, in **one 40-iteration run** rather than by
+combining numbers across runs. **sb9x is ~1.6–2.1x slower per steady
+iteration**, so every wall cap written for sb1x is wrong here — see the
+projection guard in §4.
+
+Two of those rows are worth more than the headline. **Iteration 0 costs 65 s**,
+seven times a steady one, so any rate averaged from the start of a run reads
+high — which is why the projection measures a slope between two later
+samples. And **a checkpoint costs ~106 s here, not ~1 iteration** as §4 says
+for sb1x: at `--checkpoint-every 100` that is 1 590 s of a 4.2 h seed, about
+10 %, and it is the single largest correction to a naive `iterations x
+s/iteration` estimate.
+
+Both boxes carry the same `cadex-train-venv` pins, which `smoke.py` checks.
+sb9x's Cadex checkout arrived **unbuilt** (no `.pixi`), so `engine_resolved`
+failed and the eight `cadexd` checks never ran — training was unaffected
+(`tools/train.py` never touches the engine) but nothing that authors a
+mechanism worked. It was built on **2026-08-03** and **smoke now passes
+13/13 there**, including `dynamics_surface` at 23 assembly exports and
+`digest_stable` across two rebuilds. The recipe is below, and it is not the
+obvious command.
+
+The build leaves the checkout **clean** — 5.6 GB in `.pixi` and 225 MB in
+`build/`, both gitignored, no tracked file touched, still at `ae8da6a6`.
+
+#### Building the engine on a headless box — not `pixi run build-engine`
+
+sb9x arrived with no `.pixi`, so `smoke.py` failed at `engine_resolved` and
+the eight `cadexd` checks never ran. Getting from there to a built engine has
+one trap in it, and the obvious command is the wrong one.
+
+`build-engine` depends on `configure-release`, which depends on
+`initialize` — and `initialize` is `git submodule update --init
+**--recursive**`, which pulls `shell/lib/<platform>`: **1.3 GB over git-lfs,
+for an application this box will never run**, and `pixi.toml`'s own comment
+says it hard-fails when git-lfs is absent. It is absent here.
+
+ADR-060's engine-only path avoids it, checking out just the two submodules
+the engine actually compiles:
+
+```bash
+curl -fsSL https://pixi.sh/install.sh | sh        # ~/.pixi/bin, appends to .bashrc
+cd /home/theo/cadex
+~/.pixi/bin/pixi run setup-engine                 # OndselSolver + GSL only
+~/.pixi/bin/pixi run -- env CFLAGS= CXXFLAGS= DEBUG_CFLAGS= DEBUG_CXXFLAGS= \
+    cmake --preset conda-linux-release            # NOT `pixi run configure-release`
+~/.pixi/bin/pixi run -- cmake --build build/release --parallel 6
+~/.pixi/bin/pixi run -- cmake --install build/release
+```
+
+Two details are load-bearing. The empty `CFLAGS`/`CXXFLAGS` are what the
+`configure-release` task sets, and they matter — conda exports aggressive
+defaults that the preset expects to override. And `--parallel 6`, not the 16
+threads available: FreeCAD translation units run over 1 GB each and this box
+has **15 GB of RAM**, which a `-j16` build will exhaust. Peak observed at
+`-j6` was ~5.7 GB used with ~9.7 GB free.
+
+#### Three runtime settings, one real fix and two that only move the fault
+
+At 2048 environments the trainer **segfaults on sb9x** with stock settings.
+`tools/train.py` sets all three of these by default and records them in
+`runtime.json` and `sweep.json`:
+
+| setting | flag to undo | effect |
+|---|---|---|
+| stack 256 MiB | `--stack-mb` | **fixes** SIGSEGV during tracing, before iteration 0 — no traceback, `progress.json` still `state: starting` |
+| `XLA_PYTHON_CLIENT_PREALLOCATE=false` | `--xla-preallocate` | moves the later fault; does not remove it |
+| cyclic GC off | `--child-gc` | buys a correct exit code on runs that do finish; does not remove it |
+
+**The stack one is a genuine fix and is understood.** MJX's `make_constraint`
+fans out over contact pairs through nested `vmap` and overflows an 8 MiB
+stack while tracing. `ulimit -s unlimited` does *not* help: glibc reads
+`RLIMIT_STACK` when it creates a thread and substitutes its own 8 MiB default
+for `RLIM_INFINITY`, and JAX traces on threads. The limit must be large and
+**finite**, which is why this is a `preexec_fn` and not a shell line.
+
+**The other two are not fixes, and it took a 40-iteration run to see it.**
+The remaining fault is a `SIGSEGV` that lands *after a checkpoint write*, and
+the settings only decide which one:
+
+| configuration | died at | left behind |
+|---|---|---|
+| prealloc off, GC off | the **final** checkpoint, as `train()` returned | all checkpoints, no final policy |
+| `XLA_PYTHON_CLIENT_ALLOCATOR=platform` | the **first** checkpoint, iteration 20 | one checkpoint, nothing else |
+
+#### What this is *not*
+
+Two hypotheses are ruled out by measurement, and both were stated as fact
+here before they were checked — which is the mistake this file should not
+repeat:
+
+* **Not the card's size.** Peak device usage with preallocation off is
+  **777 MiB of 12 282** — six per cent. The 9 131 MiB seen with preallocation
+  *on* is JAX's 75 % pool, not demand. §4's "32 GB is not the binding
+  constraint at these sizes" holds here too; 12 GB is not binding either, and
+  the earlier claim that it was is withdrawn.
+* **Not a GC leak.** RSS is flat to the byte between checkpoints (above).
+
+What remains is a fault in the compile-and-free path around checkpointing,
+on jax 0.7.2 with driver 595.84 on Ada — the two things that actually differ
+from sb1x, neither of which is memory. The next diagnostic is a
+`faulthandler` traceback taken at the checkpoint boundary rather than at exit.
+
+**sb9x can train and cannot exit cleanly** — which is not the same as cannot
+finish. What a crashed run leaves is measured below, and it is enough.
+
+#### Necessary and **not yet sufficient**
+
+Measured 2026-08-03, and the reason no seed has been dispatched on sb9x.
+
+With all three settings on, 2048 environments completes cleanly at **1 and 3
+iterations** — exit 0, witness 32 975x, final `.cxpolicy` written. At **40
+iterations it segfaults**: `trainer exited -11`, `state: training`, every
+checkpoint present, **no final `.cxpolicy`**. The earlier "clean" result was
+a run too short to provoke it. **Validate at length; a 1-iteration run
+reports success for every fault on this page.**
+
+`faulthandler` puts that one at `cadex_train.py:1661` — the line
+`trained = train(...)` — with no Python frames beneath it, so it is a C-level
+fault as `train()` returns. It lands *before* the final policy is written,
+which is why `os._exit()` in the launcher would not save it.
+
+**The memory profile.** RSS across the failing run, sampled every 10 s
+against the iteration counter:
+
+```
+iterations  1 → 18    5 690 MB, flat, not one byte of growth
+iteration      19     6 442 MB   ← the checkpoint at 20
+iterations 19 → 38    6 442 MB, flat
+iteration      39     6 975 MB   ← the final checkpoint
+```
+
+So: **no per-iteration leak** — turning the collector off does not accumulate
+anything across training, which was the open worry about it. Growth is
+per-*compile*, ~500–750 MB a time, and the host still had 12.4 GB free when
+the run died.
+
+`XLA_PYTHON_CLIENT_ALLOCATOR=platform` has been tried, and it is **worse**:
+routing frees through `cudaFree` instead of the BFC pool moved the crash
+forward to the *first* checkpoint. It is not in the defaults.
+
+Reducing `--envs` would shrink the working set, but `envs` is one of the
+fourteen that define the run — that trades the crash for a different
+experiment, and the point of these seeds is to replicate a specific one.
+
+#### The crash is survivable, and that was measured too
+
+"The run crashed" and "the run is lost" are different statements, and on a
+40-iteration run that died this way the second is false:
+
+* every `.cxpolicy` on disk parsed as a **complete** policy — header,
+  weights, `network`, `normaliser`, and the model/task/trainer digests;
+* `checked_policy` runs the witness **before** writing, so the crash can
+  leave a file *missing* but never leave one *bad*;
+* the `.best` header carried the whole `reward_curve`; and
+* **`compare` consumed them end to end** — played both checkpoints over 6
+  seeds and returned per-motor torque, the hazard-15 column and a selection
+  verdict with its binomial bound.
+
+The `.best` file was rewritten ~20 times in that run, each rewrite running a
+fresh witness pass, without faulting — so **the checkpoint path is not what
+breaks; `train()`'s return is.** What a crash costs is `<label>.cxpolicy`,
+the final iteration's network, which ADR-099 says is not what you select
+anyway.
+
+`tools/train.py` therefore returns **`EXIT_SALVAGEABLE` (4)** for this state
+and prints the checkpoint inventory and the `compare` line to run next. A run
+with *no* checkpoints stays `EXIT_INFRASTRUCTURE` — the distinction is the
+point, and a sweep's verdict ranks by `SEVERITY`, not by the raw number.
+
+So sb9x **is** usable for a seed that must produce a witnessed policy, with
+the caveat that the 1500-iteration case is inferred from a 40-iteration run:
+check the checkpoint count on completion.
+
 ## 2. How the laptop drives it
 
 `/home/theo/cadex/training/remote_train.sh`:

@@ -104,3 +104,91 @@ uv run python tools/train.py \
 ~4.3 h at the 4.29 s/iteration this sweep measured. Seed 2 would start over
 rather than resume; there is no resume, and its 537 iterations are not
 comparable to a run that trained straight through.
+
+### On `sb9x`, three things in that command are wrong
+
+Recorded **2026-08-03**. The command above is correct for `sb1x` and was
+carried to a second box unchanged; it fails there in three ways, none of them
+loudly.
+
+1. **The bundle path does not exist.** `/home/theo/cadex-jobs/` on sb9x holds
+   an unrelated, older run. Use the committed copy, which is byte-identical
+   to what 200109 trained on (`tasks/stand-b2/README.md`):
+   `--bundle tasks/stand-b2/stand-task.json`.
+2. **`--timeout 10800` truncates every seed.** sb9x measures **8.93
+   s/iteration** steady against sb1x's 4.29–5.62, plus a 65 s compile and
+   **~106 s per checkpoint**, so 1500 iterations with 15 checkpoints needs
+   **~4.2 h**, not 2.34. A 3 h cap terminates each seed around iteration
+   1 050 — and what that leaves is a directory of checkpoints with no final
+   `.cxpolicy` and no witness, which is *precisely the artefact this file
+   documents*. Two of those would be indistinguishable from one another and
+   from a deliberate stop. Use `--timeout 20000`. `supervise` now projects
+   the finish from a measured slope after iteration 10 and says so, so this
+   is caught in minutes rather than hours.
+3. **The trainer segfaults at 2048 environments**, and this one is **not
+   solved — but it is survivable.** `tools/train.py` defaults three runtime
+   fixes on (`cloud.md` §1), which is enough for short runs and not enough at
+   length: a 40-iteration validation still exited `-11` as `train()`
+   returned. What it left behind, however, is a usable experiment —
+   see below. `train.py` now returns `EXIT_SALVAGEABLE` (4) for exactly this
+   state rather than calling it infrastructure failure.
+
+`--require-trainer aacfa823…` **passes on sb9x**: its Cadex sits ten commits
+past `06d1374b`, but all ten are engine-side and `training/` is byte-identical.
+
+The corrected dispatch, then, is the same command with one path and one
+number changed:
+
+```bash
+uv run python tools/train.py \
+  --bundle tasks/stand-b2/stand-task.json \
+  --label stand9 --seeds 2 3 \
+  --iterations 1500 --envs 2048 --checkpoint-every 100 \
+  --require-trainer aacfa82318e4e2399f65cf2ffe234504a288b586a178fc1dbe32e539a1fe7b24 \
+  --detach --supervise --require-device gpu --patience 0 --timeout 20000
+```
+
+**~8.4 h for the two**, against 4.3 h on sb1x. Every hyperparameter still
+defaults to what 200109 ran, so the fourteen need not be repeated.
+
+**Expect each seed to exit `-11`, and expect it to be usable anyway.** This
+was checked rather than assumed, because "the run crashed" and "the run is
+lost" are not the same statement and the difference here is eight GPU-hours.
+
+On a 40-iteration run that died exactly this way:
+
+* both `.cxpolicy` files on disk parsed as **complete policies** — full
+  header, weights, `network`, `normaliser`, and the `model`/`task`/`trainer`
+  digests;
+* `checked_policy` runs the witness **before** writing, so a checkpoint that
+  exists is one that passed — the crash cannot leave a bad file, only a
+  missing one;
+* the `.best` header carried the **whole 40-row `reward_curve`**, and
+  `train.log` carries the series independently; and
+* **`compare` consumed them end to end** — played both checkpoints in stock
+  MuJoCo over 6 seeds, produced per-motor peak and mean torque, the hazard-15
+  column, and a selection verdict with its binomial bound.
+
+The `.best` file was also rewritten ~20 times during that run, each rewrite
+running a fresh witness pass, without faulting. **The checkpoint path is not
+what breaks; `train()`'s return is.** So a 1500-iteration seed should write
+all 15 periodic checkpoints and die after the last one.
+
+What is actually lost is `stand9.cxpolicy` — the **iteration-1500** network.
+That is not the selection target: ADR-099, and both 001 and 002, say a
+checkpoint is chosen by what it did when played, and 002 measured the final
+iteration losing to earlier ones in 2 of 2 seeds. **Criterion 5 does not
+depend on the file the crash destroys.**
+
+Two things to hold to, though. The 1500-iteration case is **inferred from a
+40-iteration run**, not measured — check the checkpoint count on completion
+before concluding anything. And a seed that produces *no* checkpoints is a
+different failure and is reported as such (`EXIT_INFRASTRUCTURE`, not 4).
+
+**What this costs the comparison.** Seeds 0 and 1 ran on sb1x; 2 and 3 would
+run on a different card, driver and runtime configuration. Criterion 5 is
+answered *within* a seed — the reward peak and the best checkpoint are read
+off the same run's own curve and its own `compare` — so it survives the move.
+A claim about a *value* shared across seeds would not, and 002 already
+measured that seeds do not reproduce bitwise even on one card. §8 must name
+the box per seed.
