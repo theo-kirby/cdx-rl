@@ -349,10 +349,64 @@ resolves into a number: our `.cxpolicy` checkpoints are 88–451 KB and
 directory would be; upload the chosen and the best one and say where the rest
 live.
 
+### The artifact type is checked against the bytes, at the PUT
+
+> **Measured 2026-08-02, and it cost two prepared batches.** The server
+> validates the uploaded bytes against the declared `artifact_type` and
+> refuses with **HTTP 422**, *"uploaded artifact bytes are not valid for
+> requested artifact type"* — at the **PUT**, after the batch is already
+> prepared. And **a batch with any unfilled slot cannot be finalized**
+> (`422 artifact upload batch is incomplete`), so one wrong type wastes the
+> whole batch. A batch that is simply abandoned expires quietly and bumps no
+> revision, which is the cheap way out.
+
+What this repository measured, by probing:
+
+| type | accepts | refuses |
+|---|---|---|
+| `table` | **JSON only** — an array of row objects, *or* a `{columns, rows}` document | **CSV, TSV** |
+| `text` | plain prose, XML | |
+| `json` | JSON | |
+| `checkpoint` | a recognised model format — `.ckpt` / `.pt` / `.pth` / `.safetensors` / `.onnx` filename, a checkpoint media-type, or model metadata | **a `cadex-policy-v1` container** |
+| `binary` | anything | |
+
+Two consequences for cdx-rl:
+
+* **A `.cxpolicy` goes up as `binary`**, with its `format`, `parameters`,
+  `sha256`, `task_sha256` and `model_sha256` in `metadata` and the reason in
+  the `note`. `prepare` even says so in its refusal: *"Use
+  artifact_type='binary' for generic opaque files."*
+* **A driver that wants a `table` artifact must be able to emit JSON.**
+  `compare --table` and `capability --table` write `{columns, rows}`;
+  `compare --csv` exists separately, for spreadsheets, and must not be
+  uploaded as a `table`.
+
+### The stage lease is about sixty seconds
+
+`acquire_stage_lease` returns `expires_at` roughly 60 s out with a
+`heartbeat_interval_seconds` of 15. **A full-snapshot `commit_node` of a
+long node does not reliably fit inside one lease** — composing eight
+thousand characters of Markdown takes longer than the lease lasts, and the
+result is `409 stage lease missing or expired` after the work is done.
+
+The reliable sequence is three calls:
+
+```
+acquire_stage_lease  →  heartbeat_stage_lease  →  commit_node
+```
+
+The heartbeat resets the clock to the moment *immediately before* the long
+generation, which is the only part that takes real time. Measured: two
+straight acquire-then-commit attempts on the same node both expired; both
+succeeded with the heartbeat in between.
+
 Rules that bite:
 
 * The upload body is **raw file bytes**. A JSON metadata wrapper is
   explicitly forbidden.
+* `set_node_tag_assignments` accepted the **node's** revision on this build,
+  not the graph's — contrary to §4's note. Send the node revision; a
+  conflict states the current value, so read it and retry.
 * `title` is required non-empty and must **never** be derived from
   `storage_url`. Give every artifact a title a human would recognise in a
   list.
@@ -409,12 +463,23 @@ python3 ~/.claude/skills/flywheel-tree/scripts/render_tree.py \
         --input tree.json --no-color
 ```
 
+As of 2026-08-03, after the harness build and both experiments:
+
 ```
 cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
-├── Thesis and scope: cdx-rl owns the drivers, the discipline and the record | blue-wave-6018
-├── sb1x environment and topology: what is verified, and the stale-payload trap | black-cell-1407
-└── stand-task-20260802-200109: reward peaked at 598 of 2500, episode length at ~1800 | restless-mode-0384
+├── Thesis and scope | blue-wave-6018
+├── sb1x environment and topology | black-cell-1407
+├── stand-task-20260802-200109: reward peaked at 598, episode length at ~1800 | restless-mode-0384
+│   └── 001 Phase A: the best checkpoint is iteration 1699 | bold-violet-5086
+│       └── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
+└── 000: the loop closes, on CPU in 62 s | calm-bird-4796
 ```
+
+**The shape is the contract's, followed deliberately.** Phase A hangs off the
+observation that motivated it rather than off the root, and Phase B off Phase
+A, so the chain reads as *observation → measurement → the measurement that
+corrected it*. Experiment 000 hangs off the root because it is nobody's
+consequence — it is the floor.
 
 ## 7. Compute — we do not use it
 

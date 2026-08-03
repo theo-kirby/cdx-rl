@@ -210,6 +210,88 @@ print it is worse than one that never computed it**, because it creates the
 impression the question was asked. Recorded so the principle survives the
 specific bug.
 
+## 8. `put_asset` moves the revision, and the next `write_script` is refused
+
+**Status: worked around** (`CadexdClient.refresh_revision()`).
+
+Measured while bringing experiment 000's trained policy home. The sequence is
+the obvious one and the only one ADR-084 offers:
+
+```python
+client.put_asset("pendulum.cxpolicy")          # ok
+client.write_script(rig_source + policy_decl)  # STALE_PROGRAM_REVISION
+```
+
+with
+
+```
+The project script changed after inspection.  [STALE_PROGRAM_REVISION @ precondition]
+observed  {"current_revision": "31daf67d…"}
+retry     {"required_changes": [{"inspect": "core.inspect scope=script"}]}
+```
+
+**The script had not changed.** Storing an asset is not a script write, but
+it moves whatever the engine compares `expected_revision` against — so the
+canonical "train elsewhere, bring the weights home, declare them" flow fails
+on its second step unless the caller knows to re-inspect in between.
+
+The retry hint is correct and machine-readable, which is why this is a
+papercut rather than a trap: `inspect scope="script"` returns
+`value.revisions.working_revision` and the next write succeeds. The
+workaround is four lines.
+
+**Wanted:** `put_asset`'s reply carries the new `revision`, the way
+`write_script`, `set_params` and `rebuild` all do. Every other mutating op
+tells the caller what the project is now; this one does not, and it is the op
+that stands between a trained policy and a verified one.
+
+Related and smaller: `open_project`'s reply comes back with an **empty**
+working revision for a project that already has an accepted script, so a
+client that trusts it starts out stale.
+
+## 9. `policy_forward` takes the header and weights, not the container
+
+**Status: papercut, worked around.**
+
+`decode_policy(blob)` returns `{"header": …, "weights": …}`. The natural next
+call does not take it:
+
+```python
+container = cd.decode_policy(blob)
+cd.policy_forward(container, observation)                        # ✗
+cd.policy_forward(container["header"], container["weights"], observation)  # ✓
+```
+
+`verify_policy(container, task, …)` *does* take the container, so the two
+functions on either side of it disagree about what a policy is. Trivial once
+known, and one line in every evaluator that ever loads a policy.
+
+**Wanted:** accept the container as the first argument, or return a small
+object with a `forward(observation)` on it. Either would make the four-call
+sequence — decode, verify, load, play — read as one thing.
+
+## 10. The witness margin is thousands-separated on stderr
+
+**Status: worked around** (`harness/runlog.py::WITNESS_RE`).
+
+The trainer prints its margin as prose:
+
+```
+witness agrees to 8.761e-08 (1,141x inside the engine's tolerance)
+```
+
+The comma is the problem. A parser written against the only margins this box
+had seen — `355x`, `430x` — matched `[\d.]+` and **silently found nothing**
+on the first run whose margin exceeded a thousand. `supervise` reported "no
+witness margin recorded" for a run eleven times inside the floor.
+
+Our regex is fixed. But the general shape is wishlist #6's shape again: the
+margin is a *number* that only exists as formatted text, and hazard 13 says
+the number under 100× is the one that matters. **Wanted:** `witness_error`
+and `witness_tolerance` are already in the terminal JSON blob — put the
+factor there too, or put the margin in `progress.json` where a supervisor can
+act on it while the run is still going rather than after it ends.
+
 ---
 
 ## Withdrawn

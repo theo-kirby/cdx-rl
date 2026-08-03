@@ -1,8 +1,88 @@
 # harness/DESIGN.md — the drivers, specified
 
-**Nothing in this directory is built yet.** This file is the specification
-the follow-up plan starts from, so that plan begins with interfaces rather
-than a blank page.
+**Four of the six are built.** This file remains the specification; the
+section immediately below records what building them changed about it.
+
+| driver | | |
+|---|---|---|
+| `rebuild` | ✅ built | `rebuild.py` |
+| `supervise` | ✅ built | `supervise.py` + `runlog.py`, both modes |
+| `compare` | ✅ built | `compare.py` + `episodes.py` + `_episodes.py` |
+| `capability` | ✅ built | `capability.py` |
+| `measure` | ❌ deferred | earns its keep only before a *new* dispatch |
+| `feasibility` | ❌ deferred | same |
+
+Run them through `uv run python -m harness <driver> …`. Asking for a deferred
+one says so, rather than failing with an argparse error: "not built yet" and
+"you typed it wrong" are different problems.
+
+---
+
+## What the build changed about this specification
+
+Eight things. Each is here because it was wrong or missing in the text above,
+and each was found by running the driver rather than by reading it.
+
+1. **`episodes.py` was not specified and is load-bearing.** `compare` and
+   `capability` ask the same three questions — where is the bundle, where is
+   the model, what do a hundred rows add up to — and the answers live in one
+   module rather than in two that drift.
+
+2. **The model must be resolved by digest, not by name.** The spec says
+   `--task` means the run's own bundle and stops there. But a policy played
+   against the wrong MJCF still verifies, still produces numbers, and nothing
+   downstream says so. `resolve_model` matches the bundle's own
+   `model.sha256` and refuses otherwise.
+
+3. **The same-file-twice test must run with `--jobs 1`.** Specified as "a
+   test that plays the same file twice", which a worker pool passes for the
+   wrong reason: give each replica a fresh process and the ADR-103 bug cannot
+   express itself. The second pass has to run in a process that has already
+   played the first.
+
+4. **The `best` checkpoint record names a file the next one overwrites.**
+   `stand-task-20260802-200109` has 60 records over 49 files. Only the last
+   record per path can match on disk; the rest are `superseded`, not
+   `MISMATCH`. Getting this wrong prints ten alarming rows about a healthy
+   run, which teaches a reader to skip the column.
+
+5. **An iteration-0 "episode length" can exceed the horizon.** Four of the
+   eight runs on this box log 1280–1412 steps against a 600-step budget, one
+   point each, always the first. Left in, it wins the episode-length peak
+   search and the report announces that those runs peaked at iteration 0.
+   Points above the bundle's own `max_steps` are excluded **and counted**.
+
+6. **A winner needs a significance bound printed beside it.** Not in the
+   spec at all, and it changed a conclusion: `compare` at 12 seeds ranked
+   iteration 1699 above the final network 7/12 to 6/12, and at 48 seeds the
+   order reversed. Survival is binomial, so the worst-case standard error of
+   a difference is `√(2·0.25/n)` — 20 pp at n=12. **12 seeds is enough to
+   reject a checkpoint and not enough to crown one**, and the driver now says
+   so with the tied set listed.
+
+7. **A `table` artifact must be JSON, and a `.cxpolicy` is not a
+   `checkpoint`.** Flywheel validates uploaded bytes against the declared
+   artifact type. `table` accepts an array of row objects or a
+   `{columns, rows}` document and refuses CSV and TSV; `checkpoint` wants a
+   recognised model format and refuses a `cadex-policy-v1` container, which
+   goes up as `binary`. Both refusals arrive at the PUT, after the batch is
+   prepared, and a batch with one unfilled slot cannot be finalized.
+
+8. **Columns a task does not declare must read as absent, not as `nan`.**
+   The pendulum declares no `tipped` termination and no `drift` reward term.
+   `compare` printed `nan` in both columns and quoted the biped's `0.15`
+   threshold in the footnote. An empty cell has to say "the task does not
+   define this".
+
+And one in the spine rather than in a driver: **`put_asset` moves the project
+revision without being a script write**, so the next `write_script` is
+refused `STALE_PROGRAM_REVISION` with an unchanged script. That is exactly
+the shape of bringing a trained policy home. `CadexdClient.refresh_revision()`
+is the fix, called after `put_asset` and from `open_project` — whose reply,
+measured, comes back with an empty revision for a project that has an
+accepted script.
+
+---
 
 ## Why these exist here
 

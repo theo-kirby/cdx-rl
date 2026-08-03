@@ -268,8 +268,8 @@ identical rows — before any other number was looked at.
 |---|---|---|---|---|---|
 | `stand8.000050` | 49 | **0/12** | 21.7 | 20 | −0.5822 |
 | `stand8.best` (the reward peak) | **598** | **2/12** | 190.6 | 110 | **+0.3373** |
-| `stand8.001700` | **1699** | **7/12** | **401.2** | **600** | +0.1739 |
-| `stand8.001950` | 1949 | 6/12 | 371.4 | 434 | +0.2138 |
+| `stand8.001700` | **1699** | **7/12** | **401.2** | **600** | +0.2138 |
+| `stand8.001950` | 1949 | 6/12 | 371.4 | 434 | +0.2094 |
 | `stand8` (final) | 2499 | 6/12 | 347.8 | 370 | +0.1461 |
 
 **Best by measured survival is iteration 1699 — not 598, and not ~1800.**
@@ -364,10 +364,11 @@ The best checkpoint of `stand-task-20260802-200109` is
 playing it, which is the only way it could have been known.
 
 **Pass criterion 3 resolves the second way, and that is the result.** No
-reward-based stopping rule would have kept it. Its trainer reward is 0.1739
-against the peak's 0.3373 — 52 % of it — so any rule of the form *stop when
-reward has not improved for N iterations* stops at 598 + N and, for any N
-small enough to save compute, stops before 1699. The rule that would have
+reward-based stopping rule would have kept it. Its trainer reward is 0.2138
+against the peak's 0.3373 — 63 % of it, and **below every one of the 40
+checkpoints between them** — so any rule of the form *stop when reward has
+not improved for N iterations* stops at 598 + N and, for any N small enough
+to save compute, stops before 1699. The rule that would have
 worked on this run is *do not stop*, which is not a rule.
 
 What the numbers support instead, stated as provisional (§9's last risk

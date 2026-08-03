@@ -124,12 +124,41 @@ Other environment facts:
 
 | | |
 |---|---|
-| Environment | ✅ `uv` venv, `config/env`, smoke test passing |
-| Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py` |
+| Environment | ✅ `uv` venv, `config/env`, smoke test passing 13/13 |
+| Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel root | ✅ `rapid-bar-6214` (`c3fb9307-fdb1-5f9a-8656-6c737ba507f5`) |
-| Drivers | ❌ specified in `harness/DESIGN.md`, not built |
-| Experiments | ❌ 000 and 001 specified; 000's modelling half verified |
+| Flywheel | ✅ root `rapid-bar-6214`, six nodes, three of them empirical |
+| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability` — via `uv run python -m harness <driver>` |
+| | ❌ `measure`, `feasibility` deferred: both matter only before a *new* dispatch |
+| Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
+| Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
+
+**Total GPU-hours spent by this repository: zero.** Experiment 000's training
+half ran on CPU in 48 s; experiment 001 replayed eight existing runs.
+
+### What the experiments concluded, in four lines
+
+* The best checkpoint of `stand-task-20260802-200109` is **iteration 1699**
+  (7/12 survival). The trainer's reward peak at 598 manages **2/12**.
+* Survival against the trainer's `reward_per_step` is **r = +0.06** over the
+  whole run and **−0.34** after its peak. **No reward-based stopping rule
+  would have found the right checkpoint** — so a supervisor should stop on
+  divergence, device and liveness, never on reward patience.
+* The declared 0.3–0.8 N shove band is **in range** (48/48 unshoved, ~50 % at
+  full magnitude). ADR-106's revision worked.
+* **Hazard 15 is the resting posture**: with nothing pushing at all, the
+  later policies hold a motor at 71 % of its 86 N·mm rating. This policy
+  family does not describe a machine that can be built.
+
+### Things that will bite the next agent
+
+* **`compare --seeds 12` cannot crown a winner.** Survival is binomial; the
+  2σ bound on a difference is 20 pp at n=12. It is enough to *reject* a
+  checkpoint. `compare` prints the bound and the tied set; read it.
+* **A `table` artifact on Flywheel must be JSON**, and a `.cxpolicy` uploads
+  as `binary`, not `checkpoint`. See `flywheel.md` §5.
+* **A stage lease is ~60 s** and a full-snapshot `commit_node` of a long node
+  does not reliably fit inside one. Acquire → heartbeat → commit.
 
 **Verified on this box, and worth knowing:** the dynamics domain evaluates
 **headlessly**. A 1-DOF pendulum authored through `cadexd` produced both an
