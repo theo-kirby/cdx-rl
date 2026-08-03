@@ -1,0 +1,1439 @@
+{
+  "actions": [
+    {
+      "actuator": "hip_roll_l/position",
+      "fallback": "0",
+      "high": 30.0,
+      "index": 0,
+      "joint": "hip_roll_l",
+      "kind": "position",
+      "low": -30.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "hip_roll_r/position",
+      "fallback": "0",
+      "high": 30.0,
+      "index": 1,
+      "joint": "hip_roll_r",
+      "kind": "position",
+      "low": -30.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "hip_pitch_l/position",
+      "fallback": "0",
+      "high": 45.0,
+      "index": 2,
+      "joint": "hip_pitch_l",
+      "kind": "position",
+      "low": -45.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "hip_pitch_r/position",
+      "fallback": "0",
+      "high": 45.0,
+      "index": 3,
+      "joint": "hip_pitch_r",
+      "kind": "position",
+      "low": -45.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "knee_l/position",
+      "fallback": "0",
+      "high": 30.0,
+      "index": 4,
+      "joint": "knee_l",
+      "kind": "position",
+      "low": -30.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "knee_r/position",
+      "fallback": "0",
+      "high": 30.0,
+      "index": 5,
+      "joint": "knee_r",
+      "kind": "position",
+      "low": -30.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "ankle_l/position",
+      "fallback": "0",
+      "high": 25.0,
+      "index": 6,
+      "joint": "ankle_l",
+      "kind": "position",
+      "low": -25.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "ankle_r/position",
+      "fallback": "0",
+      "high": 25.0,
+      "index": 7,
+      "joint": "ankle_r",
+      "kind": "position",
+      "low": -25.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "ankle_roll_l/position",
+      "fallback": "0",
+      "high": 20.0,
+      "index": 8,
+      "joint": "ankle_roll_l",
+      "kind": "position",
+      "low": -20.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    },
+    {
+      "actuator": "ankle_roll_r/position",
+      "fallback": "0",
+      "high": 20.0,
+      "index": 9,
+      "joint": "ankle_roll_r",
+      "kind": "position",
+      "low": -20.0,
+      "motion_type": "angular",
+      "scale": 0.017453292519943295,
+      "source": "angle_limits_degrees",
+      "unit": "deg"
+    }
+  ],
+  "disturbance": [
+    {
+      "applied_at": "centre_of_mass",
+      "at_high_s": 1.5,
+      "at_low_s": 0.3,
+      "azimuth_high_rad": 5.759586531581287,
+      "azimuth_low_rad": 3.6651914291880923,
+      "body": "pelvis",
+      "body_id": 2,
+      "direction": "horizontal",
+      "duration_s": 0.12,
+      "frame": "world",
+      "label": "shove",
+      "newtons_high": 0.8,
+      "newtons_low": 0.3,
+      "sustained": false
+    },
+    {
+      "applied_at": "centre_of_mass",
+      "at_high_s": 3.6,
+      "at_low_s": 1.8,
+      "azimuth_high_rad": 6.283185307179586,
+      "azimuth_low_rad": 0.0,
+      "body": "pelvis",
+      "body_id": 2,
+      "direction": "horizontal",
+      "duration_s": 0.12,
+      "frame": "world",
+      "label": "shove2",
+      "newtons_high": 0.8,
+      "newtons_low": 0.3,
+      "sustained": false
+    },
+    {
+      "applied_at": "centre_of_mass",
+      "at_high_s": 0.0,
+      "at_low_s": 0.0,
+      "azimuth_high_rad": 6.283185307179586,
+      "azimuth_low_rad": 0.0,
+      "body": "pelvis",
+      "body_id": 2,
+      "direction": "horizontal",
+      "duration_s": 0.0,
+      "frame": "world",
+      "label": "wind",
+      "newtons_high": 0.06,
+      "newtons_low": 0.0,
+      "sustained": true
+    }
+  ],
+  "episode": {
+    "control_hz": 50,
+    "control_interval_s": 0.02,
+    "episode_seconds": 6.0,
+    "max_steps": 300,
+    "reset_keyframe": "solved",
+    "reward_stage": "after_step",
+    "solver_step_s": 0.002,
+    "solver_steps_per_action": 10
+  },
+  "functions": [
+    "abs",
+    "arcsin",
+    "arctan",
+    "asin",
+    "cos",
+    "exp",
+    "sin",
+    "sqrt",
+    "tanh"
+  ],
+  "label": "stand",
+  "model": {
+    "bytes": 14179,
+    "mujoco_version": "3.10.0",
+    "output": "model",
+    "path": "outputs/model-model.xml",
+    "sha256": "80eaa18f6025d589796315fcad45bb70bf72e55da750864f60b5e0b3cc71fdb3"
+  },
+  "mujoco_version": "3.10.0",
+  "observations": [
+    {
+      "adr": 0,
+      "channels": [
+        "pel_x",
+        "pel_y",
+        "pel_z"
+      ],
+      "dim": 3,
+      "kind": "component_position",
+      "name": "pel",
+      "scale": 1000.0,
+      "sensor": "obs/0",
+      "target": "pelvis",
+      "unit": "mm"
+    },
+    {
+      "adr": 3,
+      "channels": [
+        "pel_qw",
+        "pel_qx",
+        "pel_qy",
+        "pel_qz"
+      ],
+      "dim": 4,
+      "kind": "component_orientation",
+      "name": "pel",
+      "scale": 1.0,
+      "sensor": "obs/1",
+      "target": "pelvis",
+      "unit": "quat"
+    },
+    {
+      "adr": 7,
+      "channels": [
+        "pv_x",
+        "pv_y",
+        "pv_z"
+      ],
+      "dim": 3,
+      "kind": "component_linear_velocity",
+      "name": "pv",
+      "scale": 1000.0,
+      "sensor": "obs/2",
+      "target": "pelvis",
+      "unit": "mm/s"
+    },
+    {
+      "adr": 10,
+      "channels": [
+        "pw_x",
+        "pw_y",
+        "pw_z"
+      ],
+      "dim": 3,
+      "kind": "component_angular_velocity",
+      "name": "pw",
+      "scale": 57.29577951308232,
+      "sensor": "obs/3",
+      "target": "pelvis",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 13,
+      "channels": [
+        "com_x",
+        "com_y",
+        "com_z"
+      ],
+      "dim": 3,
+      "kind": "centre_of_mass",
+      "name": "com",
+      "scale": 1000.0,
+      "sensor": "obs/4",
+      "target": "pelvis",
+      "unit": "mm"
+    },
+    {
+      "adr": 16,
+      "channels": [
+        "cv_x",
+        "cv_y",
+        "cv_z"
+      ],
+      "dim": 3,
+      "kind": "centre_of_mass_velocity",
+      "name": "cv",
+      "scale": 1000.0,
+      "sensor": "obs/5",
+      "target": "pelvis",
+      "unit": "mm/s"
+    },
+    {
+      "adr": 19,
+      "channels": [
+        "cam_x",
+        "cam_y",
+        "cam_z"
+      ],
+      "dim": 3,
+      "kind": "centroidal_angular_momentum",
+      "name": "cam",
+      "scale": 1000.0,
+      "sensor": "obs/6",
+      "target": "pelvis",
+      "unit": "nmms"
+    },
+    {
+      "adr": 22,
+      "channels": [
+        "ft_l_x",
+        "ft_l_y",
+        "ft_l_z"
+      ],
+      "dim": 3,
+      "kind": "component_position",
+      "name": "ft_l",
+      "scale": 1000.0,
+      "sensor": "obs/7",
+      "target": "foot_l",
+      "unit": "mm"
+    },
+    {
+      "adr": 25,
+      "channels": [
+        "ft_r_x",
+        "ft_r_y",
+        "ft_r_z"
+      ],
+      "dim": 3,
+      "kind": "component_position",
+      "name": "ft_r",
+      "scale": 1000.0,
+      "sensor": "obs/8",
+      "target": "foot_r",
+      "unit": "mm"
+    },
+    {
+      "adr": 28,
+      "channels": [
+        "hip_roll_l_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "hip_roll_l_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/9",
+      "target": "hip_roll_l",
+      "unit": "deg"
+    },
+    {
+      "adr": 29,
+      "channels": [
+        "hip_roll_r_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "hip_roll_r_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/10",
+      "target": "hip_roll_r",
+      "unit": "deg"
+    },
+    {
+      "adr": 30,
+      "channels": [
+        "hip_pitch_l_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "hip_pitch_l_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/11",
+      "target": "hip_pitch_l",
+      "unit": "deg"
+    },
+    {
+      "adr": 31,
+      "channels": [
+        "hip_pitch_r_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "hip_pitch_r_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/12",
+      "target": "hip_pitch_r",
+      "unit": "deg"
+    },
+    {
+      "adr": 32,
+      "channels": [
+        "knee_l_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "knee_l_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/13",
+      "target": "knee_l",
+      "unit": "deg"
+    },
+    {
+      "adr": 33,
+      "channels": [
+        "knee_r_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "knee_r_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/14",
+      "target": "knee_r",
+      "unit": "deg"
+    },
+    {
+      "adr": 34,
+      "channels": [
+        "ankle_l_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "ankle_l_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/15",
+      "target": "ankle_l",
+      "unit": "deg"
+    },
+    {
+      "adr": 35,
+      "channels": [
+        "ankle_r_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "ankle_r_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/16",
+      "target": "ankle_r",
+      "unit": "deg"
+    },
+    {
+      "adr": 36,
+      "channels": [
+        "ankle_roll_l_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "ankle_roll_l_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/17",
+      "target": "ankle_roll_l",
+      "unit": "deg"
+    },
+    {
+      "adr": 37,
+      "channels": [
+        "ankle_roll_r_a"
+      ],
+      "dim": 1,
+      "kind": "position",
+      "name": "ankle_roll_r_a",
+      "scale": 57.29577951308232,
+      "sensor": "obs/18",
+      "target": "ankle_roll_r",
+      "unit": "deg"
+    },
+    {
+      "adr": 38,
+      "channels": [
+        "hip_roll_l_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "hip_roll_l_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/19",
+      "target": "hip_roll_l",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 39,
+      "channels": [
+        "hip_roll_r_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "hip_roll_r_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/20",
+      "target": "hip_roll_r",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 40,
+      "channels": [
+        "hip_pitch_l_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "hip_pitch_l_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/21",
+      "target": "hip_pitch_l",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 41,
+      "channels": [
+        "hip_pitch_r_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "hip_pitch_r_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/22",
+      "target": "hip_pitch_r",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 42,
+      "channels": [
+        "knee_l_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "knee_l_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/23",
+      "target": "knee_l",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 43,
+      "channels": [
+        "knee_r_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "knee_r_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/24",
+      "target": "knee_r",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 44,
+      "channels": [
+        "ankle_l_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "ankle_l_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/25",
+      "target": "ankle_l",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 45,
+      "channels": [
+        "ankle_r_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "ankle_r_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/26",
+      "target": "ankle_r",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 46,
+      "channels": [
+        "ankle_roll_l_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "ankle_roll_l_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/27",
+      "target": "ankle_roll_l",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 47,
+      "channels": [
+        "ankle_roll_r_v"
+      ],
+      "dim": 1,
+      "kind": "velocity",
+      "name": "ankle_roll_r_v",
+      "scale": 57.29577951308232,
+      "sensor": "obs/28",
+      "target": "ankle_roll_r",
+      "unit": "deg/s"
+    },
+    {
+      "adr": 48,
+      "channels": [
+        "hip_roll_l_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "hip_roll_l_tau",
+      "scale": 1000.0,
+      "sensor": "obs/29",
+      "target": "hip_roll_l",
+      "unit": "nmm"
+    },
+    {
+      "adr": 49,
+      "channels": [
+        "hip_roll_r_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "hip_roll_r_tau",
+      "scale": 1000.0,
+      "sensor": "obs/30",
+      "target": "hip_roll_r",
+      "unit": "nmm"
+    },
+    {
+      "adr": 50,
+      "channels": [
+        "hip_pitch_l_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "hip_pitch_l_tau",
+      "scale": 1000.0,
+      "sensor": "obs/31",
+      "target": "hip_pitch_l",
+      "unit": "nmm"
+    },
+    {
+      "adr": 51,
+      "channels": [
+        "hip_pitch_r_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "hip_pitch_r_tau",
+      "scale": 1000.0,
+      "sensor": "obs/32",
+      "target": "hip_pitch_r",
+      "unit": "nmm"
+    },
+    {
+      "adr": 52,
+      "channels": [
+        "knee_l_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "knee_l_tau",
+      "scale": 1000.0,
+      "sensor": "obs/33",
+      "target": "knee_l",
+      "unit": "nmm"
+    },
+    {
+      "adr": 53,
+      "channels": [
+        "knee_r_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "knee_r_tau",
+      "scale": 1000.0,
+      "sensor": "obs/34",
+      "target": "knee_r",
+      "unit": "nmm"
+    },
+    {
+      "adr": 54,
+      "channels": [
+        "ankle_l_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "ankle_l_tau",
+      "scale": 1000.0,
+      "sensor": "obs/35",
+      "target": "ankle_l",
+      "unit": "nmm"
+    },
+    {
+      "adr": 55,
+      "channels": [
+        "ankle_r_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "ankle_r_tau",
+      "scale": 1000.0,
+      "sensor": "obs/36",
+      "target": "ankle_r",
+      "unit": "nmm"
+    },
+    {
+      "adr": 56,
+      "channels": [
+        "ankle_roll_l_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "ankle_roll_l_tau",
+      "scale": 1000.0,
+      "sensor": "obs/37",
+      "target": "ankle_roll_l",
+      "unit": "nmm"
+    },
+    {
+      "adr": 57,
+      "channels": [
+        "ankle_roll_r_tau"
+      ],
+      "dim": 1,
+      "kind": "actuator_force",
+      "name": "ankle_roll_r_tau",
+      "scale": 1000.0,
+      "sensor": "obs/38",
+      "target": "ankle_roll_r",
+      "unit": "nmm"
+    }
+  ],
+  "randomisation": [
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 2
+        },
+        {
+          "field": "body_inertia",
+          "index": 6
+        },
+        {
+          "field": "body_inertia",
+          "index": 7
+        },
+        {
+          "field": "body_inertia",
+          "index": 8
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "pelvis",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 3
+        },
+        {
+          "field": "body_inertia",
+          "index": 9
+        },
+        {
+          "field": "body_inertia",
+          "index": 10
+        },
+        {
+          "field": "body_inertia",
+          "index": 11
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "hip_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 13
+        },
+        {
+          "field": "body_inertia",
+          "index": 39
+        },
+        {
+          "field": "body_inertia",
+          "index": 40
+        },
+        {
+          "field": "body_inertia",
+          "index": 41
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "hip_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 4
+        },
+        {
+          "field": "body_inertia",
+          "index": 12
+        },
+        {
+          "field": "body_inertia",
+          "index": 13
+        },
+        {
+          "field": "body_inertia",
+          "index": 14
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "thigh_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 14
+        },
+        {
+          "field": "body_inertia",
+          "index": 42
+        },
+        {
+          "field": "body_inertia",
+          "index": 43
+        },
+        {
+          "field": "body_inertia",
+          "index": 44
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "thigh_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 5
+        },
+        {
+          "field": "body_inertia",
+          "index": 15
+        },
+        {
+          "field": "body_inertia",
+          "index": 16
+        },
+        {
+          "field": "body_inertia",
+          "index": 17
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "calf_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 15
+        },
+        {
+          "field": "body_inertia",
+          "index": 45
+        },
+        {
+          "field": "body_inertia",
+          "index": 46
+        },
+        {
+          "field": "body_inertia",
+          "index": 47
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "calf_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 6
+        },
+        {
+          "field": "body_inertia",
+          "index": 18
+        },
+        {
+          "field": "body_inertia",
+          "index": 19
+        },
+        {
+          "field": "body_inertia",
+          "index": 20
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "ankle_bracket_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 16
+        },
+        {
+          "field": "body_inertia",
+          "index": 48
+        },
+        {
+          "field": "body_inertia",
+          "index": 49
+        },
+        {
+          "field": "body_inertia",
+          "index": 50
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "ankle_bracket_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 7
+        },
+        {
+          "field": "body_inertia",
+          "index": 21
+        },
+        {
+          "field": "body_inertia",
+          "index": 22
+        },
+        {
+          "field": "body_inertia",
+          "index": 23
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "foot_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 17
+        },
+        {
+          "field": "body_inertia",
+          "index": 51
+        },
+        {
+          "field": "body_inertia",
+          "index": 52
+        },
+        {
+          "field": "body_inertia",
+          "index": 53
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "foot_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 12
+        },
+        {
+          "field": "body_inertia",
+          "index": 36
+        },
+        {
+          "field": "body_inertia",
+          "index": 37
+        },
+        {
+          "field": "body_inertia",
+          "index": 38
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "sv_pitch_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 22
+        },
+        {
+          "field": "body_inertia",
+          "index": 66
+        },
+        {
+          "field": "body_inertia",
+          "index": 67
+        },
+        {
+          "field": "body_inertia",
+          "index": 68
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "sv_pitch_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 11
+        },
+        {
+          "field": "body_inertia",
+          "index": 33
+        },
+        {
+          "field": "body_inertia",
+          "index": 34
+        },
+        {
+          "field": "body_inertia",
+          "index": 35
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "sv_knee_l",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "body_mass",
+          "index": 21
+        },
+        {
+          "field": "body_inertia",
+          "index": 63
+        },
+        {
+          "field": "body_inertia",
+          "index": 64
+        },
+        {
+          "field": "body_inertia",
+          "index": 65
+        }
+      ],
+      "high": 1.1,
+      "label": "mass",
+      "low": 0.9,
+      "mode": "scale",
+      "subject": "sv_knee_r",
+      "target": "mass"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 6
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_roll_l",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 11
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_roll_r",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 7
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_pitch_l",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 12
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_pitch_r",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 8
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "knee_l",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 13
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "knee_r",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 9
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "ankle_l",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 14
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "ankle_r",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 10
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "ankle_roll_l",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_damping",
+          "index": 15
+        }
+      ],
+      "high": 1.25,
+      "label": "damping",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "ankle_roll_r",
+      "target": "damping"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_armature",
+          "index": 6
+        }
+      ],
+      "high": 1.25,
+      "label": "armature",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_roll_l",
+      "target": "armature"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_armature",
+          "index": 11
+        }
+      ],
+      "high": 1.25,
+      "label": "armature",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_roll_r",
+      "target": "armature"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_armature",
+          "index": 7
+        }
+      ],
+      "high": 1.25,
+      "label": "armature",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_pitch_l",
+      "target": "armature"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_armature",
+          "index": 12
+        }
+      ],
+      "high": 1.25,
+      "label": "armature",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "hip_pitch_r",
+      "target": "armature"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_armature",
+          "index": 8
+        }
+      ],
+      "high": 1.25,
+      "label": "armature",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "knee_l",
+      "target": "armature"
+    },
+    {
+      "fields": [
+        {
+          "field": "dof_armature",
+          "index": 13
+        }
+      ],
+      "high": 1.25,
+      "label": "armature",
+      "low": 0.8,
+      "mode": "scale",
+      "subject": "knee_r",
+      "target": "armature"
+    }
+  ],
+  "reset_variation": [
+    {
+      "angular_velocity_high_rad_s": 1.5707963267948966,
+      "angular_velocity_low_rad_s": -1.5707963267948966,
+      "body": "pelvis",
+      "body_id": 2,
+      "clearance_mm": -0.0,
+      "height_high_m": 0.045,
+      "height_low_m": 0.015,
+      "label": "start",
+      "linear_velocity_high_m_s": 0.25,
+      "linear_velocity_low_m_s": 0.0,
+      "qpos_adr": 0,
+      "qvel_adr": 0,
+      "tilt_high_rad": 0.2617993877991494,
+      "tilt_low_rad": 0.0
+    }
+  ],
+  "reward": [
+    {
+      "expression": "1",
+      "label": "alive",
+      "weight": 0.2
+    },
+    {
+      "expression": "exp(-((pel_qx**2 + pel_qy**2) / 0.02))",
+      "label": "upright",
+      "weight": 1.0
+    },
+    {
+      "expression": "exp(-(((abs(com_x + cv_x / 8.3428 - ((ft_l_x + ft_r_x) / 2.0) - (0.002)) + abs(com_y + cv_y / 8.3428 - ((ft_l_y + ft_r_y) / 2.0) - (-7.583))) / 50.0)**2))",
+      "label": "capture",
+      "weight": 1.5
+    },
+    {
+      "expression": "exp(-(((abs(com_x - ((ft_l_x + ft_r_x) / 2.0) - (0.002)) + abs(com_y - ((ft_l_y + ft_r_y) / 2.0) - (-7.583))) / 40.0)**2))",
+      "label": "over_feet",
+      "weight": 1.0
+    },
+    {
+      "expression": "exp(-(((com_z - (140.944)) / 30.0)**2))",
+      "label": "height",
+      "weight": 0.5
+    },
+    {
+      "expression": "exp(-(((abs(cv_x) + abs(cv_y)) / 300.0)**2))",
+      "label": "arrest",
+      "weight": 0.3
+    },
+    {
+      "expression": "exp(-(((abs(cam_x) + abs(cam_y)) / 14.34)**2))",
+      "label": "swirl",
+      "weight": 0.3
+    },
+    {
+      "expression": "exp(-(((abs(hip_roll_l_a) + abs(hip_roll_r_a) + abs(hip_pitch_l_a) + abs(hip_pitch_r_a) + abs(knee_l_a) + abs(knee_r_a) + abs(ankle_l_a) + abs(ankle_r_a) + abs(ankle_roll_l_a) + abs(ankle_roll_r_a)) / 35.1)**2))",
+      "label": "posture",
+      "weight": 0.3
+    },
+    {
+      "expression": "exp(-(((abs(hip_roll_l_tau) + abs(hip_roll_r_tau) + abs(hip_pitch_l_tau) + abs(hip_pitch_r_tau) + abs(knee_l_tau) + abs(knee_r_tau) + abs(ankle_l_tau) + abs(ankle_r_tau) + abs(ankle_roll_l_tau) + abs(ankle_roll_r_tau)) / 191.32)**2))",
+      "label": "effort",
+      "weight": 0.2
+    }
+  ],
+  "schema": "cadex-training-task-v1",
+  "termination": [
+    {
+      "above": 0.15,
+      "below": null,
+      "expression": "pel_qx**2 + pel_qy**2",
+      "label": "tipped"
+    },
+    {
+      "above": null,
+      "below": 70.472,
+      "expression": "com_z",
+      "label": "collapsed"
+    }
+  ],
+  "variation_algorithm": "random.Random(seed) continuing in bundle order after the randomisation draws: for each reset_variation entry uniform(tilt_low_rad, tilt_high_rad), uniform(0, 2*pi) for the azimuth, uniform(height_low_m, height_high_m), three uniform(angular_velocity_low_rad_s, angular_velocity_high_rad_s), then uniform(linear_velocity_low_m_s, linear_velocity_high_m_s) and uniform(0, 2*pi) for its azimuth -- always eight; then for each disturbance entry uniform(newtons_low, newtons_high), uniform(0, 2*pi) mapped onto the declared arc by azimuth_low_rad + drawn * ((azimuth_high_rad - azimuth_low_rad) / (2*pi)) -- the ratio first, so that the full circle multiplies by exactly 1.0 -- and read as an azimuth when horizontal and as a sign when vertical, and uniform(at_low_s, at_high_s) -- always three, the last ignored when sustained"
+}

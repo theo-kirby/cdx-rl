@@ -12,26 +12,46 @@ back.
 
 ## Why these are in git when `MUJOCO.md` §7 says projects are not
 
-They are not a project. They are the **exported artifacts** of one, and the
-project that exported them **cannot be found on this box**.
+They are not a project. They are the **exported artifacts** of one, and when
+this file was written the project that exported them could not be found.
 
 `MUJOCO.md:1521` and ADR-100 both name `~/cdx-mjc/mg-legs.cadex/script.py` as
-the source. `~/cdx-mjc` does not exist. A search of the filesystem for the
-authoring calls (`assembly.reset_variation`, `assembly.termination`,
-`assembly.disturbance`) and for this machine's joint names (`ankle_roll`)
-finds only the exported bundles, the derived results in `experiments/`, and
-Cadex's own API definition and docs — **no `.py` that authors this
-mechanism**, and no `.cadex` project store anywhere except experiment 000's
-pendulum. `MUJOCO.md:2604` explains how that happens: a rebuild is keyed by
-script digest and *replaces* `script_artifacts/`, so a finished run's task can
-vanish locally while its checkpoints sit beside it. What survives is the copy
-rsynced to the training box — which is what `cadex-jobs/` is.
+the source. A search of the filesystem for the authoring calls
+(`assembly.reset_variation`, `assembly.termination`, `assembly.disturbance`)
+and for this machine's joint names (`ankle_roll`) found only the exported
+bundles, the derived results in `experiments/`, and Cadex's own API
+definition and docs — **no `.py` that authors this mechanism**, and no
+`.cadex` project store anywhere except experiment 000's pendulum.
+`MUJOCO.md:2604` explains how that happens: a rebuild is keyed by script
+digest and *replaces* `script_artifacts/`, so a finished run's task can vanish
+locally while its checkpoints sit beside it. What survives is the copy rsynced
+to the training box — which is what `cadex-jobs/` is.
 
-So `model_sha256 e3511559…` is **not reproducible**. Every number in
-experiments 001 and 002 is a statement about these exact bytes, and until
-tonight they lived in exactly one directory on exactly one machine, with no
-source and no backup. That is a worse risk than the one the "no large
-binaries" rule protects against, and 43 KB is not the case that rule is about.
+> **RESOLVED 2026-08-03, and the search was looking on the wrong machine.**
+> `~/cdx-mjc` was never on a training box. It is on the **macOS laptop**,
+> where every `mg-legs` run from M9 through B8 was authored and dispatched,
+> and it was intact. The script is now committed at
+> [`mechanisms/mg-legs/script.py`](../../mechanisms/mg-legs/script.py), and
+> the **B6 revision** — which is the closest committed ancestor of the
+> mechanism these bytes describe — at
+> `mechanisms/mg-legs/history/0018-a3a7bd262040.py`.
+>
+> **This does not make `e3511559…` reproducible, and the distinction is worth
+> keeping.** `stand-b2` was exported by a revision between B2 and B6 that is
+> not among the two kept, so re-deriving these exact bytes would mean finding
+> the matching revision in the laptop's `script_history/` and rebuilding on a
+> box whose OCCT agrees to the digest. What *has* changed is that the
+> mechanism is no longer a dead end: it can be re-authored, re-measured and
+> moved forward, which is what experiment 003 did.
+>
+> The lesson generalises, and `cloud.md` now carries it: **"searched for and
+> not found" is a claim about the machines you searched.** Two boxes were
+> searched and the work had been done on a third.
+
+Every number in experiments 001 and 002 is a statement about these exact
+bytes, and until 2026-08-02 they lived in one directory on one machine with
+no backup. That is a worse risk than the one the "no large binaries" rule
+protects against, and 43 KB is not the case that rule is about.
 
 The mechanism is **B2** (ADR-105, 2026-08-02): 302.01 g, standing CoM
 144.210 mm, 10 joints and 10 actuators at ±86 N·mm (ADR-086's re-rating), 31
