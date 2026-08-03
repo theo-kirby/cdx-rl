@@ -1,0 +1,35 @@
+left    /home/theo/cadex-jobs/stand-task-20260802-200109/stand8.cxpolicy
+        seed 0  2500 entries
+right   jobs/stand9-s0-20260803-010902/stand9.cxpolicy
+        seed 0  1500 entries
+shared  1500 iterations (capped at 1500)
+
+hyperparameters identical (ignoring iterations, checkpoint_every,
+progress path — none of which enter the update; the learning rate
+is a constant float and no schedule reads the total).
+trainer     identical  aacfa82318e4… / aacfa82318e4…
+
+  iteration    reward L    reward R           Δ  episode L  episode R
+          0   -0.941203   -0.940929   +0.000274       85.3       85.2
+        100   -0.072139    0.025605   +0.097745       72.4       97.2
+        200    0.224475    0.207328   -0.017147      196.0      167.5
+        300    0.269764    0.289023   +0.019259      204.3      217.3
+        400    0.289635    0.313562   +0.023927      225.7      253.6
+        500    0.312844    0.315394   +0.002550      258.4      288.5
+        600    0.314194    0.310281   -0.003913      228.8      267.7
+        700    0.246782    0.312428   +0.065646      212.8      256.8
+        800    0.215657    0.293603   +0.077946      213.9      261.7
+        900    0.193326    0.281499   +0.088173      196.9      267.7
+       1000    0.173053    0.267462   +0.094409      222.6      293.6
+       1100    0.167666    0.203041   +0.035375      238.8      374.1
+       1200    0.194178    0.215867   +0.021689      245.3      403.5
+       1300    0.175524    0.221883   +0.046358      273.1      512.0
+       1400    0.175518    0.237066   +0.061548      310.3      450.1
+       1499    0.207165    0.274885   +0.067720      350.1      424.5
+
+reward_per_step: 0/1500 iterations bitwise identical
+  max |Δ| 0.103831   mean |Δ| 0.039820
+  they differ from the FIRST shared iteration (0): -0.941203 vs -0.940929
+  — so this is not drift from a shared start; the very first
+    update already differs. Same seed, same code, same card.
+  Pearson r over the shared span: +0.9885  (shape, not identity)
