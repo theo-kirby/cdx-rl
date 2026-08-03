@@ -108,7 +108,7 @@ the run. What does not survive is "survival keeps improving with training".
 **Hazard 15 replicates 3 of 3** (86.6 %, 63.3 %, 87.0 % of rating with
 nothing pushing).
 
-Flywheel root `rapid-bar-6214`, now nine nodes:
+Flywheel root `rapid-bar-6214`, now ten nodes:
 
 ```
 cdx-rl: reinforcement learning in Cadex          rapid-bar-6214
@@ -119,5 +119,6 @@ cdx-rl: reinforcement learning in Cadex          rapid-bar-6214
 │   └── 001 Phase A: best is iteration 1699      bold-violet-5086
 │       ├── 001 Phase B: the task is in range    mute-shadow-9769
 │       └── 002: the peak is not best, 2 of 3    holy-recipe-7414
+│           └── 002 seed 2: does NOT replicate    spring-unit-9051
 └── 000: the loop closes, on CPU in 62 s         calm-bird-4796
 ```

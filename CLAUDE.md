@@ -146,7 +146,7 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ root `rapid-bar-6214`, nine nodes; `winter-mouse-1809` carries the sb9x characterisation |
+| Flywheel | ✅ root `rapid-bar-6214`, ten nodes; `winter-mouse-1809` the sb9x box, `spring-unit-9051` seed 2 |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability` — via `uv run python -m harness <driver>` |
 | | ❌ `measure`, `feasibility` deferred: both matter only before a *new* dispatch |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
