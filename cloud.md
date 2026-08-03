@@ -146,51 +146,92 @@ stack while tracing. `ulimit -s unlimited` does *not* help: glibc reads
 for `RLIM_INFINITY`, and JAX traces on threads. The limit must be large and
 **finite**, which is why this is a `preexec_fn` and not a shell line.
 
-**The other two are not fixes, and it took a 40-iteration run to see it.**
-The remaining fault is a `SIGSEGV` that lands *after a checkpoint write*, and
-the settings only decide which one:
+**The other two are not established.** They are on by default because they
+are harmless and were present for every run that completed, **not** because
+any measurement shows they help — see "reading single runs" below.
 
-| configuration | died at | left behind |
-|---|---|---|
-| prealloc off, GC off | the **final** checkpoint, as `train()` returned | all checkpoints, no final policy |
-| `XLA_PYTHON_CLIENT_ALLOCATOR=platform` | the **first** checkpoint, iteration 20 | one checkpoint, nothing else |
+#### The remaining fault, named by the kernel
+
+Not inferred from a Python traceback. `dmesg` records what it is:
+
+```
+traps: python[782844] general protection fault in xla_cuda_plugin.so
+traps: python[697290] general protection fault in libjax_common.so
+traps: python[707493] general protection fault in python3.12
+traps: python[674763] general protection fault in libc.so.6
+```
+
+A **general protection fault** is a bad-pointer dereference, not a stack
+overflow and not an allocation failure. It lands in **four different
+libraries across eight crashes**, which is the signature of a
+**use-after-free**: the freed block is reused by whatever allocates next, so
+the crash surfaces wherever the stale pointer happens to lead. That is
+upstream, in jaxlib 0.7.2's CUDA plugin.
+
+#### It is non-deterministic, and that invalidates single-run comparisons
+
+Observed crash points at 2048 environments: **iteration 0, iteration ~7,
+checkpoint 20, and teardown after 40** — and a 1 GiB-stack run that died at
+iteration 7 ran clean to iteration 31 on repeat. There is no threshold here,
+only a race.
+
+**This is the methodological trap on this page.** Three earlier claims in
+this file — that a 12 GB card was too small, that a larger stack made things
+worse, that preallocation-off "moves the fault from the first checkpoint to
+the last" — were each drawn from a **single run**, and a single run cannot
+distinguish a setting's effect from a coin flip. They are withdrawn. Any
+future claim that a runtime setting helps needs a repeat count, and
+`method.md`'s rule about stating the metric before dispatch applies to
+debugging too.
 
 #### What this is *not*
-
-Two hypotheses are ruled out by measurement, and both were stated as fact
-here before they were checked — which is the mistake this file should not
-repeat:
 
 * **Not the card's size.** Peak device usage with preallocation off is
   **777 MiB of 12 282** — six per cent. The 9 131 MiB seen with preallocation
   *on* is JAX's 75 % pool, not demand. §4's "32 GB is not the binding
-  constraint at these sizes" holds here too; 12 GB is not binding either, and
-  the earlier claim that it was is withdrawn.
+  constraint at these sizes" holds here too.
 * **Not a GC leak.** RSS is flat to the byte between checkpoints (above).
+* **Not the GPU.** No `Xid`, no `MCE`, no `EDAC` events during any run; the
+  card idles at 49 °C with no throttling. And the arithmetic is checked
+  independently — the witness agrees to **3e-9**, 34 652x inside tolerance. A
+  card computing wrong answers fails that.
+* **Not this machine's health**, though it looks alarming at first. sb9x
+  logged **3 252 faults in seven days** — but **2 906 of them belong to one
+  unrelated tenant**, `qingestion` (a duckdb pipeline under `/app`) which has
+  been crashing since June and threw 110 in one day. The trainer accounts for
+  eight. Worth knowing the neighbour is noisy; it is not evidence about ours.
 
-What remains is a fault in the compile-and-free path around checkpointing,
-on jax 0.7.2 with driver 595.84 on Ada — the two things that actually differ
-from sb1x, neither of which is memory. The next diagnostic is a
-`faulthandler` traceback taken at the checkpoint boundary rather than at exit.
+**sb9x trains, usually exits cleanly, and is safe when it does not** — 2 of 3
+40-iteration runs finished with exit 0, and the third left everything that
+matters. Both halves of that are measured below.
 
-**sb9x can train and cannot exit cleanly** — which is not the same as cannot
-finish. What a crashed run leaves is measured below, and it is enough.
+#### How often, actually: 1 crash in 3
 
-#### Necessary and **not yet sufficient**
+Measured 2026-08-03. Three runs at 2048 environments, 40 iterations,
+`--checkpoint-every 20`, identical defaults:
 
-Measured 2026-08-03, and the reason no seed has been dispatched on sb9x.
+| run | exit | left behind |
+|---|---|---|
+| `validate` | **-11** | 2 checkpoints, no final policy |
+| `rep1` | **0** | `state: done`, all 3 policies, witness 4.8e-8 |
+| `rep2` | **0** | `state: done`, all 3 policies, witness 5.5e-8 |
 
-With all three settings on, 2048 environments completes cleanly at **1 and 3
-iterations** — exit 0, witness 32 975x, final `.cxpolicy` written. At **40
-iterations it segfaults**: `trainer exited -11`, `state: training`, every
-checkpoint present, **no final `.cxpolicy`**. The earlier "clean" result was
-a run too short to provoke it. **Validate at length; a 1-iteration run
-reports success for every fault on this page.**
+So the default configuration **usually finishes**, and this correct
+description only became available at n=3. At n=1 it read as "sb9x cannot
+finish a run", which is what this file said for several hours and which was
+wrong.
 
-`faulthandler` puts that one at `cadex_train.py:1661` — the line
+`faulthandler` puts the failing case at `cadex_train.py:1661` — the line
 `trained = train(...)` — with no Python frames beneath it, so it is a C-level
 fault as `train()` returns. It lands *before* the final policy is written,
 which is why `os._exit()` in the launcher would not save it.
+
+**Do not extrapolate this rate to a real seed.** 40 iterations is 10 minutes
+and 2 checkpoints; 1500 iterations is ~4.2 h and 15. If the hazard scales
+with compiles or with wall time, a full seed is likelier to be hit than one
+in three. That is an argument for dispatching **one** seed before both, and
+for `--checkpoint-every 100` so that a run struck early still leaves
+something.
 
 **The memory profile.** RSS across the failing run, sampled every 10 s
 against the iteration counter:

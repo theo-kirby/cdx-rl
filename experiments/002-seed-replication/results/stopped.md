@@ -151,9 +151,11 @@ uv run python tools/train.py \
 **~8.4 h for the two**, against 4.3 h on sb1x. Every hyperparameter still
 defaults to what 200109 ran, so the fourteen need not be repeated.
 
-**Expect each seed to exit `-11`, and expect it to be usable anyway.** This
-was checked rather than assumed, because "the run crashed" and "the run is
-lost" are not the same statement and the difference here is eight GPU-hours.
+**A seed will probably exit 0, and is usable even when it does not.** At n=3
+on 40-iteration runs, two exited `0` and one exited `-11`; the fault is
+intermittent, not certain. What follows was checked rather than assumed,
+because "the run crashed" and "the run is lost" are not the same statement
+and the difference here is eight GPU-hours.
 
 On a 40-iteration run that died exactly this way:
 

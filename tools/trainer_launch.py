@@ -23,12 +23,21 @@ collector    artefacts                    exit
 **off**      all written, witness passes   **0**
 ===========  ===========================  =====================
 
-The artefacts survive either way, so this is not about losing a policy. It is
-about the **exit code**, which is the only thing ``train.py`` and the sweep
-have to tell a finished seed from a broken one — a seed that wrote everything
-and then died at teardown would be recorded as infrastructure failure, and a
-sweep would be pausing on runs that actually worked. Tracing is also about
-1.5x faster without the collector walking those graphs.
+**Read that table with suspicion.** It is one run per row, and sb9x's
+remaining fault is a **race** — the kernel calls it a general protection
+fault in jaxlib's CUDA plugin, and it has struck at iteration 0, iteration 7,
+a checkpoint, and ``train()``'s return. One run per configuration cannot
+separate a setting's effect from a coin flip, so treat this as *"the
+collector was off for every run that finished"*, not as a demonstration that
+turning it off is what made them finish. ``cloud.md`` §1 has the full
+argument; establishing a real effect needs repeats.
+
+What is not in doubt is the **cost of getting the exit code wrong**: it is
+the only thing ``train.py`` and the sweep have to tell a finished seed from a
+broken one, which is why ``post_mortem`` now reads the run directory instead
+of trusting it. Tracing also measured about 1.5x faster without the collector
+walking those graphs — that one is a timing difference large enough to see in
+a single run.
 
 **What it costs.** Reference cycles are freed only when the process exits.
 That was an open worry when this was written and has since been **measured
@@ -42,9 +51,10 @@ reclaimed either. There is no accumulation across training to worry about.
 that reached the end. It does not make a long run reach the end: with this
 shim, the raised stack and XLA preallocation all in place, a **40-iteration**
 run still dies with ``SIGSEGV`` as ``train()`` returns, before the final
-policy is written. See ``cloud.md`` §1 — sb9x can train and cannot finish,
-and that is open. Do not read a clean 3-iteration run as evidence otherwise;
-every one of these faults is scale-dependent.
+policy is written. Measured at n=3: **2 runs of 40 iterations exited 0, one
+exited -11**, so the fault is intermittent rather than certain. See
+``cloud.md`` §1; it is open, and it is a race, so no single run — clean or
+crashed — is evidence about any setting here.
 """
 
 from __future__ import annotations

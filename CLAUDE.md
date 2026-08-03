@@ -152,7 +152,7 @@ Other environment facts:
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 2 of 4 seeds measured and published; seeds 2–3 not run |
-| sb9x | ✅ engine built (smoke 13/13), trainer hardened, measured, and salvage-verified — runs exit `-11` at `train()`'s return and their checkpoints are complete and `compare`-able (`EXIT_SALVAGEABLE`) |
+| sb9x | ✅ engine built (smoke 13/13), trainer hardened and measured. 2 of 3 forty-iteration runs exit 0; the third hit an intermittent jaxlib fault and still left complete, `compare`-able checkpoints (`EXIT_SALVAGEABLE`) |
 
 **Total GPU-hours spent by this repository: ~5.1**, all of them experiment
 002 — two seeds of `stand-task-20260802-200109` retrained from scratch to ask
@@ -230,11 +230,20 @@ not** — two fresh seeds, 48 evaluation seeds each:
   `train.py` defaults three runtime settings on and records them in
   `runtime.json`; `cloud.md` §1 has the tables and the measurements. The
   tracing overflow is genuinely fixed by a large **finite** `RLIMIT_STACK`
-  (`ulimit -s unlimited` does *not* raise a thread's stack). The other lands
-  **after a checkpoint write** and leaves every checkpoint, no final
-  `.cxpolicy`, no reward curve and no witness — identical to what a SIGTERMed
-  run leaves, so it reads as "stopped early" rather than "crashed". It is
-  **not fixed**: short runs pass, 40 iterations exits `-11`.
+  (`ulimit -s unlimited` does *not* raise a thread's stack). The other is a
+  **general protection fault in jaxlib's CUDA plugin** — the kernel says so
+  in `dmesg`, across four different libraries in eight crashes, which is a
+  use-after-free upstream. It is **a race**: seen at iteration 0, iteration 7,
+  a checkpoint, and `train()`'s return. Usually it leaves every checkpoint and
+  no final `.cxpolicy`, which reads as "stopped early" rather than "crashed".
+  Not fixed, and **not worth fixing** — the only real fix is upstream, and
+  bumping the pins would break comparability with 001 and 002.
+* **Because it is a race, a single run proves nothing about a setting.**
+  Three claims in these docs were drawn from one run each and all three were
+  wrong (the card was too small; a bigger stack hurt; preallocation-off moved
+  the crash later). If you want to say a runtime setting helps, say how many
+  repeats. `method.md`'s "state the metric before dispatch" applies to
+  debugging too.
 * **A crashed sb9x run is still usable, and `train.py` says so.** Every
   checkpoint it wrote is complete and witness-checked (`checked_policy` runs
   the witness *before* writing, so a crash can lose a file but never corrupt

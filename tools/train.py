@@ -94,10 +94,14 @@ answer without them is no — in two ways that do not look like crashes:
 * **during tracing**, before iteration 0, as a bare ``SIGSEGV`` with no
   traceback and a ``progress.json`` still reading ``state: starting``. The
   stack limit fixes this one outright; and
-* **after a checkpoint write**, leaving a run directory holding every
-  checkpoint, no final ``.cxpolicy``, no ``reward_curve`` and no witness
-  margin — which is exactly the artefact a SIGTERMed run leaves, so it reads
-  as "stopped early", not "crashed". This one is **still open**.
+* **at an unpredictable point** — iteration 0, iteration 7, a checkpoint, or
+  ``train()``'s return have all been seen — most often leaving a run
+  directory holding every checkpoint, no final ``.cxpolicy``, no
+  ``reward_curve`` and no witness margin, which is exactly the artefact a
+  SIGTERMed run leaves, so it reads as "stopped early", not "crashed". The
+  kernel names it a **general protection fault in jaxlib's CUDA plugin** — a
+  use-after-free upstream, not a resource limit. This one is **still open**,
+  and it is a race, so no single run tells you anything about a setting.
 
 The second is the dangerous one, and it is why these live in the dispatcher
 rather than in a shell line or a README. A launch recipe that has to be
@@ -187,16 +191,20 @@ HYPERPARAMETERS = (
 #: it. Measured on sb9x: 8 MiB segfaults, 256 MiB traces clean.
 TRAINER_STACK_MB = 256
 
-#: XLA's BFC allocator grabs 75 % of the card up front. Growing the pool on
-#: demand instead delays sb9x's post-checkpoint ``SIGSEGV`` from the *first*
-#: checkpoint to the last, which is the difference between a run that
-#: produces one checkpoint and a run that produces all of them.
+#: XLA's BFC allocator grabs 75 % of the card up front; this grows the pool on
+#: demand instead.
 #:
-#: It is **not a fix**, and the reason first written here — that a 12 GB card
-#: leaves too little outside the pool — was wrong. Peak device usage with
-#: preallocation off is **777 MiB of 12 282**, six per cent of the card; the
-#: 9 131 MiB seen with it on is the pool, not demand. Memory is not the
-#: constraint. See ``cloud.md`` §1 for what is still open.
+#: **Not a fix, and not shown to help.** Two stories were written here and
+#: both were wrong: that a 12 GB card leaves too little outside the pool
+#: (peak device usage is **777 MiB of 12 282** — the 9 131 MiB you otherwise
+#: see *is* the pool, not demand), and that turning it off moves sb9x's crash
+#: later. The second came from comparing single runs, and sb9x's remaining
+#: fault is a **race** — it has struck at iteration 0, 7, a checkpoint, and
+#: teardown — so one run cannot separate a setting from a coin flip.
+#:
+#: It stays on because it is harmless and every completed run had it, not
+#: because it was measured. Establishing otherwise needs repeats. See
+#: ``cloud.md`` §1.
 TRAINER_XLA_PREALLOCATE = "false"
 
 #: How bad each exit code is, for picking a sweep's verdict from its seeds.
@@ -809,10 +817,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--xla-preallocate", action="store_true",
         help="Let XLA preallocate 75%% of the card, as it does by default. "
-             "cdx-rl turns this off because it delays sb9x's "
-             "post-checkpoint SIGSEGV from the first checkpoint to the last. "
-             "It is not a fix, and memory is not the constraint — the task "
-             "peaks at 777 MiB of 12 282. See cloud.md §1.",
+             "cdx-rl turns it off as a harmless precaution, NOT because it "
+             "was shown to help — sb9x's remaining fault is a race and no "
+             "single run can attribute anything to a setting. Memory is not "
+             "the constraint either: the task peaks at 777 MiB of 12 282. "
+             "See cloud.md §1.",
     )
     parser.add_argument(
         "--child-gc", action="store_true",
