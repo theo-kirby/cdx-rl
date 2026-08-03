@@ -275,20 +275,65 @@ with the determinism check passing on both.
 
 ### The headline — criterion 5
 
-**In 2 of 2 seeds the trainer's reward peak is not the best checkpoint by
-measured survival**, and in both the gap clears the separation bound by a
-factor of two:
+**In 2 of 3 seeds the trainer's reward peak is not the best checkpoint by
+measured survival.** In those two the gap clears the separation bound by a
+factor of two. **In the third it does not clear it at all.**
 
-| seed | reward peak | survival there | best by survival | survival there | gap |
-|---|---|---|---|---|---|
-| 0 | iteration **594** | **16/48 = 0.333** | iteration **1299** | **36/48 = 0.750** | **+41.7 pp** |
-| 1 | iteration **510** | **12/48 = 0.250** | iteration **1499** | **37/48 = 0.771** | **+52.1 pp** |
+| seed | box | reward peak | survival there | best by survival | survival there | gap |
+|---|---|---|---|---|---|---|
+| 0 | sb1x | iteration **594** | **16/48 = 0.333** | iteration **1299** | **36/48 = 0.750** | **+41.7 pp** |
+| 1 | sb1x | iteration **510** | **12/48 = 0.250** | iteration **1499** | **37/48 = 0.771** | **+52.1 pp** |
+| 2 | sb9x | iteration **568** | **15/48 = 0.312** | iteration **1399** | **16/48 = 0.333** | **+2.1 pp — tied** |
 
-2σ separation bound at n=48: **20.4 pp**. Both gaps clear it outright.
+2σ separation bound at n=48: **20.4 pp**. Seeds 0 and 1 clear it outright;
+seed 2 is inside it by an order of magnitude.
 
 For comparison, 001 measured the same thing on 200109 at 12 seeds: reward
-peak 598 at 2/12, best 1699 at 7/12. **Same shape, on two runs 001 never
-saw, with four times the seeds.**
+peak 598 at 2/12, best 1699 at 7/12.
+
+#### Seed 2 does not replicate, and this is the result
+
+Seed 2 was added on 2026-08-03 (see `results/dispatch-sb9x.md`). Its survival
+curve is **flat within noise from iteration 199 onward** — every checkpoint
+from 199 to 1399 sits between 20.8 % and 33.3 %, and *all* of them are inside
+the bound of *each other*. There is no late optimum to find, so the reward
+peak is not beaten; neither is anything else.
+
+```
+iteration    99  reward -0.1207  survival  6.2%  steps 135.6
+iteration   568  reward +0.3430  survival 31.2%  steps 266.2   <- reward peak
+iteration   799  reward +0.2598  survival 33.3%  steps 273.9
+iteration  1099  reward +0.2312  survival 20.8%  steps 229.0
+iteration  1399  reward +0.1970  survival 33.3%  steps 300.8   <- best survival
+```
+
+**What still holds in this seed, and what does not.** The *decoupling* holds:
+between iteration 568 and 1399 the trainer's reward falls **43 %** while
+survival does not move and mean episode length rises **13 %**, to the longest
+of the run. A reward-based stop at 568 would still have been reading a number
+that stopped tracking what matters. What does **not** hold is the
+*separation* — this seed offers no checkpoint measurably better than the
+peak, so criterion 5's question answers "no" here.
+
+**And the anti-correlation reverses.** Seeds 0 and 1 measured survival vs
+trainer reward after the peak at −0.71 and −0.83. Seed 2 measures **+0.50**:
+reward and survival move *together*, dipping together around 1099–1299 and
+recovering together at 1399. That is the opposite sign, not a smaller
+magnitude.
+
+**Two honest caveats, in opposite directions.**
+
+* The crash cost the **1500 checkpoint** (`dispatch-sb9x.md`): the run died
+  at `train()`'s return having written 100–1400 plus `best`. Survival was at
+  its maximum *and* episode length at its longest at 1399 and still climbing,
+  so a 1500 checkpoint could only have widened the gap. **The missing file
+  biases against the headline, not for it** — this seed might have separated
+  with it.
+* Seed 2 ran on a **different box**. Criterion 5 is answered entirely within
+  a seed, so nothing about sb9x's card or driver should reach this number,
+  and the trainer digest is byte-identical. But it is the one axis 002 never
+  controlled, it is named here rather than buried, and **seed 3 should run on
+  sb9x too** so that any box effect shows up as 2-and-2 rather than hiding.
 
 #### A correction to §7 criterion 4
 
@@ -304,23 +349,31 @@ held under either convention.
 
 ### The correlation, restated per seed
 
-| | 001 (200109) | seed 0 | seed 1 |
-|---|---|---|---|
-| survival vs trainer reward, whole run | +0.06 | **+0.11** | **+0.12** |
-| survival vs trainer reward, **after its peak** | −0.34 | **−0.71** | **−0.83** |
-| survival vs iteration, whole run | — | **+0.93** | **+0.93** |
+| | 001 (200109) | seed 0 | seed 1 | seed 2 |
+|---|---|---|---|---|
+| survival vs trainer reward, whole run | +0.06 | **+0.11** | **+0.12** | **+0.87** |
+| survival vs trainer reward, **after its peak** | −0.34 | **−0.71** | **−0.83** | **+0.50** |
+| survival vs iteration, whole run | — | **+0.93** | **+0.93** | **+0.19** |
 
-The sign replicates in both seeds on both spans, and the post-peak
-anti-correlation is **two to three times stronger** than 001 measured. The
-whole-run figure is near zero for the reason 001 gave: it averages the early
-stretch, where reward and survival climb together because the network is
-going from nothing to something, with the span a stopping rule would actually
-act on.
+The sign replicated in seeds 0 and 1 on both spans, two to three times
+stronger than 001 measured. **Seed 2 breaks it.** Its post-peak figure is
++0.50 — the opposite sign, not a smaller magnitude — and `survival vs
+iteration` is +0.19 against +0.93, which is the same statement said twice:
+in this seed survival does *not* keep improving with training, it goes flat
+after iteration 199.
 
-`survival vs iteration` at +0.93 in both is the plainest statement of it: on
-this task, over this range, **survival just keeps improving with training**,
-while the scalar the trainer optimises turns over at around iteration 500–600
-and declines.
+The whole-run figure is near zero in seeds 0 and 1 for the reason 001 gave:
+it averages the early climb, where reward and survival rise together, with
+the later span a stopping rule would act on. Seed 2's **+0.87** is that same
+artefact with nothing to cancel it — the early climb is the *only* structure
+in its curve, so it dominates.
+
+**So the finding is 2 of 3, and the third is not a near miss.** What survives
+all three is narrower and still sufficient for the supervisor's mandate: the
+trainer's scalar is **not a proxy for survival** — it fell 43 % in seed 2
+while survival held and episode length rose. What does not survive is
+"survival keeps improving with training", which was true in 001, seed 0 and
+seed 1, and is false here.
 
 ### Criterion 6 — seed 0 against 200109
 
@@ -353,15 +406,24 @@ columns do not deserve equal confidence.
 `capability` on each seed's best-by-survival checkpoint, 48 seeds per row.
 The `no-variation` row is the one that matters: **nothing is pushing at all.**
 
-| | seed 0 (`001300`) | seed 1 (`final`) | 001 |
-|---|---|---|---|
-| **mean torque, nothing pushing** | **86.6 % of limit** | **63.3 % of limit** | 71 % |
-| peak torque, nothing pushing | 99.8 % | 99.3 % | — |
-| survival, nothing pushing | **48/48** | **48/48** | 48/48 |
+| | seed 0 (`001300`) | seed 1 (`final`) | seed 2 (`001400`) | 001 |
+|---|---|---|---|---|
+| **mean torque, nothing pushing** | **86.6 % of limit** | **63.3 % of limit** | **87.0 % of limit** | 71 % |
+| peak torque, nothing pushing | 99.8 % | 99.3 % | **99.6 %** | — |
+| survival, nothing pushing | **48/48** | **48/48** | **48/48** | 48/48 |
 
-001's 71 % sits between the two. **The resting posture replicates**: these
-policies stand still by holding motors near their rating, and one of them
-peaks at 99.8 % of an 86 N·mm limit with the robot doing nothing.
+001's 71 % sits inside the spread. **The resting posture replicates in 3 of
+3** — and unlike criterion 5, this one is unanimous. These policies stand
+still by holding motors near their rating, and every seed peaks within half a
+per cent of the 86 N·mm limit with the robot doing nothing.
+
+Seed 2 makes it concrete: one motor carries a **mean** command of 74.8 N·mm
+against an 86 N·mm rating and sits above 90 % of it on **62 % of frames**,
+while the machine stands perfectly still for all 600 steps of all 48
+episodes. **The seed that failed to reproduce the headline reproduced this
+one**, which is worth noticing — hazard 15 is not a side effect of the late
+checkpoints that survive best, because seed 2 has no late survival advantage
+and shows it anyway.
 
 It is worse than "a property of the run", because it **tracks the thing we
 selected for**. Mean fraction of limit climbs monotonically with the
@@ -407,13 +469,23 @@ beat the reward peak"* — not *"iteration 1299 is the best one"*.
 
 ## 9. What it means, and what it does not mean
 
-**It means 001's first conclusion is no longer resting on one run.** The
-trainer's reward peak was the wrong checkpoint in 200109, in seed 0 and in
-seed 1 — three independent runs, the latter two with 48 evaluation seeds and
-gaps of 42 and 52 pp against a 20.4 pp bound. The supervisor rule 001 derived
-follows from the task, not from an accident: **stop on divergence, device and
-liveness; never on reward patience.** `--patience 0` stays the default, and
-now has evidence behind it rather than one cautionary example.
+**It means 001's first conclusion is no longer resting on one run — and no
+longer unanimous either.** The trainer's reward peak was the wrong checkpoint
+in 200109, in seed 0 and in seed 1: three independent runs, the latter two
+with 48 evaluation seeds and gaps of 42 and 52 pp against a 20.4 pp bound.
+**Seed 2 is the exception**, tied at +2.1 pp with a post-peak correlation of
+the opposite sign. Three of four runs, not four of four.
+
+**The supervisor rule survives that, and is worth restating in the narrower
+form the evidence actually supports.** `--patience 0` was never justified by
+"a later checkpoint is better" — it is justified by "**the trainer's scalar
+is not a proxy for the thing we care about**", and seed 2 is *more* evidence
+for that, not less: its reward fell 43 % between iteration 568 and 1399 while
+survival held and episode length rose to the longest of the run. A patience
+rule watching that scalar would have stopped a run that was still improving
+on the axis that matters, in every seed measured including the one that
+failed to separate. **Stop on divergence, device and liveness; never on
+reward patience.**
 
 **It means hazard 15 is a property of this task, not of one policy.** Two
 fresh runs both stand at 63–87 % of an 86 N·mm rating with nothing pushing
@@ -421,17 +493,19 @@ them, bracketing 001's 71 %. Phase B's recommendation — a torque-cost term —
 is not an idea about one bad policy; it is the obvious response to a reward
 function that will buy survival with torque every time it is allowed to.
 
-**It does not mean four seeds agreed, because four seeds did not run.** Two
-did. Two runs plus 001's is a materially weaker claim than the design asked
-for, and criterion 5's question — *in how many of four* — is unanswered. The
-`status/provisional` tag comes **down a notch, not off**: seeds 2 and 3 are a
-4.3-hour dispatch away and the exact command is in `results/stopped.md`.
+**It does not mean four seeds agreed, because four seeds did not run — and
+the three that did do not agree.** Criterion 5's question was *in how many of
+four*; the answer so far is **2 of 3**. `status/provisional` stays on. Seed 3
+is a ~4.2 h dispatch away (`results/dispatch-sb9x.md`) and should run on
+sb9x, so that a box effect — the one axis 002 never controlled — would show
+as 2-and-2 rather than hiding inside a 3-and-1.
 
-**It does not mean survival keeps improving forever.** The measured range is
-1 500 iterations. Phase B found survival flat-ish from 1 500 to 2 500 on
-200109, and nothing here contradicts or extends that; `survival vs iteration`
-of +0.93 describes the span that was run and must not be read as a trend line
-to extrapolate.
+**It does not mean survival keeps improving with training.** That was the
+plainest reading of seeds 0 and 1, at `survival vs iteration` = +0.93 each.
+**Seed 2 measures +0.19** and goes flat after iteration 199. Whatever makes a
+run's survival climb late, it is not guaranteed by the task — which is
+precisely the kind of thing three seeds can see and two cannot, and the
+reason the sweep was worth finishing.
 
 **It does not mean a checkpoint was selected.** No policy from these runs is
 installable, and §7 said in advance that a better policy is not a pass

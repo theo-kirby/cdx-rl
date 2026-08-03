@@ -151,22 +151,24 @@ Other environment facts:
 | | ❌ `measure`, `feasibility` deferred: both matter only before a *new* dispatch |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
-| Experiment 002 | ✅ 2 of 4 seeds measured and published; seeds 2–3 not run |
+| Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
 | sb9x | ✅ engine built (smoke 13/13), trainer hardened and measured. 2 of 3 forty-iteration runs exit 0; the third hit an intermittent jaxlib fault and still left complete, `compare`-able checkpoints (`EXIT_SALVAGEABLE`) |
 
-**Total GPU-hours spent by this repository: ~6.6.** ~5.1 of them are
-experiment 002 — two seeds of `stand-task-20260802-200109` retrained from
-scratch to ask whether 001's conclusions were a property of the task or of
-one run. **They replicate.** The sweep was stopped after 2 of 4 seeds because
-the card was needed elsewhere;
-`experiments/002-seed-replication/results/stopped.md` records that, and the
-dispatch for the missing two.
+**Total GPU-hours spent by this repository: ~10.8.**
 
-The remaining ~1.5 are **sb9x characterisation** on 2026-08-03 — throughput,
-the three runtime settings, and the n=3 base rate for the intermittent
-jaxlib fault. No research question was asked with them; they bought the right
-to trust the box, which `method.md` would otherwise not permit spending
-four hours a seed on.
+* **~5.1** — experiment 002's seeds 0 and 1 on sb1x, retrained from scratch
+  to ask whether 001's conclusions were a property of the task or of one run.
+* **~1.5** — **sb9x characterisation** on 2026-08-03: throughput, the three
+  runtime settings, and the n=3 base rate for the intermittent jaxlib fault.
+  No research question was asked with them; they bought the right to trust
+  the box, which `method.md` would not otherwise permit spending four hours a
+  seed on.
+* **~4.2** — experiment 002's **seed 2** on sb9x, which is where "they
+  replicate" became **2 of 3**. The run exited `-11` at 4.13 h having written
+  14 of its 15 periodic checkpoints; `EXIT_SALVAGEABLE`, analysed in full.
+
+The sweep still owes **seed 3**. `experiments/002-seed-replication/README.md`
+§8 has the three-seed table and `results/dispatch-sb9x.md` the command.
 
 Experiment 000's training half ran on CPU in 48 s; experiment 001 replayed
 eight existing runs and spent nothing.
@@ -185,16 +187,24 @@ eight existing runs and spent nothing.
   later policies hold a motor at 71 % of its 86 N·mm rating. This policy
   family does not describe a machine that can be built.
 
-**Experiment 002 asked whether any of that was one run's accident. It is
-not** — two fresh seeds, 48 evaluation seeds each:
+**Experiment 002 asked whether any of that was one run's accident. Partly
+it was** — three fresh seeds now, 48 evaluation seeds each:
 
-* The reward peak is **not** the best checkpoint in **2 of 2** seeds, by
-  41.7 pp and 52.1 pp against a 20.4 pp bound. Survival vs the trainer's
-  scalar after its own peak is **−0.71** and **−0.83** (001 measured −0.34).
-  **`--patience 0` is now evidence-backed, not precautionary.**
-* Hazard 15 replicates: **86.6 %** and **63.3 %** of rating with nothing
-  pushing, bracketing 001's 71 % — and mean torque rises monotonically with
-  the checkpoints that survive best. The reward buys survival with torque.
+* The reward peak is **not** the best checkpoint in **2 of 3** seeds, by
+  41.7 pp and 52.1 pp against a 20.4 pp bound. **Seed 2 is tied at +2.1 pp**,
+  with a post-peak survival-vs-reward correlation of **+0.50** against seeds
+  0 and 1's −0.71 and −0.83 — the opposite sign, not a smaller magnitude. Its
+  survival curve is flat from iteration 199 on, so there is no late optimum
+  to beat the peak with.
+* **`--patience 0` still holds, on the narrower claim it always rested on**:
+  the trainer's scalar is not a proxy for what matters. In seed 2 that scalar
+  fell **43 %** between the peak and the end while survival held and episode
+  length rose to the longest of the run. What does *not* survive three seeds
+  is "survival keeps improving with training" — +0.93, +0.93, **+0.19**.
+* Hazard 15 replicates in **3 of 3**: **86.6 %**, **63.3 %** and **87.0 %**
+  of rating with nothing pushing, around 001's 71 %. The seed that failed the
+  headline reproduced this one, so it is not a side effect of late
+  checkpoints. The reward buys survival with torque.
 * **Seed 0 reproduced 200109 in shape but not in value**: same seed, same
   trainer digest, **0 of 1500 iterations bitwise identical**, yet r = +0.9885
   and the reward peak four iterations apart. Claims about *shape* survive

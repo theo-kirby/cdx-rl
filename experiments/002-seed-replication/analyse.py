@@ -251,8 +251,28 @@ def main() -> int:
             ),
         },
     }
-    (RESULTS / "crossseed.json").write_text(
+    # Named for the seeds it actually covers, and refusing to overwrite a
+    # different set. The first version wrote `crossseed.json` unconditionally,
+    # which is fine while one sweep holds every seed and destructive the
+    # moment a second sweep adds one: re-running this for seed 2 replaced the
+    # committed record of seeds 0 and 1 with a one-seed file whose headline
+    # read "in 0 of 1 seeds". Only git noticed. A summary file is the
+    # experiment's answer, and an answer that silently narrows is worse than
+    # no file at all.
+    covered = "-".join(str(item.get("seed")) for item in seeds_facts)
+    out = RESULTS / f"crossseed-seeds-{covered}.json"
+    if out.exists():
+        previous = json.loads(out.read_text(encoding="utf-8"))
+        was = [row.get("seed") for row in previous.get("seeds", [])]
+        now = [row.get("seed") for row in seeds_facts]
+        if was != now:
+            raise SystemExit(
+                f"{out} already covers seeds {was}, this run covers {now}. "
+                f"Refusing to overwrite; move the old file first."
+            )
+    out.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    summary["_written_to"] = str(out)
 
     print("\n" + "=" * 64)
     print("cross-seed")
@@ -271,7 +291,7 @@ def main() -> int:
               f"{(item.get('peak_vs_best') or {}).get('verdict', '—')}")
     print()
     print(f"  {summary['headline']['statement']}")
-    print(f"\n  wrote {RESULTS / 'crossseed.json'}")
+    print(f"\n  wrote {out}")
     return 0
 
 
