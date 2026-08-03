@@ -135,12 +135,29 @@ HYPERPARAMETERS = (
 )
 
 
+def _fresh(path: Path) -> Path:
+    """``path``, or ``path-2``, ``path-3``… — whichever does not yet exist."""
+
+    candidate, suffix = path, 1
+    while True:
+        try:
+            candidate.mkdir(parents=True, exist_ok=False)
+            return candidate
+        except FileExistsError:
+            suffix += 1
+            candidate = path.with_name(f"{path.name}-{suffix}")
+
+
 def make_run_dir(label: str, jobs_root: Path, seed: int | None = None) -> Path:
     """``<jobs>/<label>[-s<seed>]-<YYYYMMDD>-<HHMMSS>/``, created.
 
-    UTC in the name. Two runs a second apart are distinguishable; two runs in
-    the same second are not, and that has never happened because a dispatch
-    takes longer than a second to set up.
+    UTC in the name, to the second, with ``-2``, ``-3``… appended if that is
+    somehow taken. An earlier version of this docstring asserted a collision
+    "has never happened because a dispatch takes longer than a second to set
+    up" — true of a *training* dispatch, and false the moment two of them are
+    scripted back to back, which is exactly what an agent driving this on
+    another box will do. Crashing on ``exist_ok=False`` there loses nothing
+    but is a stupid way to lose a night.
 
     The ``-s<seed>`` infix appears only in a sweep. A single run keeps the
     plain ``<label>-<stamp>`` shape the eight directories in
@@ -150,9 +167,7 @@ def make_run_dir(label: str, jobs_root: Path, seed: int | None = None) -> Path:
 
     stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     stem = label if seed is None else f"{label}-s{seed}"
-    run_dir = jobs_root / f"{stem}-{stamp}"
-    run_dir.mkdir(parents=True, exist_ok=False)
-    return run_dir
+    return _fresh(jobs_root / f"{stem}-{stamp}")
 
 
 def stage(bundle_path: Path, run_dir: Path) -> tuple[Path, Path]:
@@ -370,6 +385,26 @@ def dispatch(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     except TrainerVenvError as exc:
         return EXIT_INFRASTRUCTURE, {"error": str(exc)}
 
+    # ADR-104 is "refuse to dispatch to a box running a different trainer",
+    # and it lives in remote_train.sh — which local dispatch never touches.
+    # So this path recorded trainer_sha256 in the manifest and checked
+    # nothing, which is the hyperparameter confound's shape exactly: the fact
+    # is captured, and captured facts do not stop anything. It matters most
+    # off this box, where "same seed, same hyperparameters" is worthless if
+    # the update rule differs.
+    trainer_digest = sha256_file(trainer)
+    if args.require_trainer and trainer_digest != args.require_trainer:
+        return EXIT_USAGE, {
+            "error": (
+                f"trainer digest is {trainer_digest}, --require-trainer "
+                f"expects {args.require_trainer}. This box's "
+                f"{trainer} is not the one that produced the runs you are "
+                f"comparing against; seeds from it are comparable to each "
+                f"other and to nothing else."
+            ),
+            "trainer_sha256": trainer_digest,
+        }
+
     jobs_root = Path(
         args.jobs_dir or os.environ.get("CDXRL_JOBS", str(REPO_ROOT / "jobs"))
     ).expanduser()
@@ -388,7 +423,7 @@ def dispatch(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         "hyperparameters": shared,
         "hyperparameter_defaults": "stand-task-20260802-200109",
         "trainer": str(trainer),
-        "trainer_sha256": sha256_file(trainer),
+        "trainer_sha256": trainer_digest,
         "trainer_pins": pins,
         "device_requested": "cpu" if args.cpu else "gpu",
         "runs": [],
@@ -404,6 +439,9 @@ def dispatch(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     if sweep:
         print(f"sweep     {args.label}: {len(seeds)} seed(s) "
               f"{', '.join(str(value) for value in seeds)}, one at a time")
+        print(f"trainer   {trainer_digest[:12]}…"
+              + ("  (matches --require-trainer)" if args.require_trainer else
+                 "  (unchecked — pass --require-trainer to pin it)"))
         print(f"          {args.iterations} iterations each, "
               f"envs {args.envs}, checkpoint every {args.checkpoint_every}")
         if sweep_dir is not None:
@@ -513,6 +551,13 @@ def build_parser() -> argparse.ArgumentParser:
              "a whole sweep.",
     )
     parser.add_argument(
+        "--require-trainer", default="",
+        help="Refuse to dispatch unless cadex_train.py has this sha256. "
+             "ADR-104 on another box: same seed and same hyperparameters mean "
+             "nothing if the update rule differs. Experiment 002 ran "
+             "aacfa82318e4e2399f65cf2ffe234504a288b586a178fc1dbe32e539a1fe7b24.",
+    )
+    parser.add_argument(
         "--sigma-floor", type=float, default=0.02,
         help="action_std below this is σ collapse; the run is stopped. "
              "Default 0.02 — 200109 decayed 0.4002 → 0.3375 over 2500 "
@@ -558,6 +603,20 @@ def main(argv: list[str] | None = None) -> int:
     raw = list(sys.argv[1:] if argv is None else argv)
     args = build_parser().parse_args(raw)
 
+    # Before forking, and before any directory is made. The check exists for
+    # cross-box work, and the cross-box failure mode is precisely: dispatch
+    # detached, read "detached pid 1234", walk away, and come back to a sweep
+    # that died in its first second inside a log nobody opened.
+    if args.detach and not args.detached_child and args.require_trainer:
+        repo = Path(os.environ.get("CADEX_REPO", "/home/theo/cadex"))
+        trainer = repo / "training" / "cadex_train.py"
+        digest = sha256_file(trainer) if trainer.is_file() else ""
+        if digest != args.require_trainer:
+            print(f"ERROR  trainer digest is {digest or '(no trainer found)'}, "
+                  f"--require-trainer expects {args.require_trainer}. "
+                  f"Refusing to detach.", file=sys.stderr)
+            return EXIT_USAGE
+
     jobs_root = Path(
         args.jobs_dir or os.environ.get("CDXRL_JOBS", str(REPO_ROOT / "jobs"))
     ).expanduser()
@@ -569,8 +628,7 @@ def main(argv: list[str] | None = None) -> int:
         sweep_dir.mkdir(parents=True, exist_ok=True)
     elif args.detach or args.seeds is not None:
         stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
-        sweep_dir = jobs_root / f"{args.label}-sweep-{stamp}"
-        sweep_dir.mkdir(parents=True, exist_ok=False)
+        sweep_dir = _fresh(jobs_root / f"{args.label}-sweep-{stamp}")
         args.sweep_dir = str(sweep_dir)
     else:
         sweep_dir = None

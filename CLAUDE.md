@@ -60,9 +60,16 @@ cdx-rl/
   uv.lock
   config/env.example   → copy to config/env (gitignored)
 
+  tasks/
+    stand-b2/          the biped's bundle + MJCF — committed because the
+                       authoring project cannot be found on this box
+
   tools/
     cadexd_client.py   the spine: NDJSON client + the artifact resolver
     smoke.py           prove the whole spine end to end
+    train.py           dispatch a run or a seed sweep, detached
+    cxpolicy.py        read a .cxpolicy header; diff two reward curves
+    fire_divergence_guard.py   make supervise's guard fail on purpose
 
   harness/
     DESIGN.md          the five drivers + the supervisor, specified
@@ -192,6 +199,15 @@ not** — two fresh seeds, 48 evaluation seeds each:
 * **`os.kill(pid, 0)` succeeds on a zombie**, so it cannot tell a live
   trainer from a dead one while `train.py` is still its unreaped parent. Use
   `runlog.process_gone()`.
+* **The biped's authoring script does not exist anywhere on this box.**
+  `~/cdx-mjc/`, which `MUJOCO.md` §7 and ADR-100 both name, is gone; searched
+  for. `model_sha256 e3511559…` is therefore **not reproducible**, and every
+  number in 001 and 002 is a claim about the exact bytes now committed at
+  `tasks/stand-b2/`. Locating or re-authoring that script is the first step
+  of any task change.
+* **Pin the trainer off this box**: `--require-trainer <sha256>`. ADR-104's
+  refusal lived only in `remote_train.sh`, which local dispatch never calls,
+  so `train.py` recorded the digest and checked nothing.
 
 **Verified on this box, and worth knowing:** the dynamics domain evaluates
 **headlessly**. A 1-DOF pendulum authored through `cadexd` produced both an
