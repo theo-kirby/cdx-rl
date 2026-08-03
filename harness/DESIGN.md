@@ -50,7 +50,20 @@ Three things about it are worth carrying into the other drivers:
    likely to be given. McNemar over the discordant seeds is the test the
    design supports, and on 003 it says p = 1.000 and p = 0.453: **the three
    are indistinguishable**, which is the honest answer and not the one the
-   point estimates suggest. `compare` should grow the same thing.
+   point estimates suggest.
+
+   **`compare` has now grown the same thing.** The statistic lives in
+   `harness/_stats.py` and both drivers call it, which is the arrangement that
+   stops the two from drifting apart again — they had already drifted once,
+   which is why this paragraph existed. It takes the success predicate as a
+   parameter because the drivers score different things: `compare` ranks on
+   survival (`truncated`, exactly as `aggregate` defines it) and `steps` on
+   the conjunction. `compare` prints the paired rows for the checkpoints its
+   unpaired bound could not separate and puts leader-against-all in `--json`;
+   that is not a `--verbose` gate on a conclusion, because anything the
+   *weaker* test already separated the paired test can only separate more
+   strongly. Both bounds print side by side — the unpaired one stays, because
+   it is what every earlier result was reported against.
 
 ## What experiment 003 owes this file
 

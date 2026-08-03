@@ -257,7 +257,14 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   seeds** beside it — which said p = 1.000 and p = 0.453, i.e. *the three are
   indistinguishable*, and that is the honest answer where the point estimates
   suggested a winner. It was first written up as "1150 wins cleanly"; it does
-  not. `compare` should grow the same test.
+  not. **`compare` now prints it too** — both drivers share
+  `harness/_stats.py`, tested by `harness/test_stats.py` under cdx-rl's own
+  interpreter with no GPU. `compare` scores the paired test on survival and
+  `steps` on the conjunction, which is why the statistic takes the predicate
+  as a parameter. **The published 001 and 002 tables predate it**, so their
+  "indistinguishable at this seed count" sets were decided by the weaker test
+  alone; 002 seed 0 has four checkpoints tied at a 0 pp gap over 48 seeds and
+  nobody has yet asked the paired question of them.
 * **Under a POSITION action space the gate's drop test inverts.** Zero action
   must *stand* — that is the premise — and non-degeneracy has to be measured
   against the declared task instead. A gate that still demands a fall will

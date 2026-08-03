@@ -55,13 +55,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import statistics
 import sys
 from pathlib import Path
 from typing import Any
 
 from harness import EXIT_INFRASTRUCTURE, EXIT_OK, EXIT_USAGE
+from harness._stats import mcnemar, significance_pp
 from harness.episodes import BundleError, load_bundle, resolve_model
 from harness.provenance import envelope, sha256_file
 from harness.trainer_venv import (
@@ -98,54 +98,26 @@ def load_profile(name: str) -> dict[str, Any]:
     return profile
 
 
-def significance_pp(n: int) -> float:
-    """2σ on a *difference* of two binomial rates, in percentage points.
-
-    The worst case is p = 0.5 in both, so ``se = sqrt(2 * 0.25 / n)``. Printed
-    beside every table, because a driver that ranks without it invites the
-    reader to believe an ordering the sample size cannot support.
-    """
-
-    return 2.0 * math.sqrt(2.0 * 0.25 / max(1, n)) * 100.0
+#: The conjunction, as a predicate over one episode row. This is what makes
+#: ``steps``' paired test different from ``compare``'s: both play the same
+#: seeds and both use :func:`harness._stats.mcnemar`, but this driver scores a
+#: policy on *stepped AND survived* where ``compare`` scores it on survival
+#: alone.
+def stepped_and_survived(row: dict[str, Any]) -> bool:
+    return bool(row["survived"] and row["steps"] > 0)
 
 
 def paired(a: list[dict[str, Any]], b: list[dict[str, Any]]) -> dict[str, Any]:
     """McNemar on the conjunction, over the seeds the two policies share.
 
-    **The unpaired bound `compare` prints is the wrong test for this
-    comparison, and it is wrong in the conservative direction.** It assumes
-    two independent samples, so at n=24 it will not separate 17/24 from
-    14/24 — a 12.5 pp difference against a 28.9 pp worst-case bound. But
-    every checkpoint here is played against *the same seeds*, and a seed
-    fixes the reset draw and the whole disturbance schedule. Most episodes
-    therefore agree for reasons that have nothing to do with the policy, and
-    only the **discordant** ones carry information.
-
-    So: count the seeds where exactly one of the two succeeded, and ask
-    whether that split is worth believing. Under the null the discordant
-    seeds are a fair coin, which is an exact binomial test with no normal
-    approximation and no minimum sample size.
+    The statistic and the argument for it live in :mod:`harness._stats`, which
+    ``compare`` now shares. This is the conjunction-scored spelling of it.
 
     Reported, never used to auto-select. It says how much evidence there is;
     it does not say which checkpoint to install.
     """
 
-    by_seed_a = {r["seed"]: bool(r["survived"] and r["steps"] > 0) for r in a}
-    by_seed_b = {r["seed"]: bool(r["survived"] and r["steps"] > 0) for r in b}
-    shared = sorted(set(by_seed_a) & set(by_seed_b))
-    only_a = sum(1 for s in shared if by_seed_a[s] and not by_seed_b[s])
-    only_b = sum(1 for s in shared if by_seed_b[s] and not by_seed_a[s])
-    n = only_a + only_b
-    # Two-sided exact binomial p over the discordant seeds.
-    if n == 0:
-        p_value = 1.0
-    else:
-        k = min(only_a, only_b)
-        tail = sum(math.comb(n, i) for i in range(0, k + 1)) / (2 ** n)
-        p_value = min(1.0, 2.0 * tail)
-    return {"shared_seeds": len(shared), "only_first": only_a,
-            "only_second": only_b, "discordant": n,
-            "p_value": round(p_value, 4)}
+    return mcnemar(a, b, stepped_and_survived)
 
 
 def score(rows: list[dict[str, Any]]) -> dict[str, Any]:

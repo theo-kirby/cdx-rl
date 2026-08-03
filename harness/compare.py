@@ -59,6 +59,7 @@ from pathlib import Path
 from typing import Any
 
 from harness import EXIT_INFRASTRUCTURE, EXIT_OK, EXIT_USAGE
+from harness._stats import mcnemar
 from harness.episodes import (
     BundleError,
     aggregate,
@@ -262,6 +263,16 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             ),
             **separation(playable, len(seeds)),
         }
+        # …and the paired test, which is the right one for this table. The
+        # unpaired bound above stays because it is what every earlier result
+        # was reported against; the two are printed side by side rather than
+        # one replacing the other.
+        payload["selection"]["paired"] = paired_separation(
+            by_policy,
+            playable,
+            (payload["selection"].get("separation") or {}).get(
+                "indistinguishable", []),
+        )
         # The correlation the whole experiment is about, computed rather than
         # eyeballed off the table.
         usable = [row for row in playable if row["iteration"] >= 0]
@@ -350,6 +361,70 @@ def separation(rows: list[dict[str, Any]], seeds: int) -> dict[str, Any]:
             "indistinguishable": tied,
         }
     }
+
+
+def survived_episode(row: dict[str, Any]) -> bool:
+    """``aggregate``'s definition of survival, as a predicate over one row.
+
+    ``truncated`` — the episode used its whole step budget — and not "did not
+    report a termination label". Kept identical to ``aggregate``'s rule on
+    purpose: a paired test that scored survival differently from the table it
+    sits under would be comparing something the reader cannot see.
+    """
+
+    return bool(row["truncated"])
+
+
+def paired_separation(
+    by_policy: dict[str, list[dict[str, Any]]],
+    rows: list[dict[str, Any]],
+    tied: list[str],
+) -> list[dict[str, Any]]:
+    """McNemar of the survival leader against every other playable checkpoint.
+
+    **``separation`` above is the wrong test for this table, and it is wrong
+    conservatively.** Its 2σ bound assumes two independent samples, but every
+    checkpoint here is played against the *same* evaluation seeds, and a seed
+    fixes the reset draw and the entire disturbance schedule. Two checkpoints
+    therefore agree on most episodes for reasons that have nothing to do with
+    either policy, and the unpaired bound throws that structure away — it
+    needs about half the range before it will call anything separated.
+
+    ``steps`` grew this test first, when experiment 003's three tied
+    checkpoints scored 14, 17 and 16 of 24 and the unpaired bound could not
+    order them at any sample size the budget allows. The paired test said
+    p = 1.000 and p = 0.453 — *indistinguishable* — which is the honest answer
+    where the point estimates suggested a winner, and it had already been
+    written up as one. ``compare`` was making the same comparison with the
+    weaker statistic, so it now makes it with both.
+
+    Every comparison is returned; the caller prints the ones in ``tied``,
+    which is where the ambiguity is. That is not a ``--verbose`` gate on
+    something that could change a conclusion: a checkpoint the *unpaired*
+    bound already separated is one the paired test can only separate more
+    strongly, so the rows not printed cannot reverse an ordering.
+
+    Reported, never used to auto-select — ADR-099. It says how much evidence
+    there is; it does not say which checkpoint to install.
+    """
+
+    ranked = sorted(rows, key=lambda row: row["survival"], reverse=True)
+    if len(ranked) < 2:
+        return []
+    leader = ranked[0]
+    out: list[dict[str, Any]] = []
+    for row in ranked[1:]:
+        out.append({
+            "leader": leader["name"],
+            "against": row["name"],
+            "tied_unpaired": row["name"] in tied,
+            **mcnemar(
+                by_policy.get(leader["path"], []),
+                by_policy.get(row["path"], []),
+                survived_episode,
+            ),
+        })
+    return out
 
 
 def _pearson(left: list[float], right: list[float]) -> float | None:
@@ -524,7 +599,28 @@ def report(payload: dict[str, Any]) -> None:
                       f"{gap['two_sigma'] / 2 * 100:.0f} pp).")
                 print(f"  Indistinguishable at this seed count: "
                       f"{', '.join(gap['indistinguishable'])}")
-                print("  Raise --seeds before treating the top row as the answer.")
+
+        paired = selection.get("paired") or []
+        shown = [row for row in paired if row["tied_unpaired"]] or paired[:1]
+        if shown:
+            leader = shown[0]["leader"]
+            print()
+            print("  But the seeds are PAIRED — every checkpoint played the "
+                  "same reset draws\n  and the same disturbance schedules — so "
+                  "the bound above is the wrong test,\n  and it is wrong "
+                  "conservatively. McNemar over the discordant seeds only:")
+            print(f"  {'against':<24} {'only ' + leader[:10]:>16s} "
+                  f"{'only other':>11s} {'disc':>5} {'p':>7}")
+            for row in shown:
+                print(f"  {row['against']:<24} {row['only_first']:16d} "
+                      f"{row['only_second']:11d} {row['discordant']:5d} "
+                      f"{row['p_value']:7.3f}")
+            print("  p is two-sided exact binomial. Discordant seeds are the "
+                  "only ones carrying\n  information; agreement on the rest is "
+                  "the pairing, not the policy.")
+            print("  It says how much evidence there is; it does not choose "
+                  "(ADR-099). Install by\n  what the policy DID when you played "
+                  "it, and report the evidence beside it.")
 
     correlation = payload.get("correlation")
     if correlation:
