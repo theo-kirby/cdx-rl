@@ -78,6 +78,55 @@ WITNESS_FLOOR = 100.0
 TERMINAL_STATES = {"done", "error", "stopped", "failed", "cancelled"}
 
 
+def process_gone(pid: int) -> bool:
+    """Has this process actually exited? ``os.kill(pid, 0)`` cannot tell you.
+
+    **The zombie trap**, found by firing ``supervise``'s divergence guard on
+    purpose. ``cadex_train.py`` is a *child* of ``tools/train.py``, and
+    ``train.py`` only calls ``process.wait()`` after ``watch()`` returns. So
+    between the trainer exiting and the watch loop ending, the trainer is a
+    **zombie**: exited, unreaped, pid still valid. ``os.kill(pid, 0)``
+    succeeds on a zombie, so the naive check reports "still running" about a
+    process that is dead and can never do anything again.
+
+    Three things went wrong on that check, all silently:
+
+    * ``supervise._stop`` burned its full 60 s grace on an already-dead
+      process and then recorded ``"exited": false`` — a diagnostic stating
+      the opposite of the truth.
+    * ``watch``'s liveness branch could never fire. A trainer that crashed at
+      02:00 would leave the supervisor polling a zombie until ``--timeout``,
+      so a seed that died in a second would still cost its full three-hour
+      wall cap, and a sweep would lose the night to a run that was not
+      running.
+    * ``liveness``'s ``stale`` — *"it claims to be training and nothing is
+      running it"* — read ``pid_alive: True`` for exactly the case it exists
+      to catch.
+
+    ``/proc/<pid>/stat`` settles it. The state letter is the field after the
+    **last** ``)``, which is how a process whose name itself contains
+    parentheses is handled without a regex getting it wrong.
+    """
+
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    except PermissionError:
+        # Alive, owned by somebody else. Still alive.
+        return False
+
+    try:
+        stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8")
+    except OSError:
+        # No /proc entry and yet signallable is not a state Linux offers; if
+        # it happens, the pid is not there to be waited on.
+        return True
+
+    after_comm = stat.rpartition(")")[2].split()
+    return bool(after_comm) and after_comm[0] == "Z"
+
+
 def read_progress(run_dir: str | os.PathLike[str]) -> dict[str, Any]:
     """``progress.json``, or ``{}`` if there is none.
 
@@ -199,14 +248,7 @@ def liveness(run_dir: str | os.PathLike[str], progress: dict[str, Any]) -> dict[
             pid = 0
         if pid > 0:
             facts["pid"] = pid
-            try:
-                os.kill(pid, 0)
-                facts["pid_alive"] = True
-            except ProcessLookupError:
-                facts["pid_alive"] = False
-            except PermissionError:
-                # Alive, owned by somebody else. Still alive.
-                facts["pid_alive"] = True
+            facts["pid_alive"] = not process_gone(pid)
 
     progress_file = root / "progress.json"
     if progress_file.is_file():

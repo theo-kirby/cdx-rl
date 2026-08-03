@@ -4,7 +4,8 @@ The piece ``MUJOCO.md`` §7 assumes a human provides by watching.
 
 ```
 supervise --run DIR [--report-only] [--watch] [--patience N]
-          [--min-iterations M] [--require-device gpu] [--json]
+          [--min-iterations M] [--require-device gpu] [--sigma-floor X]
+          [--json]
 ```
 
 Two modes, one report. ``--report-only`` reads a finished run; ``--watch``
@@ -46,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import signal
 import sys
@@ -57,11 +59,22 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 from harness import EXIT_INFRASTRUCTURE, EXIT_OK, EXIT_USAGE  # noqa: E402
 from harness.provenance import envelope, load_env_file  # noqa: E402
-from harness.runlog import WITNESS_FLOOR, load_run, read_progress  # noqa: E402
+from harness.runlog import (  # noqa: E402
+    WITNESS_FLOOR, load_run, process_gone, read_progress,
+)
 
 #: How many rows the curve table shows, besides the named points. Ten is
 #: enough to see a shape and few enough to read.
 CURVE_ROWS = 10
+
+#: Below this ``action_std``, exploration has collapsed and the run is only
+#: burning power. **Read off the data, not invented**:
+#: ``stand-task-20260802-200109`` decayed 0.4002 → 0.3375 over 2 500
+#: iterations, so 0.02 — five per cent of that run's ``initial_std`` — sits an
+#: order of magnitude below anything a healthy run has been observed to do.
+#: A floor picked out of the air guesses at where "too small" begins; this one
+#: is at least anchored to a run that worked.
+SIGMA_FLOOR = 0.02
 
 
 def quoted_points(run: dict[str, Any]) -> list[dict[str, Any]]:
@@ -468,14 +481,68 @@ def _stop(run_dir: Path, pid: int, reason: str, *, grace: float = 60.0) -> dict[
 
     deadline = time.monotonic() + grace
     while time.monotonic() < deadline:
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
+        if process_gone(pid):
             record["exited"] = True
             return record
         time.sleep(1.0)
     record["exited"] = False
     return record
+
+
+def divergence(progress: dict[str, Any], sigma_floor: float) -> dict[str, Any] | None:
+    """``DESIGN.md`` §6's ``divergence | loss, action_std | NaN, or σ collapse``.
+
+    Returns the finding, or ``None`` if the run looks healthy.
+
+    **This is stop-the-burn, not checkpoint selection.** Both branches say
+    the same thing — the optimiser has left the region where its numbers mean
+    anything — and neither says which checkpoint to keep. A diverged run's
+    earlier checkpoints are still perfectly good, which is exactly why this
+    stops the process rather than deleting anything.
+
+    Why it is not gated behind reward patience: patience is switched *off* by
+    default here (experiment 001 Phase A found it stops runs that are
+    working). Divergence is the opposite kind of signal — it is not a
+    judgement about whether the policy is improving, it is an arithmetic fact
+    about whether the numbers are still numbers. A NaN at 02:00 otherwise
+    burns the rest of the night, silently, at full power.
+    """
+
+    # A non-finite loss or reward is unambiguous: no later iteration recovers
+    # from it, because the gradient that produced it has already been applied.
+    for field in ("loss", "reward_per_step"):
+        value = progress.get(field)
+        if isinstance(value, (int, float)) and not math.isfinite(float(value)):
+            return {
+                "check": "non-finite",
+                "field": field,
+                "value": repr(value),
+                "reason": f"{field} is {value!r} — the optimiser has diverged",
+            }
+
+    sigma = progress.get("action_std")
+    if (
+        sigma_floor > 0
+        and isinstance(sigma, (int, float))
+        and math.isfinite(float(sigma))
+        and float(sigma) < sigma_floor
+    ):
+        return {
+            "check": "sigma-collapse",
+            "field": "action_std",
+            "value": float(sigma),
+            "floor": sigma_floor,
+            "reason": (
+                f"action_std {float(sigma):.5f} is below the floor "
+                f"{sigma_floor:g} — exploration has collapsed"
+            ),
+        }
+
+    # Note the deliberate absence of an `else` that reports health. A missing
+    # or null action_std means an older trainer that never logged one (see
+    # runlog's docstring), and a run whose sigma is unknown must not be
+    # reported as a run whose sigma is nought.
+    return None
 
 
 def watch(run_dir: Path, args: argparse.Namespace) -> dict[str, Any]:
@@ -535,15 +602,23 @@ def watch(run_dir: Path, args: argparse.Namespace) -> dict[str, Any]:
             events.append({"event": "terminal", "state": state})
             break
 
-        if pid:
-            try:
-                os.kill(pid, 0)
-            except ProcessLookupError:
-                events.append({"event": "process-gone", "pid": pid,
-                               "state": state, "iteration": iteration})
-                print(f"  process {pid} is gone while state is {state!r} — "
-                      "this run is stale, not live.")
-                break
+        if pid and process_gone(pid):
+            events.append({"event": "process-gone", "pid": pid,
+                           "state": state, "iteration": iteration})
+            print(f"  process {pid} is gone while state is {state!r} — "
+                  "this run is stale, not live.")
+            break
+
+        # Divergence before patience, and unconditionally: patience is off by
+        # default, so a run left to its own devices overnight has this as its
+        # only arithmetic guard.
+        diverged = divergence(progress, getattr(args, "sigma_floor", SIGMA_FLOOR))
+        if diverged is not None:
+            print(f"  STOPPING: {diverged['reason']}")
+            events.append({"event": "divergence", "iteration": iteration, **diverged})
+            if pid:
+                stopped = _stop(run_dir, pid, diverged["reason"])
+            break
 
         best_iteration = progress.get("best_iteration")
         if (
@@ -609,6 +684,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--timeout", type=float, default=0.0,
         help="Give up watching after this many seconds. Does not stop the run.",
+    )
+    parser.add_argument(
+        "--sigma-floor", type=float, default=SIGMA_FLOOR,
+        help=f"Stop when action_std falls below this. Default {SIGMA_FLOOR:g}, "
+             "which is 5%% of the initial_std of the run this floor was read "
+             "off. 0 disables the sigma half of the divergence guard; the "
+             "non-finite half cannot be disabled.",
     )
     parser.add_argument(
         "--no-verify-checkpoints", action="store_true",
