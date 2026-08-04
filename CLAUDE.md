@@ -133,15 +133,27 @@ Other environment facts:
 * `MUJOCO_GL` is **unset box-wide** and there is no precedent for setting it —
   the trainer is headless MJX and never opens a renderer. If video rollout is
   ever added, set `MUJOCO_GL=egl` at that call site, not in the environment.
-* **There are two boxes now, and they are not interchangeable.** Everything
-  in these docs written as "this box" means `sb1x`: RTX 5090 32 GB, Ryzen 9
-  9950X (32 threads), 60 GB RAM, 2.4 TB free, Ubuntu 24.04, Cadex at
-  `06d1374b`, clean. The second is `sb9x`: **RTX 4070 12 GB**, 16 threads,
-  15 GB RAM, driver 595.84, Cadex at `ae8da6a6`, built 2026-08-03 and clean.
-  It is **~1.6–2.1x slower per steady iteration** and needs three runtime
-  settings sb1x never did. `cloud.md` §1 has the full comparison, the
-  headless build recipe, and the open segfault; do not carry a wall cap or a
-  GPU-hour estimate between them.
+* **`sb9x` IS NO LONGER AVAILABLE TO THIS PROJECT — 2026-08-04, until further
+  notice.** It has been reassigned to its own unrelated work. **Do not
+  dispatch to it, do not ssh into it, do not plan around it.** Everything
+  cdx-rl does now happens on **`sb1x`**: RTX 5090 32 GB, Ryzen 9 9950X
+  (32 threads), 60 GB RAM, 2.4 TB free, Ubuntu 24.04, Cadex at `06d1374b`,
+  clean.
+
+  Its history stays in these docs because results depend on it — experiment
+  002's seed 2 ran there, and the segfault characterisation is why
+  `train.py` defaults three runtime settings on for everyone. `cloud.md` §1
+  keeps the comparison. What is retired is sb9x as *capacity*, not sb9x as
+  *evidence*. For the record it was an RTX 4070 12 GB, 16 threads, driver
+  595.84, Cadex `ae8da6a6`, **~1.6–2.1x slower per steady iteration**, and
+  it crashed **2 of 2 full-length runs** to the open jaxlib race.
+
+  Practical consequence: **there is one card, so runs are serial.** A sweep
+  that used to be split across two boxes now queues. Budget accordingly, and
+  note that scoring (`steps`, `compare`, `capability`, `hazard15`) is **CPU
+  MuJoCo** and does *not* contend with training — measured at 31–51 s for a
+  37-checkpoint seed at 12 evaluation seeds, so analysis can run while the
+  card trains.
 * **Check which box you are on before believing a wall-clock number.**
   `smoke.py` records the host, `train.py` writes it into `runtime.json` and
   `sweep.json`, and `platform.node()` is the one-liner.
@@ -160,10 +172,21 @@ Other environment facts:
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
-| Experiment 003 | ✅ imported and re-measured. **Position action space: 17/24 on the conjunction against B6's 6/12, and hazard 15 dissolves.** One seed |
-| sb9x | ✅ engine built (smoke 13/13), trainer hardened and measured. 2 of 3 forty-iteration runs exit 0; the third hit an intermittent jaxlib fault and still left complete, `compare`-able checkpoints (`EXIT_SALVAGEABLE`) |
+| Experiment 003 | ✅ **four seeds.** Best is seed 2's `001700` at 18/24. **Headroom past iteration 1200 is 3 of 3, p = 0.0391** — the runs stop mid-climb. **Hazard 15 does NOT dissolve: it replicates 3 of 3** at 73–91 % mean of rating |
+| sb9x | ⛔ **RETIRED from this project 2026-08-04** — reassigned to unrelated work. Do not dispatch to it. Its measurements stand; its capacity is gone. It crashed **2 of 2** full-length runs |
 
-**Total GPU-hours spent by this repository: ~10.8.**
+**Total GPU-hours spent by this repository: ~27.5.**
+
+* **~15.0** — experiment 003's **seeds 1, 2 and 3** on sb1x, 2026-08-03/04,
+  1800 iterations each at 4.96, 4.97 and 5.04 h. All three exited 0. They
+  bought the four-seed table, the headroom result, and — via the corrected
+  instrument — the finding that hazard 15 never dissolved.
+* **~1.7** — experiment 002's **seed 3** on sb9x, which crashed at iteration
+  598 of 1500 to the jaxlib race, leaving 5 periodic checkpoints. Coverage
+  stops far short of where 002's best checkpoints live, so it does **not**
+  answer criterion 5 and 002 stays at three seeds. It did establish that the
+  fault hits **2 of 2** full-length runs there, which is why sb9x is retired
+  rather than merely slow.
 
 * **~5.1** — experiment 002's seeds 0 and 1 on sb1x, retrained from scratch
   to ask whether 001's conclusions were a property of the task or of one run.
@@ -193,13 +216,31 @@ sign convention and the control rate — and:
   survives, it survives **by stepping**: `survived` and `both` are the same
   number at every late checkpoint, where B6's `best` scored survived 2/12,
   stepped 2/12, both 1/12.
-* **Hazard 15 dissolves, and it was an artefact of the action space.**
-  002 replicated the bracing 3 of 3 at 63–87 % of rating with nothing
-  pushing. Under position servos the same mechanism holds its stance at
-  **27.0 N·mm peak (31 %)**, with `mj_inverse` putting the static cost at
-  **15.6 %**. Hazard 16 is right that a reward term cannot fix it; the action
-  space can, because a policy whose output *is* torque has no way to say
-  "hold still" except to keep commanding torque.
+* **~~Hazard 15 dissolves, and it was an artefact of the action space.~~
+  IT DOES NOT. Measured against the trained policies on 2026-08-04, it
+  replicates 3 of 3.** With nothing pushing, after the reset drop is
+  absorbed, the worst motor sits at a **mean of 73.2 %, 90.5 % and 78.5 % of
+  the 86 N·mm rating** and is above 90 % of it for **49 %, 77 % and 59 % of
+  the frames**. Peak is 100 % in all three — the servo saturates. That is
+  001's 71 % and 002's 63–87 % again, not an improvement on them.
+
+  **The original claim compared two different measurements.** 003's
+  "27.0 N·mm peak (31 %)" is `feasibility.py` check 6 — *the model's own PD
+  servo, one episode, zero action*, holding the nominal pose. It is a
+  property of the mechanism and the gains, with no trained network in it.
+  002's 63–87 % is a trained policy's commanded torque. A servo number and a
+  policy number are not comparable, and the conclusion drawn from putting
+  them side by side was wrong.
+
+  What actually happens is subtler than "the action space fixes it": the
+  policy never commands torque, but it commands **position errors large
+  enough that the servo saturates** — 003's own gate says the PD saturates at
+  16.4° of error, and these policies command up to 44° on a ±45° joint. The
+  bracing moved from the network's output to the servo's, and the harness's
+  instrument could not see it (below). Hazard 16 stands: a reward term cannot
+  fix this, and neither did the action space.
+
+  `mechanisms/mg-legs/drivers/hazard15.py` is the measurement.
 * **The untrained policy stands.** Zero action under a torque space falls at
   0.976 s; under a position space it holds the nominal pose, so PPO stops
   having to discover gravity compensation for ten joints before it can learn
@@ -265,6 +306,24 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   "indistinguishable at this seed count" sets were decided by the weaker test
   alone; 002 seed 0 has four checkpoints tied at a 0 pp gap over 48 seeds and
   nobody has yet asked the paired question of them.
+* **The harness's torque columns are WRONG under a position action space,
+  and they are wrong silently.** `_episodes._torque_columns` derives peak,
+  mean and saturation from `step["action"]` — the clamped list written to
+  `data.ctrl` — which is right when the action *is* torque and meaningless
+  when it is a joint angle. On `stand-b8` it reports `limit_nmm` as
+  `[30, 30, 45, 45, …]` and `peak_torque_nmm` as `[27.6, 29.6, 43.3, 44.3, …]`
+  — **degrees, against the joints' angle ranges, labelled N·mm.** Divide 44.3
+  by an 86 N·mm rating and you get "51 %" of nothing. `compare`, `capability`
+  and every table built on them inherit this. Use `data.actuator_force`
+  against `model.actuator_forcerange`, as
+  `mechanisms/mg-legs/drivers/hazard15.py` does.
+* **A peak over a whole episode measures the RESET DROP, not the posture.**
+  The reset variation lifts the machine and drops it, and absorbing 42 mm
+  saturates every motor. `hazard15.py` reports a settled window beside the
+  whole-episode figure so the difference is visible rather than chosen —
+  though in this case both were 100 % and the honest statistic turned out to
+  be the **mean and the duty cycle**, not either peak. `script.py` documents
+  the same instrument error against foot lift.
 * **Under a POSITION action space the gate's drop test inverts.** Zero action
   must *stand* — that is the premise — and non-degeneracy has to be measured
   against the declared task instead. A gate that still demands a fall will

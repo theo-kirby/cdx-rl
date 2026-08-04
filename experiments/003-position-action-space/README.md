@@ -325,24 +325,79 @@ scored 6/12 of 10/12 stepped.
 
 # 9. What it means, and what it does not
 
-## Hazard 15 was an artefact of the action space
+## ~~Hazard 15 was an artefact of the action space~~ — RETRACTED 2026-08-04
 
-This is the finding, and it is bigger than the headline number.
+**This section was the headline finding and it was wrong. It compared a servo
+measurement with a policy measurement.** The paragraphs below are kept
+unedited, because `method.md` says a claim that has been published is
+corrected in place rather than quietly deleted. The correction follows them.
 
-`MUJOCO.md` hazard 15 — *the bracing is the resting posture* — replicated in
-**3 of 3** of experiment 002's seeds: 86.6 %, 63.3 % and 87.0 % of the 86 N·mm
-rating **with nothing pushing at all**. Experiment 001 called it "this policy
-family does not describe a machine that can be built."
+> This is the finding, and it is bigger than the headline number.
+>
+> `MUJOCO.md` hazard 15 — *the bracing is the resting posture* — replicated in
+> **3 of 3** of experiment 002's seeds: 86.6 %, 63.3 % and 87.0 % of the 86 N·mm
+> rating **with nothing pushing at all**. Experiment 001 called it "this policy
+> family does not describe a machine that can be built."
+>
+> Under a position action space the same mechanism holds its stance at
+> **27.0 N·mm peak — 31 % of rating — and `mj_inverse` says the static stance
+> costs 13.41 N·mm, 15.6 %.** The torque is computed by the solver at the
+> solver's rate and the policy never has to command it.
+>
+> Hazard 16 says *"a reward term cannot fix this"* and is correct. The action
+> space could. A policy whose output *is* torque has no representation of "hold
+> still" other than to keep commanding torque, and bracing is the cheapest
+> stable answer available to it.
 
-Under a position action space the same mechanism holds its stance at
-**27.0 N·mm peak — 31 % of rating — and `mj_inverse` says the static stance
-costs 13.41 N·mm, 15.6 %.** The torque is computed by the solver at the
-solver's rate and the policy never has to command it.
+### What the two numbers actually were
 
-Hazard 16 says *"a reward term cannot fix this"* and is correct. The action
-space could. A policy whose output *is* torque has no representation of "hold
-still" other than to keep commanding torque, and bracing is the cheapest
-stable answer available to it.
+**27.0 N·mm is not a policy.** It is `feasibility.py` check 6 — *the model's
+own PD servo, one episode, zero action*, holding the nominal pose — quoted in
+§8's gate table above as `peak effort 27.0 N·mm, 3.18× margin`. It is a
+property of the mechanism and the servo gains, and there is no trained
+network anywhere in it.
+
+**002's 63–87 % is a policy** — the torque a trained network commanded, at
+rest, over evaluation episodes.
+
+Putting the two side by side compared the machine with the machine plus a
+controller, and read the difference as an effect of the action space.
+
+### What the trained policies actually do
+
+Measured 2026-08-04 with `mechanisms/mg-legs/drivers/hazard15.py`, which
+reads `data.actuator_force` against `model.actuator_forcerange` (both 86.0
+N·mm) — the disturbance schedule dropped entirely, 12 seeds each, the reset
+drop excluded by a 1 s settling window:
+
+| policy | peak | **mean of rating** | **frames above 90 %** |
+|---|---|---|---|
+| s2 `001700` | 100 % | **73.2 %** | 49.4 % |
+| s1 `001750` | 100 % | **90.5 %** | 76.6 % |
+| s3 `001750` | 100 % | **78.5 %** | 58.7 % |
+
+**Hazard 15 replicates 3 of 3, at 001's 71 % and 002's 63–87 % — or worse.**
+All three saturate the actuator at some point in every settled window.
+
+### Why, and it is more interesting than the retraction
+
+The policy genuinely never commands torque. But it commands **position
+errors large enough that the servo saturates**. §8's own gate says this
+servo saturates at **16.4° of error** (86 N·mm ÷ 5.236 N·mm/deg) — and these
+policies command up to **44°** on a ±45° hip pitch. The bracing did not go
+away; it moved from the network's output to the servo's, where the
+experiment's instrument could not see it.
+
+That instrument is the third thing wrong here, and it is now documented in
+`CLAUDE.md`: `_episodes._torque_columns` derives "torque" from the action
+written to `data.ctrl`, which under a position action space is an **angle in
+degrees** scored against the joint's angle range. It reported
+`peak_torque_nmm` of 44.3 against a `limit_nmm` of 45 — numbers that look
+like torque, are not, and would have made this section look fine.
+
+**Hazard 16 stands, and is stronger than before: a reward term cannot fix
+this, and neither did the action space.** What changed is where the cost is
+paid, not whether it is paid.
 
 ## What does not follow
 
