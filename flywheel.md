@@ -490,7 +490,7 @@ python3 ~/.claude/skills/flywheel-tree/scripts/render_tree.py \
         --input tree.json --no-color
 ```
 
-As of 2026-08-03, after the harness build, three experiments and the import:
+As of 2026-08-04, after the harness build, five experiments and the import:
 
 ```
 cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
@@ -503,12 +503,27 @@ cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
 │       ├── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
 │       │   └── 003: the action space was the problem | broad-fire-8531
 │       │       └── 003 at four seeds: headroom is real, hazard 15 never dissolved | broken-cloud-4296
+│       │           └── 004: the bracing was a POLICY choice; ±25° is the operating point | white-cloud-2565
+│       │               └── 005: the gate vetoed the run — bracing is a function of TRAINING TIME | small-recipe-2040
 │       └── 002: the reward peak is not the best checkpoint in 2 of 2 fresh seeds | holy-recipe-7414
 │           ├── 002 seed 3-of-4: the headline does not replicate — 2 of 3 | spring-unit-9051
 │           └── 003 (second parent) | broad-fire-8531
 ├── mg-legs before cdx-rl: nine runs, and the three things none moved | rapid-voice-5955
 └── 000: the loop closes, on CPU in 62 s | calm-bird-4796
 ```
+
+**The 003 → 004 → 005 chain reads as claim → isolation → qualification**, and
+each node retracts or narrows its parent rather than replacing it. 004 answers
+the question `broken-cloud-4296`'s retraction left open (machine or network?
+*network*); 005 then qualifies 004 with the variable 004 held fixed (training
+time). A node whose job is to narrow its parent belongs *under* it, so the
+chain stays walkable in one direction.
+
+**`small-recipe-2040` records a run that never happened**, and that is
+deliberate. Its GPU cost is zero and its finding is real, so the graph would be
+wrong to omit it — the veto is the evidence that the 1800-iteration budget is
+load-bearing. Tag it `status/measured`: something *was* measured, on CPU,
+across 105 checkpoint evaluations.
 
 **The shape is the contract's, followed deliberately.** Phase A hangs off the
 observation that motivated it rather than off the root, and Phase B off Phase
