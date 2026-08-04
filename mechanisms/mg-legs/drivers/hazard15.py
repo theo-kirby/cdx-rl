@@ -219,9 +219,16 @@ def trend(iters: list[int], duty: list[float]) -> dict:
     a function of training time; rising past 25 % duty by extrapolation to
     3600 means a longer run undoes experiment 004's result.
     """
+    # A run still in flight has one checkpoint long before it has two. Return
+    # the same keys either way so the caller never has to check — an early
+    # return with a different shape is how this printed a KeyError instead of
+    # a table.
+    first = round(float(duty[0]), 6) if duty else 0.0
+    last = round(float(duty[-1]), 6) if duty else 0.0
     if len(iters) < 2:
-        return {"slope_per_1000": 0.0, "extrapolated_3600": duty[-1] if duty
-                else 0.0, "n": len(iters)}
+        return {"slope_per_1000": 0.0, "intercept": last,
+                "extrapolated_3600": last, "first": first, "last": last,
+                "n": len(iters), "degenerate": True}
     x = np.asarray(iters, dtype=float)
     y = np.asarray(duty, dtype=float)
     slope, intercept = np.polyfit(x, y, 1)
@@ -229,9 +236,10 @@ def trend(iters: list[int], duty: list[float]) -> dict:
         "slope_per_1000": round(float(slope) * 1000.0, 6),
         "intercept": round(float(intercept), 6),
         "extrapolated_3600": round(float(slope * 3600.0 + intercept), 6),
-        "first": round(float(y[0]), 6),
-        "last": round(float(y[-1]), 6),
+        "first": first,
+        "last": last,
         "n": len(iters),
+        "degenerate": False,
     }
 
 
@@ -306,7 +314,11 @@ def main() -> int:
           "63–87 % in 3 of 3\n  seeds — both under a TORQUE action space, "
           "where the policy's own command\n  was the torque.")
 
-    if tr:
+    if tr and tr.get("degenerate"):
+        print(f"\n  duty trend: only {tr['n']} checkpoint(s) in the series — "
+              f"no trend to fit.\n  A run still in flight will look like this; "
+              f"re-run when it has written more.")
+    elif tr:
         print(f"\n  duty trend over {tr['n']} checkpoints "
               f"({series_rows[0]['iteration']} → "
               f"{series_rows[-1]['iteration']}): "
