@@ -1,27 +1,58 @@
-# Experiment 004 — the ceiling, and whether a buildable policy can step
+# Experiment 004 — whether a buildable policy can step
 
 **Written before dispatch.** ADR-097: a metric chosen after looking at the
 curve is a metric chosen by looking at the answer. Nothing below is edited
 after the fact; where a run departs from it, §8 says so and says why.
 
+> **Revised 2026-08-04 11:51Z, with nothing scored.** This experiment was
+> dispatched as two arms, A (ceiling) and B (clamp). A was **cancelled at
+> iteration 158 of 2500**, 30 minutes in, and **no checkpoint of it was ever
+> played** — the revision is a cost argument, not a response to a result. §2
+> is the accounting. The GPU-hours it freed went to a second *seed* of B,
+> which is what 002's lesson says the answer needs.
+
 ## 1. Question
 
-Experiment 003 at four seeds left two findings pointing in opposite
-directions, and this experiment runs one arm at each.
+Experiment 003 at four seeds left the same policies holding the worst motor at
+**73–91 % of the 86 N·mm rating on average, with nothing pushing**, above 90 %
+of it for **49–77 % of frames**. Hazard 15 did not dissolve; it moved from the
+network's output to the servo's.
 
-**A — the ceiling.** All three 1800-iteration seeds peaked at iteration
-**1700–1750**, the last two checkpoints written, and the pooled paired test
-put the late-beats-early direction at **8 discordant to 1, p = 0.0391**. The
-runs stop mid-climb. *Where does improvement actually stop?*
+***Can a policy that cannot saturate its motors still step?***
 
-**B — buildability.** The same policies hold the worst motor at **73–91 % of
-the 86 N·mm rating on average, with nothing pushing**, above 90 % of it for
-**49–77 % of frames**. Hazard 15 did not dissolve; it moved from the network's
-output to the servo's. *Can a policy that cannot saturate its motors still
-step?*
+That is the whole experiment. A better policy that cannot be built is not
+progress, so this question gates every other one — including the ceiling.
 
-B is the one that matters. A better policy that cannot be built is not
-progress, and A alone would produce exactly that.
+## 1b. Why the ceiling arm was cancelled
+
+The original design paired the clamp against a fresh 2500-iteration run of the
+unchanged task, seed 2, to ask where improvement stops. **The accounting does
+not survive being written down.**
+
+003 seed 2 already ran this exact configuration — same seed, same task, same
+fourteen hyperparameters, same box — for **1800 iterations**, and it is on
+disk with 37 checkpoints, scored, with hazard 15 measured. A 2500-iteration
+re-run recomputes 1800 of those iterations to reach 700 new ones. That is
+**6.9 h of card time to buy 1.9 h of novel computation**, and the other 5 h
+reproduces something already owned. 002 measured same-seed reruns at
+**r = +0.9885 in shape while 0 of 1500 bitwise identical**, so the recomputed
+prefix is not even a free replication — it is a slightly different draw of a
+curve whose shape is known.
+
+**The reason it cost 3.6× what it should is that the trainer cannot warm-start
+from a checkpoint** — `cadex-wishlist.md` #11. With `--init-from`, the ceiling
+question is a 1.9 h continuation from `stand10.001700` and worth running
+immediately. Without it, it is the most expensive way to ask the least urgent
+question in the file.
+
+And the question it asks is about a policy family this experiment exists to
+show is **unbuildable**. Pushing that family further up a curve is not
+progress until the clamp result says whether the curve is worth climbing.
+
+**003 seeds 1, 2 and 3 are the control**, at no cost: 1800 iterations each,
+same box, same hyperparameters, hazard 15 measured at 73.2 %, 90.5 % and
+78.5 % mean of rating. Running the clamp at **1800 iterations** makes the
+comparison length-matched and seed-matched against a control already paid for.
 
 ## 2. Metric
 
@@ -31,28 +62,32 @@ the discordant seeds** and not the point estimate. Plus
 `mechanisms/mg-legs/drivers/hazard15.py` for the resting torque, which is the
 instrument 003 lacked.
 
-## 3. The two runs
+## 3. The runs, and the control that was already paid for
 
-Both **2500 iterations, checkpoint every 50** — 50 periodic checkpoints, at
-the measured **9.95 s/iteration** on `sb1x`, so **~6.9 h each, ~13.8 h
-serial**. There is one card now: `sb9x` was retired 2026-08-04.
+**1800 iterations, checkpoint every 50** — 37 checkpoints, at the measured
+**9.95 s/iteration** on `sb1x`, so **~5.0 h each**. There is one card now:
+`sb9x` was retired 2026-08-04, so arms are serial.
 
-| | task | bundle sha256 | seed |
-|---|---|---|---|
-| **A ceiling** | `tasks/stand-b8/` unchanged | `5572adf265aa51cb…` | 2 |
-| **B clamp15** | `tasks/stand-b8-clamp15/` | `50e2d08bcb6b0785…` | 2 |
+| | task | bundle sha256 | seed | status |
+|---|---|---|---|---|
+| **control** | `tasks/stand-b8/` unchanged | `5572adf265aa51cb…` | 1, 2, 3 | ✅ **003, already on disk** |
+| **arm 1** | `tasks/stand-b8-clamp15/` | `50e2d08bcb6b0785…` | 2 | dispatched 11:51Z |
+| **arm 2** | selected by the §7 fork | — | — | chained |
 
-**Seed 2 for both.** It was 003's best seed (`001700` at 18/24), so A's first
-1800 iterations can be read against a run whose shape is already known — 002
-measured same-seed runs at **r = +0.9885** in shape while being **0 of 1500
-bitwise identical**, so this is a consistency check on shape, never on a
-value. And B shares the seed with its own control, which is what makes the
-comparison paired at the level that matters.
+**The control is free and it is exact.** 003's seeds 1, 2 and 3 are the same
+task, the same fourteen hyperparameters, the same box and the same 1800
+iterations. Matching the clamp's length to theirs is what turns this from
+"a clamped run and a remembered number" into a paired comparison at the seed
+level — every arm is played against a control that shares its seed, so the
+reset draw and the whole disturbance schedule are held fixed.
 
-**A is the control for B.** Running them at the same length, same seed, same
-everything-but-the-action-range is the whole point; 003's lesson was that
-moving four things at once makes attribution an argument rather than a
-measurement.
+**Arm 1 is seed 2** because that was 003's best (`001700` at 18/24). If the
+clamp costs stepping anywhere, it costs it against the strongest control, and
+a null there is worth more than a null against a weak one.
+
+Note this is **not** a same-seed rerun of the control: the bundle differs, so
+the trajectories diverge from iteration 0. The seed match buys paired
+*evaluation*, not paired training.
 
 ## 4. What B changes, and it is one thing
 
@@ -153,10 +188,10 @@ learning. Both are worth 7 hours.
 
 ## 6. Budget and stopping rule
 
-~13.8 h across the two, serial, on `sb1x`. `--timeout 32400` (9 h) per run —
-2500 iterations needs ~6.9 h and the cap must not bite before the question is
-answered; 003's 25200 would truncate at ~iteration 2530, which is close enough
-to the target to be worth avoiding.
+**~10 h across the two arms**, serial, on `sb1x` — against the ~13.8 h the
+cancelled design would have spent to answer one question with one seed.
+`--timeout 25200` (7 h) per run: 1800 iterations needs ~5.0 h, and 003's four
+seeds all finished inside this cap, three of them at 4.96–5.04 h.
 
 `--patience 0`. Reward patience stays off — 001 found no reward rule would
 have found the right checkpoint, and 003's four seeds put the trainer's
@@ -168,25 +203,44 @@ gae_lambda 0.95, clip 0.2, entropy 2e-3, value_weight 0.5, initial_std 0.4`.
 Note these differ from `train.py`'s `RUN_200109` defaults in two —
 `discount` and `gae_lambda` — which is the silent-substitution trap.
 
-## 7. Pass criteria — written before the runs
+## 7. Pass criteria, and the fork — written before the runs
 
-1. **A finds the ceiling, or shows there isn't one yet.** The best checkpoint
-   in (1800, 2500] versus the best in [0, 1800], by McNemar at 24 seeds. If
-   late still wins, 2500 is *also* too short and that is the finding.
-2. **B steps at all.** Its best checkpoint scores ≥ 6/12 on the conjunction —
-   B6's baseline, the number 003 was measured against. Below that, the clamp
-   is too tight to control the machine.
-3. **B is measurably less braced.** Resting duty cycle above 90 % of rating
-   **below 25 %**, against A's 49–77 %. This is the point of the experiment;
-   a B that steps as well as A while still saturating has taught us nothing.
-4. **The comparison is paired and reported as such.** A-vs-B on the
-   conjunction through McNemar, not through the point estimates, and the tied
-   set named.
+1. **The clamp steps at all.** The best checkpoint scores ≥ **6/12** on the
+   conjunction — B6's baseline, the number 003 was measured against. Below
+   that, the clamp is too tight to control the machine.
+2. **The clamp is measurably less braced.** Resting duty cycle above 90 % of
+   rating **below 25 %**, against the control's 49–77 %. This is the point of
+   the experiment; a clamped run that steps as well as 003 while still
+   saturating has taught us nothing.
+3. **The comparison is paired and reported as such.** Clamp-vs-control on the
+   conjunction through McNemar over discordant seeds, not through the point
+   estimates, and the tied set named.
+4. **It replicates.** Criterion 2 must hold in **both** seeds, or in both
+   clamp settings if the fork takes the relax branch. 003's hazard-15
+   retraction is trustworthy *because* it was 3 of 3; a one-seed collapse of
+   the duty cycle would be exactly the n=1 claim 003 had to retract.
 
-**Stated in advance: the likely outcome is a trade.** B steps worse and braces
-less. If so the deliverable is the *curve* between them, not a winner, and the
-next question is where on it a buildable machine sits — which is an actuator
-sizing question, not a policy one.
+### The fork, decided in advance
+
+Arm 2 is chosen by criterion 1 applied to arm 1, **evaluated by a script, not
+by judgement** — `jobs/chain-004-fork.sh` scores arm 1 at 12 seeds the moment
+it exits and dispatches accordingly. The branch cannot be chosen by looking at
+the curve, because nobody looks at the curve first.
+
+| arm 1's best `both` at 12 seeds | arm 2 | why |
+|---|---|---|
+| **≥ 6** | **clamp15, seed 1** | the clamp is controllable — the open question is whether the effect replicates |
+| **< 6** | **clamp25, seed 2** (`3d627ef4b9a509fe…`) | ±15° is too tight — find where on the range control returns, rather than replicating a failure |
+
+±25° is the relax point because it is still **above** the 16.4° saturation
+threshold — so it is a real test of the same hypothesis and not a retreat to
+the control — while sitting far below the ±45° the 003 policies were using. It
+narrows 6 of 10 actions; ±15° narrows all 10.
+
+**Stated in advance: the likely outcome is a trade.** The clamp steps worse
+and braces less. If so the deliverable is the *curve* between ±15°, ±25° and
+±45°, not a winner, and the next question is where on it a buildable machine
+sits — which is an actuator sizing question, not a policy one.
 
 ## 8. What happened
 

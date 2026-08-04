@@ -38,7 +38,8 @@ Four rules. The first two have cost real time when broken elsewhere.
 | 4 | [`flywheel.md`](flywheel.md) | The graph as it actually is — no typed node kinds, mandatory six-key `repo_context`, full-snapshot commits. |
 | 5 | [`cloud.md`](cloud.md) | Compute topology, GPU budgeting, and when bursting off-box is worth it (rarely). |
 | 6 | [`harness/DESIGN.md`](harness/DESIGN.md) | The drivers, specified. Five built, `measure` and `feasibility` deferred. |
-| 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Wants, captured rather than acted on. |
+| 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Wants, captured rather than acted on. Thirteen. |
+| 8 | [`cadex-engine-plan.md`](cadex-engine-plan.md) | The three of those that are **costing research time**, scoped for hand-off to the Cadex dev repo. |
 
 If you are about to design an experiment, `method.md` §"What a cdx-rl
 experiment must contain" is the checklist and
@@ -55,6 +56,7 @@ cdx-rl/
   flywheel.md          the graph
   cloud.md             compute topology
   cadex-wishlist.md    wants, captured
+  cadex-engine-plan.md the blocking three, scoped for hand-off
 
   pyproject.toml       cdx-rl's own tooling deps (small, no mujoco, no jax)
   uv.lock

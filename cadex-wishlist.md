@@ -393,6 +393,55 @@ the MJCF sets `ctrllimited="false"` on every actuator, so nothing downstream
 re-clamps — but the result is not reproducible from the script, which is the
 one property this project most wants to keep.
 
+## 13. The pinned engine cannot build the mechanism its own experiments ran on
+
+**Status: open.** Makes `mechanisms/mg-legs/script.py` unbuildable on the only
+box that has a GPU.
+
+`script.py` declares two observation kinds its own comments number **ninth**
+and **tenth**:
+
+```python
+assembly.observation(pelvis_c, "centre_of_mass_velocity",    name="cv"),   # mjSENS_SUBTREELINVEL
+assembly.observation(pelvis_c, "centroidal_angular_momentum", name="cam"),
+```
+
+Neither string appears anywhere in the pinned checkout. `06d1374b`'s
+observation table has twelve entries and stops at the eighth kind:
+
+```
+actuator_force, armature, centre_of_mass, component_angular_velocity,
+component_linear_velocity, component_orientation, component_position,
+damping, friction_loss, mass, position, velocity
+```
+
+So the mechanism builds on the **laptop** (`560935bd`) and nowhere else.
+`sb1x` at `06d1374b` refuses `centre_of_mass_velocity`; `sb9x` at `ae8da6a6`
+got past that one and refused `centroidal_angular_momentum`.
+
+**Why this is worse than it sounds.** CLAUDE.md's headline recovery story is
+that finding `script.py` made the mechanism *"changeable rather than a dead
+end"*. It is changeable only on a machine with no GPU and no training venv.
+Every mechanism edit has to be authored on the laptop, exported, and carried
+to `sb1x` as bytes — which is exactly the `stand-b2` situation the recovery
+was supposed to end, one step removed.
+
+**Wanted, in preference order:**
+
+1. **A pin that can build what it trains.** Either the two observation kinds
+   backported to `06d1374b`, or a statement of the earliest revision that has
+   both, so cdx-rl can move its pin deliberately rather than discover the gap
+   per-box. Note the constraint: bumping the *trainer* breaks comparability
+   with 001–003 (ADR-104), but the ten commits between `06d1374b` and
+   `ae8da6a6` were all engine-side with `training/` byte-identical, so an
+   engine-only bump is available if the boundary is stated.
+2. **A build-time capability check.** `assembly.observation` with an unknown
+   kind should name the kind, the revision, and the supported set. Today the
+   failure surfaces partway through a long script, which reads like a
+   modelling error rather than a version gap.
+3. **`cadexd` should report its observation vocabulary**, so a driver can
+   refuse before it spends a build.
+
 ---
 
 ## Withdrawn

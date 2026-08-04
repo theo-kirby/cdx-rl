@@ -41,6 +41,7 @@ threshold.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import shutil
@@ -48,12 +49,23 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 SRC = REPO / "tasks" / "stand-b8"
-DST = REPO / "tasks" / "stand-b8-clamp15"
-CAP_DEGREES = 15.0
-LABEL = "stand11"
+
+# The cap is a parameter because 004's pre-registered fork has a second arm at
+# ±25°: still above the 16.4° saturation threshold, but far below the ±45° the
+# trained policies were using. Which one runs is decided by the rule in
+# `README.md` §7, not by looking at a curve.
+CAPS = {15.0: ("stand-b8-clamp15", "stand11"),
+        25.0: ("stand-b8-clamp25", "stand12")}
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--cap", type=float, default=15.0, choices=sorted(CAPS))
+    args = ap.parse_args(argv)
+    dst_name, LABEL = CAPS[args.cap]
+    DST = REPO / "tasks" / dst_name
+    CAP_DEGREES = args.cap
+
     task = json.loads((SRC / "stand-task.json").read_text())
 
     changed = []
