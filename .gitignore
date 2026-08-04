@@ -224,3 +224,14 @@ jobs/
 projects/
 runs/
 *.cxpolicy
+
+# ...except a policy that is deliberately shipped rather than produced. A
+# rollout project is only openable if the weights travel with the script that
+# names them by digest, and 330 KB is a reasonable price for a repository
+# whose whole point is reproducible results.
+#
+# This rule is also why experiment 003's README says
+# `tasks/stand-b8/stand10.001150.cxpolicy` "is committed as that starting
+# network" when no .cxpolicy has ever been tracked: the add was silently
+# swallowed by the line above and nobody checked.
+!mechanisms/mg-legs/rollout/assets/*.cxpolicy
