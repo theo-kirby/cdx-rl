@@ -61,6 +61,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import statistics
 import sys
 from pathlib import Path
@@ -184,9 +185,65 @@ def measure(policy_path: Path, task: dict, model_xml: bytes, seeds: list[int],
     }
 
 
+#: ``<label>.NNNNNN.cxpolicy``. ``<label>.best.cxpolicy`` and the final
+#: ``<label>.cxpolicy`` carry no iteration and are not part of a series.
+_PERIODIC = re.compile(r"\.(\d{6})\.cxpolicy$")
+
+
+def series_checkpoints(run_dir: Path, stride: int) -> list[tuple[int, Path]]:
+    """Periodic checkpoints at ``stride``, plus the last one written.
+
+    The last is always included whatever its iteration: it is the newest
+    evidence about where the run is heading, and dropping it because 1750 is
+    not a multiple of 250 would silently truncate the trend at its most
+    informative end.
+    """
+    found: list[tuple[int, Path]] = []
+    for p in sorted(run_dir.glob("*.cxpolicy")):
+        m = _PERIODIC.search(p.name)
+        if m:
+            found.append((int(m.group(1)), p))
+    if not found:
+        raise SystemExit(f"no periodic checkpoints under {run_dir}")
+    found.sort()
+    keep = {it: p for it, p in found if stride <= 0 or it % stride == 0}
+    keep[found[-1][0]] = found[-1][1]
+    return sorted(keep.items())
+
+
+def trend(iters: list[int], duty: list[float]) -> dict:
+    """Least-squares slope of duty against iteration, and the extrapolation.
+
+    Printed unconditionally. The gate's decision rule was written down before
+    any of this was looked at (ADR-097): flat or falling means bracing is not
+    a function of training time; rising past 25 % duty by extrapolation to
+    3600 means a longer run undoes experiment 004's result.
+    """
+    if len(iters) < 2:
+        return {"slope_per_1000": 0.0, "extrapolated_3600": duty[-1] if duty
+                else 0.0, "n": len(iters)}
+    x = np.asarray(iters, dtype=float)
+    y = np.asarray(duty, dtype=float)
+    slope, intercept = np.polyfit(x, y, 1)
+    return {
+        "slope_per_1000": round(float(slope) * 1000.0, 6),
+        "intercept": round(float(intercept), 6),
+        "extrapolated_3600": round(float(slope * 3600.0 + intercept), 6),
+        "first": round(float(y[0]), 6),
+        "last": round(float(y[-1]), 6),
+        "n": len(iters),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--policy", action="append", required=True, type=Path)
+    ap.add_argument("--policy", action="append", type=Path)
+    ap.add_argument("--series", type=Path,
+                    help="run directory: score its periodic checkpoints at "
+                         "--stride and print the duty-cycle trend")
+    ap.add_argument("--stride", type=int, default=250,
+                    help="series mode: iteration spacing (default 250); "
+                         "the last checkpoint is always included")
     ap.add_argument("--task", required=True, type=Path)
     ap.add_argument("--model", type=Path)
     ap.add_argument("--seeds", type=int, default=12)
@@ -194,17 +251,37 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
+    if not args.policy and not args.series:
+        ap.error("one of --policy or --series is required")
+
     task = json.loads(args.task.read_text())
     model_path = args.model or (args.task.parent / "model-model.xml")
     model_xml = model_path.read_bytes()
     seeds = list(range(args.seeds))
 
-    rows = [measure(p, task, model_xml, seeds, args.rating_nmm)
-            for p in args.policy]
+    selected: list[tuple[int | None, Path]] = [(None, p)
+                                               for p in (args.policy or [])]
+    if args.series:
+        selected += series_checkpoints(args.series, args.stride)
+
+    rows = []
+    for iteration, p in selected:
+        row = measure(p, task, model_xml, seeds, args.rating_nmm)
+        if iteration is not None:
+            row["iteration"] = iteration
+        rows.append(row)
+
+    series_rows = [r for r in rows if "iteration" in r]
+    tr = trend([r["iteration"] for r in series_rows],
+               [r["settled_duty_worst"] for r in series_rows]) \
+        if series_rows else None
 
     if args.json:
-        print(json.dumps({"driver": "hazard15", "rating_nmm": args.rating_nmm,
-                          "seeds": seeds, "rows": rows}, indent=1))
+        out = {"driver": "hazard15", "rating_nmm": args.rating_nmm,
+               "seeds": seeds, "rows": rows}
+        if tr:
+            out["duty_trend"] = tr
+        print(json.dumps(out, indent=1))
         return 0
 
     print(f"hazard 15 — peak |actuator_force| with NOTHING PUSHING, "
@@ -228,6 +305,21 @@ def main() -> int:
     print("\n  For reference: 001 measured 71 % of rating, 002 replicated "
           "63–87 % in 3 of 3\n  seeds — both under a TORQUE action space, "
           "where the policy's own command\n  was the torque.")
+
+    if tr:
+        print(f"\n  duty trend over {tr['n']} checkpoints "
+              f"({series_rows[0]['iteration']} → "
+              f"{series_rows[-1]['iteration']}): "
+              f"{tr['first']*100:.1f} % → {tr['last']*100:.1f} %, "
+              f"slope {tr['slope_per_1000']*100:+.2f} pp / 1000 iterations")
+        print(f"  extrapolated to iteration 3600: "
+              f"{tr['extrapolated_3600']*100:.1f} % duty")
+        print("\n  The rule was written down before this was run: flat or "
+              "falling means the\n  bracing is not a function of training "
+              "time; rising past 25 % duty at 3600\n  means a longer run "
+              "undoes experiment 004's result. A linear fit is the\n  "
+              "weakest possible model of the trend — read the per-checkpoint "
+              "column too.")
     return 0
 
 

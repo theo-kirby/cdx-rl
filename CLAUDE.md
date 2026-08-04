@@ -175,6 +175,7 @@ Other environment facts:
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
 | Experiment 004 | ✅ **two arms, both `rc 0`.** The bracing was a **policy choice, not a dynamics requirement**: capping the command range cuts resting duty above 90 % of rating from **51.8 % → 13.5 % (±25°) → 0.2 % (±15°)**. **±25° is the operating point** — 15/24 against the control's 18/24, McNemar 4:1, **p = 0.375, indistinguishable** — while ±15° costs stepping decisively (5/24, 13:0, p = 0.0002). **n=1 in seeds**; `stand12` seed 1 dispatched 21:45Z |
+| Experiment 005 | ✅ **the run was never dispatched — its own CPU gate vetoed it, for 70 s of CPU instead of ~10 h of card.** Designed as a 3600-iteration extension of clamp25. Scoring `hazard15.py --series` across all three of 004's arms shows **bracing rises with training time in every one**: the command range sets the *rate* and the *plateau*, not whether it happens. **004's headline holds only at a fixed training budget.** ±25° sits at mean 54.6 % of rating and climbing +10 pp/1000 — the unclamped arm's operating point just before its own duty tripled to 55 % |
 | Experiment 003 | ✅ **four seeds.** Best is seed 2's `001700` at 18/24. **Headroom past iteration 1200 is 3 of 3, p = 0.0391** — the runs stop mid-climb. **Hazard 15 does NOT dissolve: it replicates 3 of 3** at 73–91 % mean of rating |
 | sb9x | ⛔ **RETIRED from this project 2026-08-04** — reassigned to unrelated work. Do not dispatch to it. Its measurements stand; its capacity is gone. It crashed **2 of 2** full-length runs |
 
@@ -289,6 +290,22 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
 
 ### Things that will bite the next agent
 
+* **A duty cycle is a THRESHOLD statistic, and a linear fit on one can
+  predict 140 %.** Experiment 005's gate extrapolated resting duty to
+  iteration 3600 and got **140.6 % for the unclamped control** — arithmetically
+  impossible, and proof the model was wrong for every arm including the one
+  the decision was read off. Duty stays near zero while the underlying mean is
+  low, then moves sharply once the mean nears the threshold, so it is flat in
+  two different regimes that mean opposite things. **Fit the underlying
+  quantity — here the mean fraction of rating — and read the threshold
+  statistic as a consequence.** The veto still held, but on the trend's
+  *direction* and on the control's measured transition, not on the number.
+* **Score a checkpoint SERIES, not a checkpoint, before extending a run.**
+  004 measured hazard 15 once per arm and concluded the bracing was a policy
+  choice; the series says the command range sets the rate at which it
+  accumulates. Both statements come from the same runs, already on disk.
+  `hazard15.py --series <run dir> --stride 50` is 23 s of CPU for 35
+  checkpoints × 6 seeds and does not contend with the card.
 * **`compare --seeds 12` cannot crown a winner.** Survival is binomial; the
   2σ bound on a difference is 20 pp at n=12. It is enough to *reject* a
   checkpoint. `compare` prints the bound and the tied set; read it.

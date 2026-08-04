@@ -1,0 +1,33 @@
+{
+ "columns": [
+  "comparison",
+  "discordant_favouring_left",
+  "discordant_favouring_right",
+  "p_exact",
+  "reading"
+ ],
+ "rows": [
+  [
+   "\u00b145\u00b0 vs \u00b125\u00b0",
+   4,
+   1,
+   0.375,
+   "indistinguishable"
+  ],
+  [
+   "\u00b145\u00b0 vs \u00b115\u00b0",
+   13,
+   0,
+   0.0002,
+   "\u00b115\u00b0 is worse"
+  ],
+  [
+   "\u00b125\u00b0 vs \u00b115\u00b0",
+   11,
+   1,
+   0.0063,
+   "\u00b125\u00b0 is better"
+  ]
+ ],
+ "note": "Conjunction (stepped >= 10 mm AND survived 300/300) at 24 evaluation seeds, paired: each checkpoint is played on the SAME seeds, and a seed fixes the reset draw and the whole disturbance schedule. The unpaired 2-sigma bound at n=24 is 28.9 pp and separates NONE of these three, which is why both tests are carried."
+}

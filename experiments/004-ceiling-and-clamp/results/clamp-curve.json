@@ -1,0 +1,84 @@
+{
+ "columns": [
+  "max_command_deg",
+  "arm",
+  "policy",
+  "both_of_24",
+  "survived_of_24",
+  "stepped_of_24",
+  "settled_mean_pct_of_rating",
+  "settled_duty_pct_above_90"
+ ],
+ "rows": [
+  [
+   45,
+   "control (003 seed 2)",
+   "stand10.001700",
+   18,
+   20,
+   21,
+   74.4,
+   51.8
+  ],
+  [
+   25,
+   "arm 2",
+   "stand12.001750",
+   15,
+   18,
+   20,
+   53.8,
+   13.5
+  ],
+  [
+   25,
+   "arm 2",
+   "stand12.best",
+   12,
+   18,
+   16,
+   56.7,
+   18.3
+  ],
+  [
+   25,
+   "arm 2",
+   "stand12.001450",
+   null,
+   null,
+   null,
+   43.8,
+   11.3
+  ],
+  [
+   15,
+   "arm 1",
+   "stand11.001600",
+   5,
+   11,
+   12,
+   33.9,
+   0.2
+  ],
+  [
+   15,
+   "arm 1",
+   "stand11.cxpolicy",
+   null,
+   null,
+   null,
+   34.7,
+   1.5
+  ],
+  [
+   15,
+   "arm 1",
+   "stand11.001300",
+   null,
+   null,
+   null,
+   29.4,
+   0.0
+  ]
+ ]
+}

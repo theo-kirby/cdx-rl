@@ -160,6 +160,41 @@ that cannot train. Every mechanism edit has to be authored on the laptop,
 exported, and carried to `sb1x` as bytes, which is the situation the recovery
 was meant to end.
 
+### This is now the binding constraint on the research, not the GPU
+
+Filed 2026-08-04, after experiment 004. This item was previously "makes the
+mechanism awkward to edit". It is now **what the next experiment is waiting
+on**, and that is a different priority.
+
+004 established that the bracing is a policy choice: capping the command range
+cuts resting duty above 90 % of rating from 51.8 % to 13.5 % at ±25°, for a
+stepping cost the paired test cannot distinguish from zero. The obvious
+counterfactual — *stop restricting the policy and size the motor for the
+~230 N·mm it wants* (44° of commanded error × 5.236 N·mm/deg) — **is not
+available, and `script.py` §1232–1276 already says why**:
+
+* The centre of pressure cannot leave the sole, which reaches 45.5 mm ahead of
+  the ankle, so past **2.581 N × 45.5 mm = 117 N·mm the foot rolls instead of
+  pushing** (ADR-082).
+* 86 N·mm was chosen partly *for this*. At MG90S stall (216 N·mm) a single
+  ankle out-torques the footprint by **1.8×**, which means the machine could
+  **tip itself** by over-torquing one ankle. At 86, one ankle sits below 117
+  and cannot roll the foot.
+* 86 is ~40 % of stall — an engineering judgment, stated as one, not a
+  datasheet number (ADR-086).
+
+So the torque budget is **not raisable without a bigger foot**, and the foot
+is a `script.py` edit. **The next mechanism experiment is foot geometry, and
+this item is what blocks it.** Every other lever this project has — reward
+terms, disturbance schedule, action space, command range — has now been moved,
+and the remaining one is on the far side of a build that only the laptop can
+do.
+
+Note that item 2 (the command range) and this item compound rather than stack:
+even a clamp expressible in the script could not be built into a bundle here.
+Together they are why `concept.md`'s success criterion 5 — *"a result that
+came out of here can be built"* — is recorded as **currently failing**.
+
 ### Wanted, in preference order
 
 1. **The earliest revision that has both kinds**, stated, so cdx-rl can move
