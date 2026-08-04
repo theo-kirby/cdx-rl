@@ -497,10 +497,12 @@ cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
 ├── Thesis and scope | blue-wave-6018
 ├── sb1x environment and topology | black-cell-1407
 │   └── sb9x: a second box characterised | winter-mouse-1809
+│       └── sb9x RETIRED — reassigned, 2 of 2 full-length crashes | winter-lake-9230
 ├── stand-task-20260802-200109: reward peaked at 598, episode length at ~1800 | restless-mode-0384
 │   └── 001 Phase A: the best checkpoint is iteration 1699 | bold-violet-5086
 │       ├── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
 │       │   └── 003: the action space was the problem | broad-fire-8531
+│       │       └── 003 at four seeds: headroom is real, hazard 15 never dissolved | broken-cloud-4296
 │       └── 002: the reward peak is not the best checkpoint in 2 of 2 fresh seeds | holy-recipe-7414
 │           ├── 002 seed 3-of-4: the headline does not replicate — 2 of 3 | spring-unit-9051
 │           └── 003 (second parent) | broad-fire-8531

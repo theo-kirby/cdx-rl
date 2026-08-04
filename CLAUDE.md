@@ -165,7 +165,7 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ root `rapid-bar-6214`, ten nodes; `winter-mouse-1809` the sb9x box, `spring-unit-9051` seed 2 |
+| Flywheel | ✅ root `rapid-bar-6214`, **twelve nodes**; `broken-cloud-4296` is 003 at four seeds + the hazard-15 retraction, `winter-lake-9230` retires sb9x |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, **`steps`** — via `uv run python -m harness <driver>` |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
 | Mechanism | ✅ **`mg-legs` authoring script recovered and committed** |
