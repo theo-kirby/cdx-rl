@@ -244,4 +244,91 @@ sits — which is an actuator sizing question, not a policy one.
 
 ## 8. What happened
 
-*(to be written after the runs)*
+**Both arms ran on `sb1x`, 1800 iterations, seed 2, `rc 0`, 4.77 h and 4.95 h.
+The fork took the relax branch on its own at 16:37:58Z** — `chain-004-fork.sh`
+scored arm 1 at 4/12, below criterion 1's bar, and dispatched clamp25 without
+anybody having looked at a curve.
+
+### The curve, which is the deliverable
+
+Conjunction at **24 evaluation seeds**; hazard 15 at 6 seeds, settled window,
+against the 86 N·mm rating. Each policy is played on **its own** bundle — a
+clamp25 network re-scaled onto a ±45° action table is a different policy — and
+the bundles differ only in the action table, so the reset draw and the whole
+disturbance schedule are identical across arms and the pairing is valid.
+
+| max command | policy | **both** /24 | surv | step | mean % rating | **duty % > 90 %** |
+|---|---|---|---|---|---|---|
+| **±45°** (003 s2) | `stand10.001700` | **18** | 20 | 21 | 74.4 | **51.8** |
+| **±25°** (arm 2) | `stand12.001750` | **15** | 18 | 20 | 53.8 | **13.5** |
+| ±25° | `stand12.best` | 12 | 18 | 16 | 56.7 | 18.3 |
+| ±25° | `stand12.001450` | — | — | — | 43.8 | 11.3 |
+| **±15°** (arm 1) | `stand11.001600` | **5** | 11 | 12 | 33.9 | **0.2** |
+| ±15° | `stand11.cxpolicy` | — | — | — | 34.7 | 1.5 |
+| ±15° | `stand11.001300` | — | — | — | 29.4 | **0.0** |
+
+Paired, McNemar over the discordant seeds (criterion 3):
+
+| | discordant | p |
+|---|---|---|
+| ±45° vs **±25°** | 4 : 1 | **0.375** — indistinguishable |
+| ±45° vs ±15° | 13 : 0 | **0.0002** — ±15° is worse |
+| ±25° vs ±15° | 11 : 1 | **0.0063** — ±25° is better |
+
+The unpaired 2σ bound at n=24 is 28.9 pp and separates none of them, which is
+the point of carrying both tests.
+
+### 1. The bracing was a policy choice, not a dynamics requirement
+
+This is the finding, and it closes the question 003's retraction opened.
+
+003 left it undecided whether the resting torque came from the machine or from
+the network commanding setpoints 44° away on a ±45° joint. **It was the
+network.** Cap what the policy may ask for and the duty cycle above 90 % of
+rating falls from **51.8 % to 13.5 %, and to 0.0–1.5 % at ±15°** — while the
+machine still stands (5/6 and 6/6 in the undisturbed episodes). Nothing about
+the mechanism, the gains or the reward changed.
+
+That is the difference between *this design cannot be built* and *this policy
+could not be built*, and they call for completely different next steps.
+
+### 2. ±25° is the operating point, and it is nearly free
+
+**Criterion 1 passes at ±25° (7/12, 15/24) and fails at ±15° (4/12, 5/24).
+Criterion 2 passes at both** — 13.5 % and 0.2 %, against a bar of 25 % and a
+control at 51.8 %.
+
+So ±25° buys a **3.8× reduction in saturation duty** for a stepping difference
+the paired test cannot distinguish from zero (4 : 1 discordant, p = 0.375).
+±15° buys near-total elimination and pays for it with stepping the paired test
+separates decisively (13 : 0, p = 0.0002 — *every* discordant seed favours the
+control).
+
+Note the peak column is 100 % of rating in every row, settled window included.
+The peak is not the statistic; it never was. §7 of `hazard15.py` and the mean
+and duty cycle are.
+
+### 3. What did NOT get established
+
+**Criterion 4 is not met, and the relax branch is why.** The pre-registered
+fork spends arm 2 on a second clamp *setting* rather than a second *seed*, so
+the duty-cycle collapse is replicated across settings and **n=1 in seeds**.
+003's hazard-15 retraction is exactly the failure mode this criterion exists
+to prevent, and it would be dishonest to count a monotone three-point curve as
+the replication that was asked for.
+
+**`stand12` seed 1 was dispatched 21:45Z** to close it, on the criteria
+already stated above. Until it lands, every claim here is one seed per point.
+
+Also not established: the ceiling. §1b cancelled that arm and it stays
+cancelled — it is a 1.9 h question the moment `--init-from` exists and a 6.9 h
+one until then.
+
+### 4. An instrument note
+
+`harness steps --policy A --policy B` **silently scores only B.** `steps`
+declares `--policy` as `nargs="*"` while `compare` and `capability` use
+`action="append"`, so the repeated form overwrites instead of accumulating and
+reports no error — the run above lost a checkpoint to it before the variadic
+form `--policy A B` was used. Nothing was mis-scored, but a table could
+quietly have been built on half the checkpoints it named.

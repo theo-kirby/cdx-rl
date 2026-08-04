@@ -174,6 +174,7 @@ Other environment facts:
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
+| Experiment 004 | ✅ **two arms, both `rc 0`.** The bracing was a **policy choice, not a dynamics requirement**: capping the command range cuts resting duty above 90 % of rating from **51.8 % → 13.5 % (±25°) → 0.2 % (±15°)**. **±25° is the operating point** — 15/24 against the control's 18/24, McNemar 4:1, **p = 0.375, indistinguishable** — while ±15° costs stepping decisively (5/24, 13:0, p = 0.0002). **n=1 in seeds**; `stand12` seed 1 dispatched 21:45Z |
 | Experiment 003 | ✅ **four seeds.** Best is seed 2's `001700` at 18/24. **Headroom past iteration 1200 is 3 of 3, p = 0.0391** — the runs stop mid-climb. **Hazard 15 does NOT dissolve: it replicates 3 of 3** at 73–91 % mean of rating |
 | sb9x | ⛔ **RETIRED from this project 2026-08-04** — reassigned to unrelated work. Do not dispatch to it. Its measurements stand; its capacity is gone. It crashed **2 of 2** full-length runs |
 
@@ -336,6 +337,12 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   100 Hz)"; 003 moved to 50 Hz, which would silently have made it 60 ms and
   made every step count incomparable with the baseline. Express behavioural
   thresholds as durations.
+* **`harness steps --policy A --policy B` silently scores only B.** `steps`
+  declares `--policy` as `nargs="*"`; `compare` and `capability` declare it
+  `action="append"`. So the repeated form accumulates in two drivers and
+  **overwrites** in the third, with no error either way. Use the variadic
+  `--policy A B` for `steps`, and check the row count against what you asked
+  for. Experiment 004 lost a checkpoint to this before it was noticed.
 * **A `table` artifact on Flywheel must be JSON**, and a `.cxpolicy` uploads
   as `binary`, not `checkpoint`. See `flywheel.md` §5.
 * **A stage lease is ~60 s** and a full-snapshot `commit_node` of a long node
