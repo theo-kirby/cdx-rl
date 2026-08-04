@@ -15,13 +15,28 @@ range lived entirely in the bundle's action table. The same file also carries
 `forcerange="-0.086 0.086"`, which is where the 86 N·mm figure comes from —
 it is a model limit, not the judgment it is often called.
 
-**This is a bundle edit, not a mechanism edit, and the difference is a debt.**
-The ranges originate in `angle_limits_degrees` on the mechanism, so the honest
-version of this change is a `script.py` edit. It is not done here because
-`sb1x` cannot build `script.py` at all — its pinned Cadex `06d1374b` rejects
-`centre_of_mass_velocity`, and only `mmini` (`560935bd`) accepts the full
-observation set. Until that is carried back, 004-B is a claim about committed
-bytes rather than a re-derivable one.
+**This is a bundle edit rather than a mechanism edit, and that is required
+rather than expedient.** In Cadex a position servo's action range *is* its
+joint's physical limits — `CadexDynamics._ACTION_SOURCES` maps
+`("position", "angular")` to `angle_limits_degrees` — and the exported MJCF
+confirms it, carrying joint ranges that are the same ten numbers as the action
+table. Capping the range in `script.py` would narrow the **joint** too, so the
+machine could not flex past 15°, which is a different and confounded
+experiment: it removes reachable configurations for reasons unrelated to
+torque.
+
+There is no way to say "a joint that moves ±45° and a policy that may only
+command ±15°" in the mechanism vocabulary. That is `cadex-wishlist.md` #12.
+Until it exists, editing the derived bundle is the only expression of this
+experiment, and 004-B is a claim about committed bytes rather than a
+re-derivable one.
+
+Note what the cap does and does not do. The servo sees **error = command −
+actual**, so a joint displaced 45° while commanded −15° still presents 60° of
+error. The clamp does not prevent saturation; it removes the policy's ability
+to *choose* it. Any saturation that survives is coming from the dynamics
+rather than from the network asking for a setpoint three times past the
+threshold.
 """
 
 from __future__ import annotations

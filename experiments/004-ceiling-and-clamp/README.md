@@ -92,23 +92,64 @@ cannot step within its torque budget, which is a statement about the
 *actuator sizing* and lands squarely on ADR-077's lesson — the hopper's leg
 was short by 2.2× and a training run was spent finding out.
 
-## 5. Provenance of the clamped bundle, and its one weakness
+## 5. Why this is a bundle edit and CANNOT be a script edit
 
 `tasks/stand-b8-clamp15/` is derived from `tasks/stand-b8/` by
 `make_clamp_bundle.py` in this directory — the cap applied programmatically,
 never by hand.
 
-**It is not reproducible from `script.py`, and that is a real cost.** This
-project's premise is that the script is the source of truth. Two things
-prevent it here: the ranges come from `angle_limits_degrees` in the mechanism,
-so capping them properly is a script edit; and **`sb1x` cannot build
-`script.py` at all** — its pinned Cadex `06d1374b` rejects
-`centre_of_mass_velocity`, and only `mmini` (Cadex `560935bd`) accepts the
-whole observation set. Authoring the clamp on the laptop and carrying the
-bundle back is the correct fix and is deferred, not forgotten.
+This was first written up as a debt against the script-is-the-source-of-truth
+rule, to be repaid by editing `script.py` on the laptop. **That was wrong, and
+the reason is the more interesting half of this section.**
 
-So 004-B is a claim about **committed bytes**, exactly as 001 and 002 are for
-`stand-b2`. It is dispatchable and comparable; it is not yet re-derivable.
+**In Cadex a position servo's action range IS its joint's physical limits.**
+`CadexDynamics._ACTION_SOURCES` maps `("position", "angular")` to
+`angle_limits_degrees`, with a stated rationale: *"a setpoint outside them is
+a command the joint cannot obey."* The exported MJCF proves the coupling — its
+joint ranges are the same ten numbers as the action table's:
+
+```
+hip_roll ±30    hip_pitch ±45    knee ±30    ankle ±25    ankle_roll ±20
+```
+
+So capping the range in `script.py` would narrow **the joint as well as the
+command**, and the machine would physically be unable to flex past 15°. That
+is a different experiment and a confounded one: removing reachable
+configurations could prevent stepping on its own, with nothing to do with
+torque. The question here is about what the policy may *command*, not about
+what the machine can *do*.
+
+Editing the bundle is therefore not a shortcut around the script — it is the
+**only** way to express this experiment, because the mechanism vocabulary
+cannot say "a joint that moves ±45° and a policy that may only ask for ±15°".
+That is now `cadex-wishlist.md` #12.
+
+004-B remains a claim about **committed bytes** rather than a re-derivable
+one, as 001 and 002 are for `stand-b2`. But the fix is upstream, not a task
+somebody forgot to do here.
+
+### What the clamp actually buys, in error terms
+
+The servo sees **error = command − actual joint angle**, so narrowing commands
+does not bound error:
+
+| | max |command| | max joint excursion | worst-case error |
+|---|---|---|---|
+| 003 (as run) | 45° | 45° | 90° |
+| **004-B** | **15°** | 45° | **60°** |
+| a script clamp *(not run)* | 15° | 15° | 30° |
+
+All three exceed the 16.4° saturation threshold, so **none of them prevents
+saturation** — the earlier phrasing "structurally impossible" was wrong twice
+over.
+
+What 004-B does is remove the policy's ability to *choose* saturation. Any
+large error that remains comes from the machine being displaced rather than
+from the network asking for a setpoint 44° away. **That makes the result
+readable either way**: if the resting duty cycle collapses, the bracing was a
+policy strategy; if it survives at ±15° commands, the torque is coming from
+the dynamics, and the finding is about actuator sizing rather than about
+learning. Both are worth 7 hours.
 
 ## 6. Budget and stopping rule
 

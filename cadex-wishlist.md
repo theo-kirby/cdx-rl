@@ -355,6 +355,44 @@ whose digests are identical to the committed ones. So B9 lacks the flag, not
 the network. Note the location is the **read-only** jobs directory of
 invariant 3: read from it freely, write to it never.
 
+## 12. Let a position actuator's action range be narrower than its joint
+
+**Status: open.** Forced experiment 004-B to edit a derived bundle.
+
+`_ACTION_SOURCES` maps `("position", "angular")` to `angle_limits_degrees`, so
+a position servo's action range *is* the joint's declared physical range. The
+rationale in `_action_bound` is sound as far as it goes — *"a setpoint outside
+them is a command the joint cannot obey"* — but it proves only that the
+command range must not **exceed** the joint range. It does not follow that the
+two must be **equal**.
+
+**What we hit.** Experiment 003's policies brace by commanding position errors
+far past the servo's saturation point: it saturates at 16.4 deg of error
+(86 N·mm / 5.236 N·mm/deg) and they command up to 44 deg on a ±45 deg joint.
+The natural experiment is to cap what the policy may *ask for* while leaving
+the machine's range of motion alone. That cannot be said in the mechanism
+vocabulary. Capping `angle_limits_degrees` narrows the joint too — the
+exported MJCF's joint ranges are the same ten numbers as the action table's —
+which changes the reachable configuration space and confounds the result.
+
+**Wanted:** an optional action bound on the actuator, separate from the
+joint's limits, refused if it exceeds them. Something like
+`assembly.actuator(..., command_limits_degrees=[-15, 15])`, defaulting to the
+joint's range so nothing changes for anyone who does not ask.
+
+**Why it matters beyond one experiment.** A software command limit narrower
+than the mechanical range is ordinary practice on real machines, and it is one
+of the few levers that acts on hazard 15 without touching the reward — which
+hazard 16 says cannot work. It is also the difference between "the policy
+chooses to saturate" and "the dynamics force it", two findings that call for
+completely different next steps.
+
+**The workaround** is `experiments/004-ceiling-and-clamp/make_clamp_bundle.py`:
+derive the bundle, cap the action table, copy the MJCF unchanged. It works —
+the MJCF sets `ctrllimited="false"` on every actuator, so nothing downstream
+re-clamps — but the result is not reproducible from the script, which is the
+one property this project most wants to keep.
+
 ---
 
 ## Withdrawn
