@@ -120,15 +120,19 @@ def main() -> int:
               f"{len(outputs)} outputs")
 
     artifacts = accepted_artifacts(PROJECT)
+    # ``Artifact`` is (output, kind, path, type, domain) — `kind`, not
+    # `artifact_kind`, which is what the *reply* calls it. The two spellings
+    # are one of this client's rougher edges.
     kinds: dict[str, list[str]] = {}
     for art in artifacts:
-        kinds.setdefault(str(art.artifact_kind), []).append(str(art.name))
+        kinds.setdefault(str(art.kind), []).append(str(art.output))
 
-    trace = [a for a in artifacts
-             if str(a.artifact_kind) == "assembly_simulation_json"]
+    trace = [a for a in artifacts if str(a.kind) == "assembly_simulation_json"]
     print()
     for kind, names in sorted(kinds.items()):
-        print(f"  {kind:34s} {', '.join(sorted(names))}")
+        shown = sorted(names)
+        tail = "" if len(shown) <= 6 else f" …(+{len(shown)-6})"
+        print(f"  {kind:34s} {', '.join(shown[:6])}{tail}")
 
     if not trace:
         print("\nNO SIMULATION TRACE — the Shell has nothing to bake.",
