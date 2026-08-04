@@ -1,0 +1,194 @@
+<mujoco model="cadex-assembly">
+  <compiler angle="radian" autolimits="false"/>
+
+  <option integrator="implicitfast">
+    <flag island="disable"/>
+  </option>
+
+  <size nkey="1"/>
+
+  <worldbody>
+    <body name="ground">
+      <inertial pos="0 0 -0.02" quat="0.5 0.5 -0.5 0.5" mass="155.52" diaginertia="37.3248 18.6831 18.6831"/>
+      <geom name="ground/collision0" size="0.6 0.6 0.05" type="plane" conaffinity="2147483647"/>
+    </body>
+    <body name="pelvis" pos="0 0 0.297356">
+      <inertial pos="5.10066e-11 -0.0014974 0.00201431" quat="0.585863 0.395936 0.585863 0.395936" mass="0.0344318" diaginertia="2.32693e-05 2.13643e-05 4.10294e-06"/>
+      <joint name="pelvis/free" type="free"/>
+      <body name="hip_l" pos="-0.03 0 -0.046">
+        <inertial pos="0.00306308 0.000167143 0.00483132" quat="0.668848 0.689819 -0.193833 0.198044" mass="0.0109424" diaginertia="2.57133e-06 2.01601e-06 1.52965e-06"/>
+        <joint name="hip_roll_l" pos="0 0 0.019" axis="0 1 0" limited="true" range="-0.523599 0.523599" armature="2e-05" damping="0.00572958"/>
+        <body name="thigh_l" pos="0 0.012941 -0.0672963">
+          <inertial pos="0.00186334 -0.00224105 0.0083637" quat="0.704694 0.0583607 -0.126016 0.695787" mass="0.0113903" diaginertia="1.42442e-05 1.23475e-05 2.80114e-06"/>
+          <joint name="hip_pitch_l" pos="0 -0.012941 0.0482963" axis="1 0 0" limited="true" range="-0.785398 0.785398" armature="2e-05" damping="0.00572958"/>
+          <body name="calf_l" pos="0 0.000647048 -0.0941778">
+            <inertial pos="0.00190529 0.00225987 0.00843394" quat="0.695073 -0.129896 0.0544281 0.705009" mass="0.0106027" diaginertia="1.23437e-05 1.05495e-05 2.56448e-06"/>
+            <joint name="knee_l" pos="0 0.0122939 0.0458815" axis="1 0 0" limited="true" range="-0.523599 0.523599" armature="1e-05" damping="0.00572958"/>
+            <body name="ankle_bracket_l" pos="0 -0.0122939 -0.0608815">
+              <inertial pos="-0.000200146 -0.00305517 0.00502274" quat="0.649131 0.281404 0.651139 0.274697" mass="0.00855603" diaginertia="2.00256e-06 1.64844e-06 9.97989e-07"/>
+              <joint name="ankle_l" pos="0 0 0.015" axis="1 0 0" limited="true" range="-0.436332 0.436332" armature="5e-06" damping="0.00286479"/>
+              <body name="foot_l" pos="0 0.01225 -0.02">
+                <inertial pos="1.85444e-05 -0.0109016 -0.00347887" quat="0.502016 0.498229 -0.496394 0.50333" mass="0.0189899" diaginertia="5.46039e-06 4.23487e-06 1.87339e-06"/>
+                <joint name="ankle_roll_l" pos="0 -0.01225 0.005" axis="0 1 0" limited="true" range="-0.349066 0.349066" armature="5e-06" damping="0.00286479"/>
+                <geom name="foot_l/collision0" size="0.02 0.0245 0.004" pos="0 -0.01225 -0.005" quat="1 0 0 0" type="box" conaffinity="2147483647" friction="1.2"/>
+                <body name="toe_l" pos="0 0.01225 -0.005">
+                  <inertial pos="9.15527e-08 0.0100355 -2.16958e-09" quat="1.51361e-05 0.707107 -1.51361e-05 0.707107" mass="0.00631727" diaginertia="7.95477e-07 6.26498e-07 2.3884e-07"/>
+                  <geom name="toe_l/collision0" size="0.015 0.00825 0.004" pos="0 0.01275 0" quat="1 0 0 0" type="box" conaffinity="2147483647" friction="1.2"/>
+                </body>
+              </body>
+              <body name="sv_aroll_l" pos="0 -0.00155 -0.0095">
+                <inertial pos="0 0.0012249 -0.000366498" quat="0.896988 0.442054 0 0" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+              </body>
+            </body>
+            <body name="sv_ankle_l" pos="0.00155 -0.0108704 -0.0405689">
+              <inertial pos="-0.0012249 -9.48568e-05 -0.00035401" quat="0.66964 0.227117 0.392694 0.588041" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+            </body>
+          </body>
+          <body name="sv_knee_l" pos="0.00155 0.0115174 -0.0429837">
+            <inertial pos="-0.0012249 9.48568e-05 -0.00035401" quat="0.588041 0.392694 0.227117 0.66964" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+          </body>
+        </body>
+        <body name="sv_pitch_l" pos="0.00155 0 -0.0135">
+          <inertial pos="-0.0012249 0 -0.000366498" quat="0.634267 0.312579 0.312579 0.634267" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+        </body>
+      </body>
+      <body name="hip_r" pos="0.03 0 -0.046">
+        <inertial pos="-0.00306308 0.000167143 0.00483132" quat="0.668848 0.689819 0.193833 -0.198044" mass="0.0109424" diaginertia="2.57133e-06 2.01601e-06 1.52965e-06"/>
+        <joint name="hip_roll_r" pos="0 0 0.019" axis="0 1 0" limited="true" range="-0.523599 0.523599" armature="2e-05" damping="0.00572958"/>
+        <body name="thigh_r" pos="0 0.012941 -0.0672963">
+          <inertial pos="-0.00186334 -0.00224105 0.0083637" quat="0.695787 0.126016 -0.0583607 0.704694" mass="0.0113903" diaginertia="1.42442e-05 1.23475e-05 2.80114e-06"/>
+          <joint name="hip_pitch_r" pos="0 -0.012941 0.0482963" axis="1 0 0" limited="true" range="-0.785398 0.785398" armature="2e-05" damping="0.00572958"/>
+          <body name="calf_r" pos="0 0.000647048 -0.0941778">
+            <inertial pos="-0.00190529 0.00225987 0.00843394" quat="0.705009 -0.0544281 0.129896 0.695073" mass="0.0106027" diaginertia="1.23437e-05 1.05495e-05 2.56448e-06"/>
+            <joint name="knee_r" pos="0 0.0122939 0.0458815" axis="1 0 0" limited="true" range="-0.523599 0.523599" armature="1e-05" damping="0.00572958"/>
+            <body name="ankle_bracket_r" pos="0 -0.0122939 -0.0608815">
+              <inertial pos="0.000200146 -0.00305517 0.00502274" quat="0.651139 0.274697 0.649131 0.281404" mass="0.00855603" diaginertia="2.00256e-06 1.64844e-06 9.97989e-07"/>
+              <joint name="ankle_r" pos="0 0 0.015" axis="1 0 0" limited="true" range="-0.436332 0.436332" armature="5e-06" damping="0.00286479"/>
+              <body name="foot_r" pos="0 0.01225 -0.02">
+                <inertial pos="1.85444e-05 -0.0109016 -0.00347887" quat="0.502016 0.498229 -0.496394 0.50333" mass="0.0189899" diaginertia="5.46039e-06 4.23487e-06 1.87339e-06"/>
+                <joint name="ankle_roll_r" pos="0 -0.01225 0.005" axis="0 1 0" limited="true" range="-0.349066 0.349066" armature="5e-06" damping="0.00286479"/>
+                <geom name="foot_r/collision0" size="0.02 0.0245 0.004" pos="0 -0.01225 -0.005" quat="1 0 0 0" type="box" conaffinity="2147483647" friction="1.2"/>
+                <body name="toe_r" pos="0 0.01225 -0.005">
+                  <inertial pos="9.15527e-08 0.0100355 -2.16958e-09" quat="1.51361e-05 0.707107 -1.51361e-05 0.707107" mass="0.00631727" diaginertia="7.95477e-07 6.26498e-07 2.3884e-07"/>
+                  <geom name="toe_r/collision0" size="0.015 0.00825 0.004" pos="0 0.01275 0" quat="1 0 0 0" type="box" conaffinity="2147483647" friction="1.2"/>
+                </body>
+              </body>
+              <body name="sv_aroll_r" pos="0 -0.00155 -0.0095">
+                <inertial pos="0 0.0012249 -0.000366498" quat="0.896988 0.442054 0 0" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+              </body>
+            </body>
+            <body name="sv_ankle_r" pos="-0.00155 -0.0108704 -0.0405689">
+              <inertial pos="0.0012249 -9.48568e-05 -0.00035401" quat="0.392694 0.588041 0.66964 0.227117" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+            </body>
+          </body>
+          <body name="sv_knee_r" pos="-0.00155 0.0115174 -0.0429837">
+            <inertial pos="0.0012249 9.48568e-05 -0.00035401" quat="0.227117 0.66964 0.588041 0.392694" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+          </body>
+        </body>
+        <body name="sv_pitch_r" pos="-0.00155 0 -0.0135">
+          <inertial pos="0.0012249 0 -0.000366498" quat="0.312579 0.634267 0.634267 0.312579" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+        </body>
+      </body>
+      <body name="sv_roll_l" pos="-0.03 -0.00155 -0.0215">
+        <inertial pos="0 0.0012249 -0.000366498" quat="0.896988 0.442054 0 0" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+      </body>
+      <body name="sv_roll_r" pos="0.03 -0.00155 -0.0215">
+        <inertial pos="0 0.0012249 -0.000366498" quat="0.896988 0.442054 0 0" mass="0.0133982" diaginertia="1.35095e-06 9.00617e-07 7.75131e-07"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude name="hip_l|pelvis" body1="pelvis" body2="hip_l"/>
+    <exclude name="hip_r|pelvis" body1="pelvis" body2="hip_r"/>
+    <exclude name="pelvis|sv_roll_l" body1="pelvis" body2="sv_roll_l"/>
+    <exclude name="pelvis|sv_roll_r" body1="pelvis" body2="sv_roll_r"/>
+    <exclude name="hip_l|thigh_l" body1="hip_l" body2="thigh_l"/>
+    <exclude name="hip_l|sv_pitch_l" body1="hip_l" body2="sv_pitch_l"/>
+    <exclude name="calf_l|thigh_l" body1="thigh_l" body2="calf_l"/>
+    <exclude name="sv_knee_l|thigh_l" body1="thigh_l" body2="sv_knee_l"/>
+    <exclude name="ankle_bracket_l|calf_l" body1="calf_l" body2="ankle_bracket_l"/>
+    <exclude name="calf_l|sv_ankle_l" body1="calf_l" body2="sv_ankle_l"/>
+    <exclude name="ankle_bracket_l|foot_l" body1="ankle_bracket_l" body2="foot_l"/>
+    <exclude name="ankle_bracket_l|sv_aroll_l" body1="ankle_bracket_l" body2="sv_aroll_l"/>
+    <exclude name="foot_l|toe_l" body1="foot_l" body2="toe_l"/>
+    <exclude name="hip_r|thigh_r" body1="hip_r" body2="thigh_r"/>
+    <exclude name="hip_r|sv_pitch_r" body1="hip_r" body2="sv_pitch_r"/>
+    <exclude name="calf_r|thigh_r" body1="thigh_r" body2="calf_r"/>
+    <exclude name="sv_knee_r|thigh_r" body1="thigh_r" body2="sv_knee_r"/>
+    <exclude name="ankle_bracket_r|calf_r" body1="calf_r" body2="ankle_bracket_r"/>
+    <exclude name="calf_r|sv_ankle_r" body1="calf_r" body2="sv_ankle_r"/>
+    <exclude name="ankle_bracket_r|foot_r" body1="ankle_bracket_r" body2="foot_r"/>
+    <exclude name="ankle_bracket_r|sv_aroll_r" body1="ankle_bracket_r" body2="sv_aroll_r"/>
+    <exclude name="foot_r|toe_r" body1="foot_r" body2="toe_r"/>
+  </contact>
+
+  <actuator>
+    <general name="hip_roll_l/position" joint="hip_roll_l" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="hip_roll_r/position" joint="hip_roll_r" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="hip_pitch_l/position" joint="hip_pitch_l" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="hip_pitch_r/position" joint="hip_pitch_r" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="knee_l/position" joint="knee_l" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="knee_r/position" joint="knee_r" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="ankle_l/position" joint="ankle_l" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="ankle_r/position" joint="ankle_r" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="ankle_roll_l/position" joint="ankle_roll_l" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+    <general name="ankle_roll_r/position" joint="ankle_roll_r" ctrllimited="false" forcelimited="true" forcerange="-0.086 0.086" biastype="affine" gainprm="0.3" biasprm="0 -0.3 -0.01"/>
+  </actuator>
+
+  <sensor>
+    <framepos objtype="xbody" objname="pelvis" name="obs/0"/>
+    <framequat objtype="xbody" objname="pelvis" name="obs/1"/>
+    <framelinvel objtype="xbody" objname="pelvis" name="obs/2"/>
+    <frameangvel objtype="xbody" objname="pelvis" name="obs/3"/>
+    <subtreecom body="pelvis" name="obs/4"/>
+    <subtreelinvel body="pelvis" name="obs/5"/>
+    <subtreeangmom body="pelvis" name="obs/6"/>
+    <framepos objtype="xbody" objname="foot_l" name="obs/7"/>
+    <framepos objtype="xbody" objname="foot_r" name="obs/8"/>
+    <jointpos joint="hip_roll_l" name="obs/9"/>
+    <jointpos joint="hip_roll_r" name="obs/10"/>
+    <jointpos joint="hip_pitch_l" name="obs/11"/>
+    <jointpos joint="hip_pitch_r" name="obs/12"/>
+    <jointpos joint="knee_l" name="obs/13"/>
+    <jointpos joint="knee_r" name="obs/14"/>
+    <jointpos joint="ankle_l" name="obs/15"/>
+    <jointpos joint="ankle_r" name="obs/16"/>
+    <jointpos joint="ankle_roll_l" name="obs/17"/>
+    <jointpos joint="ankle_roll_r" name="obs/18"/>
+    <jointvel joint="hip_roll_l" name="obs/19"/>
+    <jointvel joint="hip_roll_r" name="obs/20"/>
+    <jointvel joint="hip_pitch_l" name="obs/21"/>
+    <jointvel joint="hip_pitch_r" name="obs/22"/>
+    <jointvel joint="knee_l" name="obs/23"/>
+    <jointvel joint="knee_r" name="obs/24"/>
+    <jointvel joint="ankle_l" name="obs/25"/>
+    <jointvel joint="ankle_r" name="obs/26"/>
+    <jointvel joint="ankle_roll_l" name="obs/27"/>
+    <jointvel joint="ankle_roll_r" name="obs/28"/>
+
+    <actuatorfrc actuator="hip_roll_l/position" name="obs/29"/>
+
+    <actuatorfrc actuator="hip_roll_r/position" name="obs/30"/>
+
+    <actuatorfrc actuator="hip_pitch_l/position" name="obs/31"/>
+
+    <actuatorfrc actuator="hip_pitch_r/position" name="obs/32"/>
+
+    <actuatorfrc actuator="knee_l/position" name="obs/33"/>
+
+    <actuatorfrc actuator="knee_r/position" name="obs/34"/>
+
+    <actuatorfrc actuator="ankle_l/position" name="obs/35"/>
+
+    <actuatorfrc actuator="ankle_r/position" name="obs/36"/>
+
+    <actuatorfrc actuator="ankle_roll_l/position" name="obs/37"/>
+
+    <actuatorfrc actuator="ankle_roll_r/position" name="obs/38"/>
+  </sensor>
+
+  <keyframe>
+    <key name="solved" qpos="0 0 0.297356 1 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
