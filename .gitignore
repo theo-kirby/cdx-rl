@@ -241,3 +241,7 @@ video/
 # network" when no .cxpolicy has ever been tracked: the add was silently
 # swallowed by the line above and nobody checked.
 !mechanisms/mg-legs/rollout/assets/*.cxpolicy
+
+# Replay sets — 380 kB of derived bytes each, whose originals are in jobs/
+# and tasks/. The record that matters is the Flywheel node.
+replay/

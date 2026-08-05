@@ -15,6 +15,9 @@ were not in the six:
     did it STEP — and survive doing so. The conjunction, and a paired test.
 ``capture``
     render the episode to an MP4, with the per-motor servo load on it.
+``replay``
+    take a trained result to another machine and open it there, on the real
+    CAD solids, where the mouse can shove it and the policy answers.
 
 ``measure`` and ``feasibility`` are not built. Both earn their keep only
 before a *new* dispatch, and nothing here dispatches anything but a CPU
@@ -28,6 +31,7 @@ Run them through the package's own entry point::
     uv run python -m harness capability --policy … --task …
     uv run python -m harness steps --dir … --task …
     uv run python -m harness capture --dir … --iteration 1800 --seeds 4 --tile
+    uv run python -m harness replay --export --dir … --iteration 1800 --arm …
 
 **Exit codes mirror Cadex's**, so a shell can act on them without reading
 prose: ``0`` fine, ``1`` infrastructure, ``2`` usage, ``3`` the engine refused

@@ -1,6 +1,6 @@
 # harness/DESIGN.md — the drivers, specified
 
-**Four of the six are built, and two more that were not in the six.** This
+**Four of the six are built, and three more that were not in the six.** This
 file remains the specification; the section immediately below records what
 building them changed about it.
 
@@ -12,6 +12,7 @@ building them changed about it.
 | `capability` | ✅ built | `capability.py` |
 | `steps` | ✅ built | `steps.py` + `_steps.py` + `profiles/` — **not in the original six** |
 | `capture` | ✅ built | `capture.py` + `_capture.py` — **not in the original six either** |
+| `replay` | ✅ built | `replay.py` — **nor this one.** The first driver whose output is a *project*, on another machine |
 | `measure` | ❌ deferred | earns its keep only before a *new* dispatch |
 | `feasibility` | ❌ deferred | same — but see the note below: a working mg-legs-specific one exists and is worth porting next |
 
@@ -177,8 +178,94 @@ exercises all of it under cdx-rl's own interpreter with no GPU and no mujoco,
 the same arrangement `_steps.lifts` and `_stats` already use.
 
 **What it does not do, and why:** it does not show the CAD solids. That is
-the Shell path in `mechanisms/mg-legs/rollout/`, it is worth having, and it
-is blocked on a training run rather than on a pipeline — see that README.
+the Shell path in `mechanisms/mg-legs/rollout/`, and ~~it is blocked on a
+training run rather than on a pipeline~~ — **it is not blocked at all since
+2026-08-05.** `replay` below is the pipeline, and what unblocked it was three
+engine PRs and no GPU time. The two drivers do not overlap: `capture` renders
+`mjVIS_INERTIA` boxes in two seconds on this box, and the Shell renders the
+real solids and answers a push.
+
+---
+
+## `replay` — the ninth driver, and the first whose output is a project
+
+```
+replay --export --dir RUN [--iteration N] --task BUNDLE --arm NAME --script FILE
+       [--label NAME] [--scp HOST] [--note …]
+replay --import SRC
+replay --preflight [SET]
+replay --list | --pending | --mark-published NODE_ID
+```
+
+Everything else here produces a number or, since `capture`, an MP4. This
+produces a **project** on another machine: the CAD solids in the Shell, with
+live mode answering a mouse shove.
+
+### A replay set, and why it is not a project store
+
+Four files, about 380 kB: the `.cxpolicy`, the **training** task bundle, the
+**training** MJCF, and a manifest of digests. A built `.cadex` store is 2–5 MB
+and would also work — and it makes the far machine a pure consumer. **The
+rebuild is the point**: it is what produces the BREP solids the Shell renders,
+and a store full of somebody else's BREPs cannot be edited or re-derived.
+
+The script does **not** travel. It is committed, so both machines have it, and
+shipping a copy would let a set be built against a script that is not the one
+in git. The manifest records its digest, and a mismatch is a **note rather
+than a refusal** — the far checkout may simply be at another commit, and the
+build that follows is the only thing that can actually tell.
+
+The bundle and the model are renamed onto the **arm**, not the checkpoint,
+because the script names the bundle *literally* in
+`assembly.policy(..., trained_task=)` and the script is committed. Every
+checkpoint of one arm trained against one bundle, so an arm-named file is
+stable; a label-named one would break that committed line every time the
+checkpoint moved.
+
+### `--preflight` is the same code as the build, deliberately
+
+`install_and_build` is one function used by both, and that is the whole point:
+a preflight that re-implemented the equivalence check would be predicting its
+own behaviour rather than the engine's. It installs the set into a scratch
+project and builds the arm's script through `cadexd`. Accept or refuse, with
+the engine's own failure envelope.
+
+**That prediction is only sound because of ADR-133.** Before the inertial snap
+a build on sb1x and a build on the Mac produced different MJCF bytes, so a
+local accept said nothing about a remote one. After it the two are
+byte-identical — measured, both boxes — which is what makes a local answer a
+real answer rather than an encouraging one.
+
+### The obligation, and the transport
+
+Same ledger, same reason as `capture`: cdx-rl's nodes are MCP-owned, the CLI
+holds a different account and returns 403 (`flywheel.md` §5), and a Python
+subprocess has no MCP. So the driver records what it owes, prints the
+outstanding count on every run, and hands over the exact
+`prepare_artifact_uploads` items with `--pending`. A `.cxpolicy` and the MJCF
+go as `binary`; the bundle and the manifest as `table`, which must be JSON.
+
+`--scp HOST` prints the one-liner instead and is **printed rather than run**,
+because "faster, and no record" is the caller's trade to make out loud.
+
+### What it does not do
+
+It does not open the Shell, and it does not rebuild the Shell. The GUI ships
+its own engine payload and `pixi run install-app` is what refreshes it — left
+to the operator, because it overwrites an installed application and rebinds it
+to whichever checkout built it. `mechanisms/mg-legs/rollout/README.md` has the
+measurement showing why it is needed and the command.
+
+It also does not make a *simulation* portable. After ADR-133 the MJCF and the
+bundle are byte-identical across platforms; the rollout trace is not
+(`d7cf5c5faa19f171` against `d598a51eb615483f`, same 152-frame episode) and
+the policy receipt differs in `witness_error` at the tenth significant figure.
+That is hazard 3, and it is the other reason the far machine rebuilds.
+
+`test_replay.py` covers the bookkeeping — 34 tests under cdx-rl's own
+interpreter, no engine, no MuJoCo — and covers the build not at all, on
+purpose: the engine's answer is measured against real arms and against five
+deliberately mutated scripts, in that README and in ADR-135.
 
 ## What experiment 003 owes this file
 

@@ -57,6 +57,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "tools"))
+sys.path.insert(0, str(REPO_ROOT))
 
 from cadexd_client import (  # noqa: E402
     CadexdClient,
@@ -64,15 +65,63 @@ from cadexd_client import (  # noqa: E402
     accepted_artifacts,
 )
 
+from harness.replay import (  # noqa: E402
+    ROLES as REPLAY_ROLES,
+    ReplayError,
+    find_set,
+    read_set,
+    script_drift,
+    verify_set,
+)
+
 HERE = Path(__file__).resolve().parent
+
+
+def _replay_set(arm: str) -> tuple[Path, dict] | None:
+    """The imported replay set for ``arm``, verified, or ``None``.
+
+    ``None`` is a state rather than an error: the two committed heroes still
+    build from ``assets/`` on a checkout that has never imported anything, and
+    that is the path every pre-ADR-134 invocation took.
+
+    What is *not* silent is a set that fails its own manifest. That is refused
+    here rather than passed on, because the alternative is ``decode_policy``
+    complaining about a container three steps later, which reads like a corrupt
+    file rather than a bad copy.
+    """
+
+    try:
+        set_dir = find_set(arm)
+    except ReplayError:
+        return None
+    manifest = read_set(set_dir)
+    complaints = verify_set(set_dir, manifest)
+    if complaints:
+        raise SystemExit(
+            f"The replay set at {set_dir} does not match its own manifest:\n  "
+            + "\n  ".join(complaints)
+            + "\nRe-import it, or delete it and export again."
+        )
+    drift = script_drift(manifest)
+    if drift:
+        print(f"NOTE      {drift}")
+        print("          The build below is what can actually tell; this is "
+              "only a heads-up.")
+    return set_dir, manifest
 
 #: The arms this directory can bake. Each is (script, asset, project); the
 #: script names its policy by digest and ``main`` refuses if the two disagree.
 #:
-#: ``clamp25`` needs ADR-123's ``command_limits_degrees``, which merged on
+#: ``clamp25`` needs ADR-131's ``command_limits_degrees``, which merged on
 #: 2026-08-05 (`theo-kirby/cadex#1`). Before that the clamped bundle could
 #: only be produced by editing the derived task JSON by hand, which is why
 #: this arm did not exist.
+#:
+#: **This table is the fallback, not the route.** Since ADR-134 both scripts
+#: name a ``trained_task``, which is a file that arrives in a **replay set**
+#: rather than one that lives in git — so ``--arm b8`` looks for
+#: ``replay/`` first and only falls back to these paths when there is no set.
+#: ``harness replay`` is what puts one there, on either machine.
 ARMS = {
     "b8": (
         HERE / "script.py",
@@ -111,11 +160,41 @@ def main() -> int:
         "--arm", choices=sorted(ARMS), default=DEFAULT_ARM,
         help=(
             "b8: experiment 003 seed 2 iteration 1700, the unclamped hero. "
-            "clamp25: experiment 005's stand13.001800 -- the same 18/24 on "
+            "clamp25: experiment 004's stand13.001800 -- the same 18/24 on "
             "the conjunction with a quarter of the resting bracing."
         ),
     )
-    SCRIPT, ASSET, PROJECT = ARMS[parser.parse_args().arm]
+    parser.add_argument(
+        "--project", type=Path, default=None,
+        help=(
+            "build here instead of the arm's usual project. A store built by "
+            "one engine is refused by another at open_project ('the restore "
+            "pass digest does not match'), which is correct and is why a "
+            "second path is sometimes the shortest way forward."
+        ),
+    )
+    args = parser.parse_args()
+    arm = args.arm
+    SCRIPT, ASSET, PROJECT = ARMS[arm]
+    if args.project is not None:
+        PROJECT = args.project
+
+    # A replay set, if one has been imported for this arm, is the route
+    # (ADR-134/135): it carries the ``.cxpolicy`` *and* the training bundle and
+    # model that ``trained_task=`` binds the policy to. `harness replay` is the
+    # only thing that assembles one, and `--import` is what checks its digests.
+    replay_set = _replay_set(arm)
+    if replay_set is None and "trained_task" in SCRIPT.read_text():
+        print(f"{SCRIPT.name} names a trained_task, which arrives in a replay "
+              f"set, and there is no set for arm {arm!r}.\n"
+              f"On this box:   uv run python -m harness replay --export "
+              f"--dir jobs/… --iteration … --task tasks/… --arm {arm} "
+              f"--script {SCRIPT.relative_to(REPO_ROOT)} --label {arm}\n"
+              f"From another:  uv run python -m harness replay --import "
+              f"replay/{arm}\n"
+              f"`harness replay --list` shows what there is.",
+              file=sys.stderr)
+        return 2
     source = SCRIPT.read_text()
 
     # The digest in the script must be the digest of the bytes we are about to
@@ -126,13 +205,26 @@ def main() -> int:
         print("no live assembly.policy(...) call in script.py", file=sys.stderr)
         return 2
     declared = POLICY_SHA.search(live.group(0))
-    actual = hashlib.sha256(ASSET.read_bytes()).hexdigest()
     if not declared:
         print("no sha256= in script.py's live policy call", file=sys.stderr)
         return 2
+
+    # The set's policy wins over ``assets/`` when there is one: it is the copy
+    # whose digest was checked on arrival, and it travelled with the bundle the
+    # script's ``trained_task=`` names. ``assets/`` is the two committed heroes
+    # and nothing else.
+    installing = [ASSET]
+    if replay_set is not None:
+        set_dir, manifest = replay_set
+        installing = [set_dir / manifest[role]["file"] for role in REPLAY_ROLES]
+        ASSET = installing[0]
+        print(f"set       {set_dir}  (arm {manifest.get('arm')!r}, "
+              f"iteration {(manifest.get('run') or {}).get('iteration')})")
+
+    actual = hashlib.sha256(ASSET.read_bytes()).hexdigest()
     if declared.group(1) != actual:
-        print(f"script.py declares {declared.group(1)[:16]}…\n"
-              f"asset on disk is  {actual[:16]}…", file=sys.stderr)
+        print(f"{SCRIPT.name} declares {declared.group(1)[:16]}…\n"
+              f"policy on disk is {actual[:16]}…  ({ASSET})", file=sys.stderr)
         return 2
     print(f"policy    {ASSET.name}  {actual[:12]}…  "
           f"{ASSET.stat().st_size} bytes")
@@ -145,8 +237,9 @@ def main() -> int:
     with CadexdClient(engine) as client:
         client.open_project(PROJECT)
         client.require_dynamics()          # the stale-payload trap, loudly
-        client.put_asset(ASSET)            # …and this moves the revision
-        print(f"asset     installed into {PROJECT.name}/assets/")
+        for path in installing:            # …and each of these moves the revision
+            client.put_asset(path)
+            print(f"asset     {path.name}")
 
         reply = client.write_script(source)
         digest = reply.get("digest") or ""

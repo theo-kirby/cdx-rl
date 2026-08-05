@@ -14,6 +14,21 @@ pull requests.** Never push to `theo-kirby/cadex`; never touch the operator's
 tree at `/home/theo/cadex`. `cadex-engine-plan.md` scopes the blocking three
 as PR specs.
 
+**Seventeen entries now, and five have merged** — #11 and #12 as GitHub PRs
+[#2](https://github.com/theo-kirby/cadex/pull/2) and
+[#1](https://github.com/theo-kirby/cadex/pull/1) on 2026-08-05, then #15, #16
+and #17 as [#3](https://github.com/theo-kirby/cadex/pull/3),
+[#4](https://github.com/theo-kirby/cadex/pull/4) and
+[#5](https://github.com/theo-kirby/cadex/pull/5) the same day. **Mind the two
+numbering schemes**: an entry number here is not a GitHub PR number and never
+has been.
+
+**#16 and #17 are the first entries this file did not accumulate.** Both were
+found and closed inside one session, and both were *created* by the entry
+before them — #15's fix orphaned every trained policy, which is #16; #16's
+surface could not reach the store, which is #17. A file that only collects
+wants would have recorded the first and shipped the other two broken.
+
 **Why keep the file.** Two reasons, and neither is sentiment. Each entry
 records *what the gap actually cost* — measured, in hours and in wrong
 conclusions — which is the evidence a PR body needs and which nobody will
@@ -538,6 +553,13 @@ was supposed to end, one step removed.
 measured pathology rather than a missing feature, and because at the default
 budgets Cadex cannot build a mechanism it shipped experiments for.
 
+**Its two `test_dynamics_collision.py` failures are INTERMITTENT, measured
+2026-08-05.** Three runs of that file alone, no code change between them:
+**2, 1, 2** failures. So a statement of the form "the suite baseline is exactly
+two failures" is slightly wrong, and a branch comparison should read that file
+as **1–2**. The defect is resource-dependent, which is consistent with it being
+an address-space cap rather than a logic error.
+
 `cadex_domain_worker.py::_resource_limits` applies the scripted budgets as
 real `setrlimit` calls: `RLIMIT_AS` from `memory_limit_mb`, `RLIMIT_CPU` from
 `timeout_seconds`, plus a hard-coded `RLIMIT_NOFILE` of 64. The engine's
@@ -613,8 +635,11 @@ sends both budgets (`tools/cadexd_client.py::DEFAULT_WORKER_*`), and
 
 ## 15. A task digest is not stable across platforms, and it gates policy replay
 
-**Status: open.** Cost: `script.py`'s own `assembly.policy` output cannot be
-rebuilt on the box that trained the policy.
+**Status: MERGED — [PR #3](https://github.com/theo-kirby/cadex/pull/3),
+ADR-133, 2026-08-05.** The third option below is what landed: a snap to zero on
+inertial coordinates below **one nanometre**, absolute. Cost while it was open:
+`script.py`'s own `assembly.policy` output could not be rebuilt on the box that
+trained the policy.
 
 `mechanisms/mg-legs/script.py` declares
 `assembly.policy(stand, weights="stand10.cxpolicy", sha256=…)`. Rebuilding it
@@ -652,6 +677,121 @@ already does), or geometry output that is reproducible across platforms, or a
 `snap-to-zero` on inertial coordinates below a tolerance where the value is
 symmetry noise. The first is cheap and honest; the third is what a CAD kernel
 arguably owes a digest-based contract.
+
+### How it was disposed of
+
+**The third.** ADR-133 snaps centre-of-mass components below one nanometre to
+exactly `0.0`, inside `body_inertial` where both publications read the number.
+The rule is **absolute**, and that is the part worth carrying: the two readings
+differ in their *fifth significant figure*, so no relative tolerance sees them
+as equal. Cancellation is why — a symmetric body's x-centroid is a difference
+of near-equal sums, so a last-bit disagreement in OCCT's own per-solid readings
+arrives amplified by eleven orders of magnitude. `math.fsum` is
+correctly-rounded, so no summation order fixes it either.
+
+Measured after, same script, byte-identical engine sources:
+
+| | script build digest | MJCF | task bundle |
+|---|---|---|---|
+| macOS 26, arm64 | `560a33a4bfce810e…` | `203f746e9bb8a857…`, 14 169 B | `6dc1c580f4bcd01a…` |
+| Ubuntu 24.04, x86-64 | `560a33a4bfce810e…` | `203f746e9bb8a857…`, 14 169 B | `6dc1c580f4bcd01a…` |
+
+`cmp` reports both pairs identical.
+
+**Two things the fix did not do**, both stated in the ADR rather than
+discovered later:
+
+* it does not snap mass or the inertia tensor. A symmetry-zero product of
+  inertia has the same cancellation problem, and a nanometre is not a tolerance
+  for kg·m² — that bound would have to be relative, which is a different
+  decision. This mechanism does not hit it: both platforms print identical
+  `quat` and `diaginertia`.
+* it does not make a *simulation* reproducible. The MJCF and the bundle now
+  agree byte for byte; the rollout trace does not (`d7cf5c5faa19f171` against
+  `d598a51eb615483f`, same 152-frame episode), and the policy receipt differs
+  in `witness_error` at the tenth significant figure. That is MuJoCo's
+  disclaimed cross-platform reproducibility (hazard 3), it is why the far
+  machine rebuilds rather than receiving a store, and no snap can fix it.
+
+**And it moved every model digest**, which orphaned every already-trained
+policy — see #16.
+
+---
+
+## 16. A whole-file task digest conflates a different task with a different route
+
+**Status: MERGED — [PR #4](https://github.com/theo-kirby/cadex/pull/4),
+ADR-134, 2026-08-05.** Raised and disposed of in the same session as #15,
+because #15's fix created it.
+
+`verify_policy` check 1 hashes the whole task bundle. Two things that are *not*
+mechanism changes therefore refuse a valid policy:
+
+* **#15's own fix.** Snapping inertial coordinates changes every model digest,
+  so every bundle embedding one, so every policy trained before it.
+* **ADR-131's honest provenance string.** `tasks/stand-b8-clamp25/` was
+  produced by editing the derived bundle by hand, and reports
+  `actions[].source` as `angle_limits_degrees` — the joint's limits, which are
+  not where ±25° came from. The script that now produces the same arm from
+  source reports `command_limits_degrees`. All ten actuators, `low`, `high`,
+  `unit` and `scale` are identical; `label` and `source` are not, and they move
+  the hash:
+
+```
+trained on        3d627ef4b9a509fe…
+declared against  bd8071b50360eaab…
+```
+
+Cost while it was open: **retrain (4–5 GPU-hours a seed) or revert a
+correctness fix.** `mechanisms/mg-legs/rollout/README.md` said the only route
+was to retrain, and it was wrong.
+
+**Wanted, and what landed:** `assembly.policy(..., trained_task=)`. The policy
+is bound to its own travelling bundle whole-file — *unweakened* — and the
+script-built bundle is then proved **equivalent**: every behaviour-deciding
+field, plus the two models compared as models rather than as hashes. That is
+**stronger** than making check 1 semantic, which was the obvious version and
+would have weakened every policy in the system to buy compatibility for a few.
+
+The model comparison is the half that matters. Two bundles can agree on every
+number while naming different mechanisms — same joint names, same limits,
+different masses — and the action table would match perfectly. A 0.4 mm bracket
+plate changes **no field of the task bundle at all** and is caught only there.
+
+It needed **no change to `training/cadex_train.py`**, which is why no trainer
+digest moved and no bridge run is owed.
+
+---
+
+## 17. The project store will not hold what a policy travels with
+
+**Status: MERGED — [PR #5](https://github.com/theo-kirby/cadex/pull/5),
+ADR-135, 2026-08-05.**
+
+`put_asset` accepted `.cxpolicy`, `.obj`, `.ply` and `.stl`. #16's whole surface
+needs a `.json` bundle and a `.xml` model in `assets/`, so **ADR-134 shipped
+unusable and all 52 of its unit tests passed.** The first end-to-end replay
+refused at step one:
+
+```
+ASSET_REJECTED at precondition
+'clamp25-task.json' is not one of the formats this project store holds
+['.cxpolicy', '.obj', '.ply', '.stl']
+```
+
+Every one of those tests exercised a pure function — `task_semantic_digest`,
+`task_differences`, `model_differences`, the API's argument validation. Not one
+went through `store_project_asset`.
+
+**The lesson is one this repository already had, one level over.** `method.md`
+says validate at length, not at three iterations, because every fault it names
+is scale-dependent. A surface whose unit tests all pass and whose first real use
+fails at step one was tested at three iterations.
+
+**Wanted, and what landed:** a third suffix constant,
+`_PROVENANCE_ASSET_SUFFIXES = {".json", ".xml"}`. Not two more members of
+`_ASSET_SUFFIXES`, which must stay exactly three because the shell mirrors it by
+name (ADR-091) — the same reason `_POLICY_ASSET_SUFFIXES` is already separate.
 
 ---
 

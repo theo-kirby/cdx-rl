@@ -56,7 +56,7 @@ Four rules. The first two have cost real time when broken elsewhere.
 | 4b | [`flywheel-conventions.md`](flywheel-conventions.md) | **How we use Flywheel: the tag vocabulary, the graph shape, how retractions work, and the ~4 KB node-body budget. Normative — read before writing any node.** |
 | 5 | [`cloud.md`](cloud.md) | Compute topology, GPU budgeting, and when bursting off-box is worth it (rarely). |
 | 6 | [`harness/DESIGN.md`](harness/DESIGN.md) | The drivers, specified. Five built, `measure` and `feasibility` deferred. |
-| 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Thirteen things cdx-rl wanted from Cadex, with what each one cost. The reproduction record; status is now `open` / `PR #N` / `merged` / `worked around` / `withdrawn`. |
+| 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | **Seventeen** things cdx-rl wanted from Cadex, with what each one cost. **Five have merged.** The reproduction record; status is `open` / `PR #N` / `merged` / `worked around` / `withdrawn`. |
 | 8 | [`cadex-engine-plan.md`](cadex-engine-plan.md) | The three that were **costing research time**, scoped as PR specs against `/home/theo/cadex-prs`. |
 
 If you are about to design an experiment, `method.md` §"What a cdx-rl
@@ -101,9 +101,12 @@ cdx-rl/
     fire_divergence_guard.py   make supervise's guard fail on purpose
     fire_projection_guard.py   make the wall-cap projection fire on purpose
     fire_salvage_guard.py      make the salvage classifier decide, both ways
+    live_probe.py      shove a live policy and see whether it answers
 
   harness/
-    DESIGN.md          the five drivers + the supervisor, specified
+    DESIGN.md          the drivers, specified — seven built, two deferred
+
+  replay/              gitignored — replay sets, and the ledger of what they owe
 
   experiments/
     README.md          the nine-section template
@@ -196,13 +199,14 @@ Other environment facts:
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
 | Flywheel | ✅ root `rapid-bar-6214`, **seventeen nodes including the root**, max depth 8. `solitary-salad-0490` is the seed-1 replication and has **two parents** — it confirms 004 and retracts part of 005. `white-cloud-2565` is 004, `small-recipe-2040` is 005 (both carry retraction banners where they earned them), `broken-cloud-4296` is 003 at four seeds, `winter-lake-9230` retires sb9x. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
-| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, `steps`, **`capture`** — via `uv run python -m harness <driver>`. `capture` renders a policy's own episode to an MP4 with the per-motor servo load along the bottom; it is the first output of this repository that is not a number |
+| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, `steps`, `capture`, **`replay`** — via `uv run python -m harness <driver>`. `capture` renders a policy's own episode to an MP4 with the per-motor servo load along the bottom. **`replay` takes a trained result to the Mac and opens it on the real CAD solids, where a 0.6 N shove gets answered** — the first output of this repository that is a *project* rather than a number or a picture |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
 | Mechanism | ✅ **`mg-legs` authoring script recovered, committed, and — since 2026-08-05 — buildable on sb1x.** It rebuilds `tasks/stand-b8/` with a **two-line** diff: the pelvis CoM x-coordinate at `5.10066e-11` vs `5.10087e-11` m (a quantity that is mathematically zero), and the MJCF digest the task JSON embeds as a consequence. Reproducible in substance, not bit-identical across platforms |
 | Cadex | ✅ **PR clone at `/home/theo/cadex-prs`, built, on `origin/main` `b169a092`.** The operator's tree at `/home/theo/cadex` is untouched — still `06d1374b`, still `standing-policy`, still clean |
-| PRs | ✅ **both MERGED 2026-08-05.** [#1](https://github.com/theo-kirby/cadex/pull/1) ADR-123 (command range) at `cfa6640e`, [#2](https://github.com/theo-kirby/cadex/pull/2) ADR-124 (`--init-from`) at `75efe784`. `main` is now `75efe784` and sb1x drives it; smoke 13/13. Bodies in [`prs/`](prs/). **Mind the two numbering schemes:** these are *wishlist* #12 and #11, and GitHub numbered them 1 and 2 |
-| ⚠️ Trainer digest | **`training/cadex_train.py` is now `4c1f24f8bdf2368a…`.** The old `aacfa823…` that these docs and every pre-2026-08-05 run record pin is one merge behind. The update rule did **not** change — the flag is a verified no-op unused — but the digest did. `method.md` §8b has the bridge-run protocol. Experiment 005 already ran under `4c1f24f8…` |
-| Engine suite | `pixi run test-engine` in the PR clone is **1507 passed / 2 failed / 22 skipped on `main`** — the two failures are the `RLIMIT_AS` defect (wishlist #14), *not* a regression. Compare any branch against that baseline, not against zero |
+| PRs | ✅ **five MERGED 2026-08-05.** [#1](https://github.com/theo-kirby/cadex/pull/1) ADR-131 (command range), [#2](https://github.com/theo-kirby/cadex/pull/2) ADR-132 (`--init-from`), then **[#3](https://github.com/theo-kirby/cadex/pull/3) ADR-133 (inertial snap), [#4](https://github.com/theo-kirby/cadex/pull/4) ADR-134 (`trained_task=`), [#5](https://github.com/theo-kirby/cadex/pull/5) ADR-135 (the store holds a policy's provenance)**. `main` is `a40656cc`. Bodies in [`prs/`](prs/). **Mind the two numbering schemes:** these are *wishlist* #12, #11, #15, #16, #17 and GitHub numbered them 1–5. **ADR-123/124 were renumbered 131/132** upstream when the operator merged; a citation to the old numbers is one merge stale |
+| Replay | ✅ **both `mg-legs` arms build and go live on the Mac, 2026-08-05.** `clamp25` — whose bundle no script could produce any more — replays without retraining and without reverting ADR-131. `tools/live_probe.py` shoves the pelvis with 0.6 N and it holds within **1.8 mm** for 3 s, identically on both boxes. ⚠️ **The Shell app is a stale payload and needs `pixi run install-app`** before the *mouse* works — see `mechanisms/mg-legs/rollout/README.md` |
+| ⚠️ Trainer digest | **`training/cadex_train.py` is now `bb133b64d57d8f2b…`** — third value in as many days. `aacfa823…` is what every pre-2026-08-05 run record pins, then `4c1f24f8…`, and the move to `bb133b64…` came in on the operator's ADR-renumbering merge `6efd3732`. **That last one is a ONE-LINE COMMENT**: `git diff` over the file is `1 insertion, 1 deletion`, and it is `(ADR-123)` becoming `(ADR-131)` in a docstring. PRs #3–#5 touched `training/` in **zero** commits, so no bridge run is owed by this work. The lesson stands rather than being softened: **a digest is not a behaviour, so read the diff before paying for a bridge run** — and equally, do not assume an unchanged digest where a comment moved. `method.md` §8b has the protocol |
+| Engine suite | `pixi run test-engine` in the PR clone is **1685 passed / 4–5 failed / 22 skipped on `main`** (`a40656cc`). Compare a branch against that, not against zero. The failures are: **two intermittent** `test_dynamics_collision.py` ones — the `RLIMIT_AS` defect (wishlist #14), measured at **2, 1, 2 failures over three identical runs**, so "exactly two" is wrong and 1–2 is right — plus three in `test_part_blending.py` / `test_part_organic.py` that arrived with the operator's ADR-renumbering merge. **The old 1507/2/22 figure is stale** |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
@@ -367,14 +371,78 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   a pass. **A digest that changes when nothing changed is worse than no
   digest**, so the driver turns MSAA off and encodes single-threaded, and the
   jaggier edges are the price. Both settings are recorded in every sidecar.
-* **A bundle digest is platform-specific, and it will refuse a valid policy.**
-  Rebuilding `script.py` on sb1x produces a task digesting to `0b4d160c…`
-  while `stand10.cxpolicy` records the laptop's `5572adf2…`, so
-  `assembly.policy` refuses. The refusal is right in principle and wrong here:
-  the whole difference is **2.1e-15 m** in the pelvis CoM x-coordinate, which
-  is zero by symmetry. Treat **`tasks/` as the unit of provenance** — a policy
-  travels with the bundle that trained it — and build mechanism variants with
-  the policy output removed. `cadex-wishlist.md` #15.
+* **~~A bundle digest is platform-specific, and it will refuse a valid policy.~~
+  FIXED 2026-08-05 — ADR-133, and the MJCF is now byte-identical on both
+  boxes.** The whole difference had been **2.1e-15 m** in the pelvis CoM
+  x-coordinate, which is zero by symmetry; `body_inertial` now snaps any
+  inertial coordinate below a nanometre to exactly zero. Measured after: same
+  script, byte-identical engine sources, and macOS-arm64 and linux-64 both
+  produce script digest `560a33a4…`, MJCF `203f746e…` and bundle `6dc1c580…`,
+  `cmp`-identical.
+
+  **The rule is ABSOLUTE and that is the transferable part.** The two readings
+  differed in the *fifth significant figure*, so no relative tolerance sees
+  them as equal — cancellation amplifies OCCT's last bit by eleven orders of
+  magnitude, and `math.fsum` is correctly-rounded so no summation trick helps.
+  A tolerance was the only available fix, and a nanometre comes from the
+  machine shop rather than from the arithmetic.
+
+  **What it did NOT fix: a simulation.** The MJCF and the bundle agree byte for
+  byte; the **rollout trace does not** (`d7cf5c5faa19f171` vs
+  `d598a51eb615483f`, same 152-frame episode), and the policy receipt differs
+  in exactly one field — `witness_error`, `1.2678048740610848e-07` vs
+  `1.2678048737058133e-07`, nine significant figures and ~800× inside
+  tolerance. That is hazard 3, no snap can fix it, and it is **why a project
+  store still does not travel between platforms**: the script build digest
+  covers the trace, so a store built here is refused at `open_project` there.
+  Ship a *replay set* and rebuild. `cadex-wishlist.md` #15.
+* **A whole-file digest cannot tell a different task from a different route,
+  and ADR-133 made that urgent.** Snapping moved every model digest, so every
+  policy trained before it was orphaned; and `clamp25`'s bundle was hand-made
+  before ADR-131, so it reports `actions[].source` as `angle_limits_degrees`
+  where the script honestly reports `command_limits_degrees` — every action
+  *number* identical. `assembly.policy(..., trained_task="<bundle>.json")`
+  (ADR-134) is the fix: the policy stays bound to its own travelling bundle
+  **whole-file and unweakened**, and the script-built bundle is then proved
+  equivalent field by field, with the two models compared **as models**.
+
+  That last half is not decoration. A 0.4 mm bracket-plate change moves **no
+  field of the task bundle at all** — same joints, same limits, same action
+  table — and is caught only by the model comparison. Measured.
+* **A surface can pass 52 unit tests and be unusable, and this one was.**
+  ADR-134 shipped with `put_asset` still refusing `.json` and `.xml`, so the
+  two files `trained_task=` needs could not reach `assets/`. The first
+  end-to-end run failed at step one with `ASSET_REJECTED`; every test had
+  exercised a pure function and none had gone through the store. ADR-135
+  widened it. **`method.md`'s "validate at length, not at three iterations"
+  applies to surfaces, not just to training runs.**
+* **The Shell app carries its own engine payload, and it is a month stale.**
+  `/Applications/Cadex.app/Contents/Resources/cadex/` was staged **2026-08-03**
+  and predates ADR-131. Measured 2026-08-05: driven with
+  `CADEX_ENGINE_ROOT` pointed at it, `open_project` on a project the current
+  engine built refuses with *"The restore pass digest does not match the
+  accepted digest"*, and it opens only stores built before the Mac's own tree
+  merged `origin/main`. **The Shell was out of sync with the operator's own
+  checkout before any of this work** — `CadexLiveSession.py` in the bundle is
+  byte-identical to the repo's, so the *panel* is current and the engine beside
+  it is not. `pixi run install-app` is the fix, it is a **local** install that
+  rebinds the bundle to whichever repo built it, and it was left to the
+  operator on purpose.
+* **Every `live_*` op answers `ok: true` and declines.** A push with no `body`,
+  or `live_open` on a project with no accepted rollout, comes back
+  `live: false` with a `reason` and **zero frames** — a state, not an error.
+  Read `reply["live"]` before `reply["frames"][-1]` or you get an IndexError
+  where there was a sentence. A live frame carries `component_placements`
+  keyed by component name, each `{position_mm, rotation_xyzw}` — not a flat
+  16-float matrix. `tools/live_probe.py` is the worked example.
+* **`--iteration 1800` and "iteration 1800" are the same file and two
+  different numbers.** `series_checkpoints` reads the **filename tag**, so
+  `stand13.001800.cxpolicy` is 1800; `discover_policies` reads the trainer's
+  own index out of `progress.json`, where the same file is 1799. Both are
+  needed — a reward curve is plotted against the trainer's index — but
+  `capture` and `replay` are pinned to the tag and `test_replay.py` asserts
+  they agree. The first version of `replay` used the other one and refused
+  `--iteration 1800` on a run holding exactly that file.
 * **"Not present in this clone" is not "not written."** `git log --all -S…`
   found neither observation kind and the honest reading was ambiguous between
   *"nobody wrote it"* and *"we never fetched it"*. It was the second: both

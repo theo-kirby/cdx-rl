@@ -2755,6 +2755,7 @@ stand = assembly.task(model, actions=ACTUATORS, reward=REWARD,
 # try before anything else in B9.
 balance = assembly.policy(stand, weights="stand13.001800.cxpolicy",
                           sha256="c6bb20c4579c4c830d3d2e1a2397b42f99a1fd1511cf3951cd27ac293c78bc8a",
+                          trained_task="clamp25-task.json",
                           label="balance")
 play = assembly.rollout(balance, frames_per_second=25, seed=4,
                         label="stand_play")
