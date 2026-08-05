@@ -39,6 +39,47 @@ There is **no digest pasted anywhere** in that. The set carries every one, the
 importer re-checks them on arrival, and the engine re-checks them again at
 `live_open`.
 
+### Shipping a *different* checkpoint
+
+Add `--rewrite-script`. It points the arm's committed script at what was just
+exported — `weights`, `sha256` and `trained_task` — with the digest **computed
+from the bytes being shipped rather than pasted**, which is the rule
+`drivers/install_checkpoint.py` already states. It is opt-in because it edits a
+file under git, and the two cases genuinely differ: shipping the checkpoint the
+script already names needs no edit at all.
+
+Demonstrated end to end on 2026-08-05 with `stand13.001600`, a checkpoint that
+had never been shipped:
+
+```
+rewrote   mechanisms/mg-legs/rollout/script-clamp25.py
+          weights: 'stand13.001800.cxpolicy' -> 'stand13.001600.cxpolicy'
+          sha256: 'c6bb20c4579c…' -> '850b6ee8dc01…'
+```
+
+→ preflight on sb1x **WILL REPLAY** → ship → import → build on the Mac → live,
+and the push was answered (`+0.8 mm` of the settled height at 2.98 s). Its
+rollout trace is **43 frames** where 1800's is 152, which is a real difference
+between two checkpoints and exactly the kind of thing worth looking at rather
+than reading.
+
+The substitution is targeted, not a regenerated call: `label`, the
+`assembly.rollout` beneath it and every `#`-prefixed retired record are left
+exactly as they are, because those records are the provenance of what each
+previous policy was.
+
+### `--preflight` is honest in both directions
+
+Measured on 2026-08-05, the same mutated script on both boxes:
+
+```
+sb1x  "error": "…is not the same task: reward[0].weight: 0.9 here, 0.2 there."
+mac   "error": "…is not the same task: reward[0].weight: 0.9 here, 0.2 there."
+```
+
+Byte-identical refusal. A local *accept* predicts the Mac too, and both arms
+were checked that way before anything was transferred.
+
 `replay --scp mmini` prints the transfer line instead; `replay --pending` prints
 the `prepare_artifact_uploads` payload if the graph is the transport. Both are
 supported and the trade is stated out loud: scp is faster and leaves no record.
@@ -105,8 +146,16 @@ end-to-end run, at step one.
 
 `clamp25` is the one worth reading twice. **No script could produce that bundle
 any more**, and this page previously said the only fix was to retrain. It was
-not: the fix cost no GPU time and reverted no correctness fix. ADR-131's
-`source` string still says `command_limits_degrees`.
+not: the fix cost no GPU time and reverted no correctness fix. Checked rather
+than asserted — the script-built bundle beside the hand-edited one:
+
+| | `actions[].source` | action ranges |
+|---|---|---|
+| hand-edited (what trained the policy) | `angle_limits_degrees` | ±25°, ±20° |
+| from `script-clamp25.py` | **`command_limits_degrees`** | **identical** |
+
+ADR-131's honest string is intact and the numbers agree, which is the whole
+argument for a semantic comparison in one table.
 
 ### …and the refusals still refuse
 

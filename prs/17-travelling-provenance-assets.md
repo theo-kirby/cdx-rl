@@ -59,7 +59,7 @@ The last justifies ADR-134's model comparison existing. A 0.4 mm plate changes m
 
 **The two `test_dynamics_collision.py` failures are intermittent, and this PR is where that got measured.** Three runs of that file alone, no code change between them: **2, 1, 2** failures. So `docs`-level statements of the form "the baseline is exactly 2 failures" are slightly wrong — the `RLIMIT_AS` defect is resource-dependent, not deterministic, and a suite comparison should read that file as 1–2.
 
-This run: **1685 passed / 4 failed / 22 skipped**, against `main`'s 1612 / 5 / 22 before ADR-133 and ADR-134. The four are one collision test (the intermittent pair, one of which passed), `test_part_blending.py` and two in `test_part_organic.py` — the three that arrived with the merge renumbering ADR-131 and ADR-132. None is touched here.
+This run: **1685 passed / 4 failed / 22 skipped**, against `main`'s 1612 / 5 / 22 before ADR-133 and ADR-134 — and across three full-suite runs on this branch, 5, 4 and 5 failures, which is the intermittency above rather than anything moving. The four are one collision test (the intermittent pair, one of which passed), `test_part_blending.py` and two in `test_part_organic.py` — the three that arrived with the merge renumbering ADR-131 and ADR-132. None is touched here.
 
 ## Tests
 

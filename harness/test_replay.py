@@ -250,6 +250,95 @@ def test_an_export_without_a_run_needs_an_explicit_policy(scene) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Pointing the script at what was exported, without pasting a digest
+# ---------------------------------------------------------------------------
+
+
+LIVE_SCRIPT = '''\
+# A retired record, kept for its digest. An unanchored match finds this one.
+# balance = assembly.policy(stand, weights="stand1.cxpolicy",
+#                           sha256="6d99a5c7…", trained_task="old-task.json",
+#                           label="balance")
+balance = assembly.policy(stand, weights="stand13.001700.cxpolicy",
+                          sha256="{old}",
+                          trained_task="clamp25-task.json",
+                          label="balance")
+play = assembly.rollout(balance, frames_per_second=25, seed=4,
+                        label="stand_play")
+'''
+
+
+def test_the_rewrite_finds_the_live_call_and_not_a_retired_one() -> None:
+    """These scripts keep six commented records above the live one, and an
+    unanchored match finds the oldest."""
+
+    source = LIVE_SCRIPT.format(old="a" * 64)
+    updated, changed = replay.rewrite_policy_call(
+        source, weights="stand13.001800.cxpolicy", sha256="b" * 64,
+        trained_task="clamp25-task.json",
+    )
+    assert "b" * 64 in updated
+    assert "stand13.001800.cxpolicy" in updated
+    # The retired record is untouched, digest and all.
+    assert '# balance = assembly.policy(stand, weights="stand1.cxpolicy",' in updated
+    assert "6d99a5c7…" in updated
+    assert "old-task.json" in updated
+    # Only what moved is reported, and trained_task did not.
+    assert len(changed) == 2
+    assert any("weights" in line for line in changed)
+    assert any("sha256" in line for line in changed)
+
+
+def test_the_rewrite_leaves_everything_else_in_the_call_alone(scene) -> None:
+    source = LIVE_SCRIPT.format(old="a" * 64)
+    updated, _changed = replay.rewrite_policy_call(
+        source, weights="w.cxpolicy", sha256="c" * 64, trained_task="t.json",
+    )
+    assert 'label="balance"' in updated
+    assert "frames_per_second=25, seed=4" in updated
+    assert updated.count("assembly.policy(") == source.count("assembly.policy(")
+
+
+def test_a_script_with_no_live_call_is_refused() -> None:
+    with pytest.raises(ReplayError, match="No live assembly.policy"):
+        replay.rewrite_policy_call(
+            "# balance = assembly.policy(stand, weights=\"x.cxpolicy\")\n",
+            weights="w.cxpolicy", sha256="c" * 64, trained_task="t.json",
+        )
+
+
+def test_a_call_with_no_trained_task_says_to_add_it_once() -> None:
+    """The keyword is added by hand once; after that this keeps it current."""
+
+    source = ('balance = assembly.policy(stand, weights="a.cxpolicy",\n'
+              '                          sha256="' + "a" * 64 + '")\n')
+    with pytest.raises(ReplayError, match="trained_task"):
+        replay.rewrite_policy_call(source, weights="w.cxpolicy",
+                                   sha256="c" * 64, trained_task="t.json")
+
+
+def test_an_export_can_point_the_script_at_what_it_shipped(scene) -> None:
+    """The digest is computed from the bytes being shipped, never pasted."""
+
+    scene["script"].write_text(LIVE_SCRIPT.format(old="a" * 64))
+    set_dir, manifest = _export(scene, rewrite_script=True)
+    text = scene["script"].read_text()
+    assert manifest["policy"]["sha256"] in text
+    assert manifest["policy"]["file"] in text
+    assert manifest["task"]["file"] in text
+    # ...and the manifest's script digest is the script AFTER the rewrite, so a
+    # set does not report drift against the checkout that produced it.
+    assert replay.script_drift(manifest) is None
+
+
+def test_an_export_does_not_touch_the_script_unless_asked(scene) -> None:
+    original = LIVE_SCRIPT.format(old="a" * 64)
+    scene["script"].write_text(original)
+    _export(scene)
+    assert scene["script"].read_text() == original
+
+
+# ---------------------------------------------------------------------------
 # Verifying one, which is what makes a transfer trustworthy
 # ---------------------------------------------------------------------------
 

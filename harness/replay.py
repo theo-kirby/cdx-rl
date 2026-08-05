@@ -64,6 +64,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -329,8 +330,17 @@ def export_set(
     policy: Path | None,
     label: str | None,
     destination: Path | None,
+    rewrite_script: bool = False,
 ) -> tuple[Path, dict[str, Any]]:
-    """Assemble one replay set on disk. Returns its directory and manifest."""
+    """Assemble one replay set on disk. Returns its directory and manifest.
+
+    ``rewrite_script`` points the arm's committed script at what was just
+    exported — ``weights``, ``sha256`` and ``trained_task`` — with the digest
+    computed from the bytes rather than pasted. It is **opt-in** because it
+    edits a file under git, and the two cases are genuinely different: shipping
+    the checkpoint the script already names needs no edit, and shipping a
+    different one needs exactly this.
+    """
 
     if policy is None:
         if run_dir is None:
@@ -373,6 +383,21 @@ def export_set(
         if source.resolve() != target.resolve():
             shutil.copy2(source, target)
 
+    # Written *before* the manifest, so ``script_sha256`` records the script as
+    # it is after the rewrite. A manifest that recorded the pre-rewrite digest
+    # would report drift against the very checkout that produced it.
+    rewritten: list[str] = []
+    if rewrite_script:
+        text = script.read_text(encoding="utf-8")
+        updated, rewritten = rewrite_policy_call(
+            text,
+            weights=staged["policy"].name,
+            sha256=sha256_file(staged["policy"]),
+            trained_task=staged["task"].name,
+        )
+        if updated != text:
+            script.write_text(updated, encoding="utf-8")
+
     manifest = manifest_for(
         label=name, arm=arm, script=script,
         policy=staged["policy"], task=staged["task"], model=staged["model"],
@@ -381,12 +406,65 @@ def export_set(
             "policy": str(policy.resolve()),
             "task": str(task.resolve()),
             "model": str(model.resolve()),
-        }},
+        },
+            "script_rewritten": rewritten},
     )
     (set_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     return set_dir, manifest
+
+
+#: The **live** ``assembly.policy(...)`` call. Line-anchored because these
+#: scripts keep every retired policy as a ``#``-prefixed record -- six of them
+#: above the live one -- and an unanchored match finds the oldest. Same rule and
+#: the same reason as ``rollout/build.py::POLICY_CALL`` and
+#: ``drivers/install_checkpoint.py``.
+POLICY_CALL = re.compile(r"^\w+\s*=\s*assembly\.policy\(.*?\)\s*$",
+                         re.MULTILINE | re.DOTALL)
+
+
+def rewrite_policy_call(source: str, *, weights: str, sha256: str,
+                        trained_task: str) -> tuple[str, list[str]]:
+    """Point the script's live policy call at these three names.
+
+    Returns the new text and what changed. **The digest is computed from the
+    bytes being shipped and never pasted**, which is the same rule
+    ``install_checkpoint.py`` states and the reason this exists rather than a
+    line in a README saying "update the sha256".
+
+    Only the three keywords move. ``label``, the rollout beneath it and every
+    commented-out historical record are left exactly as they are: this is a
+    targeted substitution, not a regenerated call, because the retired records
+    are the provenance of what each previous policy was.
+    """
+
+    match = POLICY_CALL.search(source)
+    if not match:
+        raise ReplayError(
+            "No live assembly.policy(...) call in that script, so there is "
+            "nothing to point at the exported policy."
+        )
+    call = match.group(0)
+    changed: list[str] = []
+
+    def substitute(text: str, keyword: str, value: str) -> str:
+        pattern = re.compile(rf'({keyword}\s*=\s*)"([^"]*)"')
+        found = pattern.search(text)
+        if found is None:
+            raise ReplayError(
+                f"The live assembly.policy(...) call carries no {keyword}=, "
+                "so there is nowhere to write the exported value. Add it once "
+                "by hand; after that this keeps it current."
+            )
+        if found.group(2) != value:
+            changed.append(f"{keyword}: {found.group(2)!r} -> {value!r}")
+        return pattern.sub(lambda _m: f'{found.group(1)}"{value}"', text, count=1)
+
+    call = substitute(call, "weights", weights)
+    call = substitute(call, "sha256", sha256)
+    call = substitute(call, "trained_task", trained_task)
+    return source[:match.start()] + call + source[match.end():], changed
 
 
 def import_set(source: Path, destination: Path | None = None) -> tuple[Path, dict]:
@@ -781,6 +859,11 @@ def build_parser() -> argparse.ArgumentParser:
                         help="print the scp one-liner for HOST and stop")
     parser.add_argument("--note", help="why this checkpoint — the part no "
                                        "driver can know")
+    parser.add_argument("--rewrite-script", action="store_true",
+                        help="point the arm's script at what was just "
+                             "exported: weights, sha256 and trained_task, with "
+                             "the digest computed rather than pasted. Edits a "
+                             "file under git, so it is opt-in")
     parser.add_argument("--worker-cpu-seconds", type=float,
                         default=DEFAULT_WORKER_CPU_SECONDS)
     parser.add_argument("--worker-memory-mb", type=int,
@@ -844,11 +927,19 @@ def main(argv: list[str] | None = None) -> int:
                 run_dir=args.dir, iteration=args.iteration, arm=args.arm,
                 script=script, task=args.task, policy=args.policy,
                 label=args.label, destination=args.set_dir,
+                rewrite_script=args.rewrite_script,
             )
             items = upload_items(set_dir, manifest, args.note)
             record(set_dir, manifest, items)
             if not args.json:
                 _print_set(set_dir, manifest)
+                rewritten = manifest.get("script_rewritten") or []
+                if rewritten:
+                    print(f"rewrote   {manifest['script']}")
+                    for line in rewritten:
+                        print(f"          {line}")
+                elif args.rewrite_script:
+                    print(f"script    {manifest['script']} already named it")
                 print()
                 if args.scp:
                     print(scp_line(set_dir, args.scp))
