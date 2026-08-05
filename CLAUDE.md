@@ -196,7 +196,7 @@ Other environment facts:
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
 | Flywheel | ✅ root `rapid-bar-6214`, **seventeen nodes including the root**, max depth 8. `solitary-salad-0490` is the seed-1 replication and has **two parents** — it confirms 004 and retracts part of 005. `white-cloud-2565` is 004, `small-recipe-2040` is 005 (both carry retraction banners where they earned them), `broken-cloud-4296` is 003 at four seeds, `winter-lake-9230` retires sb9x. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
-| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, **`steps`** — via `uv run python -m harness <driver>` |
+| Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, `steps`, **`capture`** — via `uv run python -m harness <driver>`. `capture` renders a policy's own episode to an MP4 with the per-motor servo load along the bottom; it is the first output of this repository that is not a number |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
 | Mechanism | ✅ **`mg-legs` authoring script recovered, committed, and — since 2026-08-05 — buildable on sb1x.** It rebuilds `tasks/stand-b8/` with a **two-line** diff: the pelvis CoM x-coordinate at `5.10066e-11` vs `5.10087e-11` m (a quantity that is mathematically zero), and the MJCF digest the task JSON embeds as a consequence. Reproducible in substance, not bit-identical across platforms |
 | Cadex | ✅ **PR clone at `/home/theo/cadex-prs`, built, on `origin/main` `b169a092`.** The operator's tree at `/home/theo/cadex` is untouched — still `06d1374b`, still `standing-policy`, still clean |

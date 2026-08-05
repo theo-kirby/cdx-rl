@@ -1,7 +1,8 @@
 # harness/DESIGN.md — the drivers, specified
 
-**Four of the six are built.** This file remains the specification; the
-section immediately below records what building them changed about it.
+**Four of the six are built, and two more that were not in the six.** This
+file remains the specification; the section immediately below records what
+building them changed about it.
 
 | driver | | |
 |---|---|---|
@@ -10,6 +11,7 @@ section immediately below records what building them changed about it.
 | `compare` | ✅ built | `compare.py` + `episodes.py` + `_episodes.py` |
 | `capability` | ✅ built | `capability.py` |
 | `steps` | ✅ built | `steps.py` + `_steps.py` + `profiles/` — **not in the original six** |
+| `capture` | ✅ built | `capture.py` + `_capture.py` — **not in the original six either** |
 | `measure` | ❌ deferred | earns its keep only before a *new* dispatch |
 | `feasibility` | ❌ deferred | same — but see the note below: a working mg-legs-specific one exists and is worth porting next |
 
@@ -64,6 +66,107 @@ Three things about it are worth carrying into the other drivers:
    *weaker* test already separated the paired test can only separate more
    strongly. Both bounds print side by side — the unpaired one stays, because
    it is what every earlier result was reported against.
+
+## `capture` — the eighth driver, and the first output that is not a number
+
+Every result this repository has published is a number. `steps` says 18/24,
+`hazard15.py` says 12.6 % duty, and until 2026-08-05 nobody had ever
+*watched* the machine.
+
+```
+capture --dir RUN [--iteration N] [--policy FILE…] [--seeds N | --seed-list …]
+        [--tile] [--quiet] [--fps N] [--slowmo N] [--track [BODY]]
+        [--azimuth D] [--elevation D] [--distance M | --distance-scale X]
+        [--width PX] [--height PX] [--out FILE] [--json]
+```
+
+It is the two-venv split the other drivers use — `capture.py` dispatches
+under cdx-rl's interpreter, `_capture.py` renders under
+`/home/theo/cadex-train-venv` — with **raw RGB24 on stdout** instead of
+NDJSON, piped straight into ffmpeg. The per-episode summary comes back
+through a file, so nothing but pixels ever touches stdout, and the driver's
+`--json` envelope is written beside the MP4 as a sidecar whatever the flag
+says.
+
+Five things about it are the substance rather than the plumbing.
+
+1. **It is the same episode the table scored, not a re-enactment.** The
+   frames come out of `evaluate_episode`'s `sample` hook — the third consumer
+   of it, after `_steps._play` and `hazard15.measure` — with the run's own
+   bundle and the run's own seeds, so `--seed 3` *is* the episode `steps`
+   scored at index 3 and `--quiet` reproduces `hazard15`'s conditions by
+   calling the same `_episodes.apply_variant`. Verified rather than asserted:
+   `steps --seed-list 0` and `capture --seed 0` report the same 154 control
+   steps and the same `collapsed`.
+
+2. **The model is not touched, and that constraint chose the picture.**
+   `stand-b8`'s MJCF has 24 bodies and **5 geoms** — the ground and four
+   foot/toe pads — so a default render is a floor and a sky at a measured
+   **0.0000** coloured-pixel fraction. The machine is invisible. The fix is
+   the viewer's `mjVIS_INERTIA` flag, which draws each body's equivalent
+   inertia box and takes that to **0.1029**. Adding visual geoms would move
+   the MJCF digest, the task digest with it, and produce a video of a
+   different machine from the one the run trained against — which is exactly
+   the class of instrument error `_episodes._torque_columns` and the
+   whole-episode torque peak already cost this project. **What you see is the
+   mass distribution, not the CAD solids**, and the driver says so on every
+   invocation.
+
+   The one exception is stated rather than hidden: the MJCF declares no
+   lights at all, so `model.vis.headlight` is raised in memory. `model.vis`
+   is the *visualiser's* block — read by `mjv_*` and `mjr_*` and by nothing
+   in `mj_step` — and the values go into the sidecar so that a brightness
+   difference between two clips is never mistaken for a difference between
+   two machines.
+
+3. **The torque strip is what makes it an instrument and not a demo.**
+   Per-motor `|data.actuator_force|` over `model.actuator_forcerange`, drawn
+   along the bottom of each pane, red at 90 % — hazard 15's own duty
+   threshold, shared as a constant rather than re-picked. Same source as
+   `hazard15.py` and never `step["action"]`, which under a position action
+   space is a joint angle in degrees that `_episodes._torque_columns` still
+   labels N·mm. Checked against the instrument: on `stand13.001800 --quiet`
+   at one seed the two agree on all ten per-motor peaks, including the one
+   motor that is *not* saturated at 54.34 N·mm.
+
+   It is also what turns a pair of clips into experiment 004's result. The
+   unclamped hero and the clamp25 arm both score 18/24 and their strips do
+   not look remotely alike: 50–55 % of frames above 90 % against 13.6 %.
+
+4. **`rollout_policy`'s frame rule is enforced, not re-derived.**
+   `control_hz % fps` must be zero or the driver refuses and lists the
+   divisors, because a frame between two actions shows a pose no action
+   produced. `--slowmo N` divides the *encoded* rate and drops nothing.
+
+5. **A tile pads by freezing, and tints the freeze red.** Four seeds end at
+   four different steps; a pane that went black would read as the clip
+   ending and a pane stretched to the common length would be a different time
+   base beside three others. Which is also why the render is a second pass
+   over a recorded trace rather than something done inside the episode loop:
+   nothing can know how long to pad for, or what the termination reason is,
+   until every episode has finished.
+
+6. **Every MP4 it records owes a Flywheel artifact, and the driver keeps the
+   account.** `video/` is gitignored, so an unpublished clip is evidence on
+   exactly one disk — invisible to success criterion 1's *"a graph node with
+   artifacts"* and to criterion 4 outright. The driver cannot publish for
+   itself (cdx-rl's nodes are MCP-owned; the CLI is a different account and
+   returns 403, `flywheel.md` §5), so it writes `video/ledger.json` with the
+   `sha256`, the ready-to-send `prepare_artifact_uploads` item and the node
+   each clip landed on, and prints the outstanding count on **every** run —
+   on stderr under `--json`, because a machine-readable mode is not a way for
+   a debt to go unmentioned. `--pending` prints the payload; `--mark-published
+   NODE_ID` closes it. A re-render under the same filename is new bytes and
+   clears the node id rather than claiming the graph holds them.
+
+The pure half — divisors, tile geometry, padding, bar columns, caption — is
+in `_capture.py` and imports nothing but numpy, so `harness/test_capture.py`
+exercises all of it under cdx-rl's own interpreter with no GPU and no mujoco,
+the same arrangement `_steps.lifts` and `_stats` already use.
+
+**What it does not do, and why:** it does not show the CAD solids. That is
+the Shell path in `mechanisms/mg-legs/rollout/`, it is worth having, and it
+is blocked on a training run rather than on a pipeline — see that README.
 
 ## What experiment 003 owes this file
 

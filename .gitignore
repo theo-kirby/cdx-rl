@@ -225,6 +225,12 @@ projects/
 runs/
 *.cxpolicy
 
+# `harness capture`'s output. An MP4 is a large binary derived entirely from
+# the checkpoint, the bundle and the model — all three of which are recorded
+# in the .json sidecar beside it — so the video is reproducible from the
+# repository and does not belong in it.
+video/
+
 # ...except a policy that is deliberately shipped rather than produced. A
 # rollout project is only openable if the weights travel with the script that
 # names them by digest, and 330 KB is a reasonable price for a repository

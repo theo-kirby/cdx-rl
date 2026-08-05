@@ -1,14 +1,15 @@
-"""``uv run python -m harness <driver> …`` — one entry point for the four.
+"""``uv run python -m harness <driver> …`` — one entry point for the six.
 
-A single dispatcher rather than four scripts, for one reason: the drivers
+A single dispatcher rather than six scripts, for one reason: the drivers
 share an envelope, an exit-code convention and a provenance block, and a
-reader who has learned one has learned all of them. Four loose scripts drift.
+reader who has learned one has learned all of them. Loose scripts drift.
 
     rebuild     get a project to a known state, assert digest stability
     supervise   watch a training run, or read a finished one
     compare     play every checkpoint in a run directory
     capability  sweep the declared disturbance band
     steps       did it STEP -- and survive doing so
+    capture     render the episode to an MP4, with the servo load on it
 
 ``measure`` and ``feasibility`` are specified in ``DESIGN.md`` and not built;
 asking for one says so rather than failing with an argparse error, because
@@ -22,7 +23,7 @@ import sys
 
 from harness import EXIT_USAGE
 
-DRIVERS = ("rebuild", "supervise", "compare", "capability", "steps")
+DRIVERS = ("rebuild", "supervise", "compare", "capability", "steps", "capture")
 DEFERRED = {
     "measure": "specified in harness/DESIGN.md §2; deferred — it earns its "
                "keep before a *new* dispatch, and nothing has dispatched yet.",

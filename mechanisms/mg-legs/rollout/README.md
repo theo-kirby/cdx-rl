@@ -108,6 +108,35 @@ identical; only the provenance string differs. That is the same conflation as
 makes experiments 004 and 005 **reproducible from source** — which is success
 criterion 5, and it was the whole point of ADR-123.
 
+### …and what was built instead, 2026-08-05
+
+The operator wanted eyes on a policy, and this path could not give them
+today. `harness capture` was built instead:
+
+```bash
+uv run python -m harness capture --dir jobs/stand13-20260805-135926 \
+    --iteration 1800 --seeds 4 --tile
+# → video/stand13.001800.tile.mp4
+```
+
+It renders the policy driving its own episode to an MP4 on this box, in
+about two seconds of CPU for four seeds, with no second machine and no GUI.
+`harness/DESIGN.md` has the section.
+
+**It is not a replacement for this path, and the difference is exactly the
+one that matters here.** `capture` renders `mjVIS_INERTIA` boxes — the mass
+distribution — because `model-model.xml` carries 5 geoms and would otherwise
+render as an empty floor, and because adding visual geoms would move the
+digest and produce a video of a different machine. **The Shell shows the real
+CAD solids and `capture` never will.** So this page stays live.
+
+What it is blocked on is unchanged and is stated once more because it is the
+thing that unblocks it: **train the next clamp25 arm against the
+script-generated bundle `bd8071b5…`**. That is a GPU run, not a pipeline. Do
+**not** revert ADR-123's `source` change to make the digests line up — it
+would buy one replay and reintroduce a bundle that misreports where its
+numbers came from.
+
 ## Notes worth keeping
 
 * **`put_asset` moves the project revision even though it is not a write.**

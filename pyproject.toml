@@ -18,9 +18,19 @@ requires-python = ">=3.12"
 #     number", which is the question ADR-103 spent a day on.
 #   * The Cadex engine. It is not pip-installable. It is reached by spawning
 #     the staged payload's FreeCADCmd, which carries its own interpreter.
+#
+# And one that looks like it does not belong and does. `imageio-ffmpeg` ships
+# a static ffmpeg binary, and `harness capture` needs an encoder: there is no
+# ffmpeg on this box's PATH (measured 2026-08-05) and the only one available
+# is inside the Cadex PR clone's pixi environment. Borrowing that would make
+# a video depend on a checkout this repository is otherwise careful not to
+# reach into. It is a *codec*, not a simulator — it never touches a number,
+# only the bytes of a picture — which is exactly why mujoco still does not
+# belong here and this does.
 dependencies = [
     "numpy>=2.0",
     "matplotlib>=3.9",
+    "imageio-ffmpeg>=0.5",
 ]
 
 [dependency-groups]

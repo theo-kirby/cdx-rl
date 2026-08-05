@@ -174,6 +174,40 @@ prepare_artifact_uploads  →  PUT raw bytes (expect 202)  →  finalize_artifac
 | the MJCF | `text` |
 | **a `.cxpolicy`** | **`binary`** — the server refuses `cadex-policy-v1` for `checkpoint` |
 | a plot | `image` |
+| **an `.mp4` from `harness capture`** | **`binary`**, `media_type: video/mp4` — there is no video type in the contract |
+
+### Every MP4 `harness capture` records becomes the artifact of a node
+
+Not a habit — a checked obligation, because a clip that only exists in
+`video/` is invisible to criterion 1's *"a graph node with artifacts"* and to
+criterion 4 entirely. `video/` is gitignored, so an unpublished MP4 is
+evidence that exists on exactly one disk.
+
+**The driver cannot publish for itself**, and the reason is measured rather
+than laziness: cdx-rl's nodes are owned by the **MCP identity**, the CLI
+holds a different account and returns 403 against them (`flywheel.md` §5),
+and a Python subprocess has no MCP. So the driver records the obligation and
+refuses to let it go quiet:
+
+```bash
+uv run python -m harness capture --pending          # what is owed, with the payload
+#   → items[] for flywheel_prepare_artifact_uploads, ready to send
+uv run python -m harness capture --mark-published <node_id>
+```
+
+`video/ledger.json` holds one entry per MP4 with its `sha256`, its
+`upload_item` and the node it landed on. Every capture prints the
+outstanding count — on stderr under `--json`, so a machine-readable mode is
+not a way for the debt to go unmentioned. **A re-render under the same
+filename is new bytes and owes a new artifact**: the ledger clears the node
+id when the digest changes, rather than claiming the graph holds bytes it
+does not.
+
+Notes are generated from the sidecar and state what the numbers mean — how
+many seeds survived, the per-seed duty above 90 % of forcerange, and that
+the shapes are `mjVIS_INERTIA` boxes rather than CAD solids. `--note` adds
+the part no driver can know: *why this policy*. Metadata carries
+`seeds_eval` and `seed_trained` separately, per §3.
 
 **The type is validated against the bytes at the PUT**, returning 422, and a
 batch with any unfilled slot cannot be finalized — one wrong type wastes the
@@ -273,7 +307,8 @@ Before writing a node:
 - [ ] Body under ~4 KB, pointing at the repo for the full write-up
 - [ ] `type/`, `mechanism/`, `task/`, `status/`, `hazard/` all assigned
 - [ ] **`status/provisional` if n=1 in training seeds**
-- [ ] Artifacts batched, `.cxpolicy` as `binary`, notes say what the numbers
-      mean, digests in metadata
+- [ ] Artifacts batched, `.cxpolicy` and `.mp4` as `binary`, notes say what
+      the numbers mean, digests in metadata
+- [ ] `harness capture --pending` is empty — no MP4 is sitting on one disk
 - [ ] If it retracts a parent: banner, in-place marker, title, summary, and
       `status/superseded` on the parent

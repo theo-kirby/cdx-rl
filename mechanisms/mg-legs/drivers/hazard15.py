@@ -61,7 +61,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import statistics
 import sys
 from pathlib import Path
@@ -70,11 +69,25 @@ REPO = Path(__file__).resolve().parents[3]
 MODULE_DIR = os.environ.get("CADEX_ENGINE_DEV_TREE", "/home/theo/cadex")
 sys.path.insert(0, str(Path(MODULE_DIR) / "src" / "Mod" / "cadex"))
 sys.path.insert(0, str(REPO / "harness"))
+sys.path.insert(0, str(REPO))
 
 import CadexDynamics as cd  # noqa: E402
 import numpy as np  # noqa: E402
 
 from _episodes import apply_variant  # noqa: E402
+
+#: Checkpoint selection, shared rather than copied.
+#:
+#: ``series_checkpoints`` was defined here until ``harness capture`` became
+#: its second caller; it is pure, so it now lives in ``harness/episodes.py``
+#: — the module cdx-rl's own venv can import — and is re-exported under this
+#: name so that ``hazard15.series_checkpoints`` still resolves for anything
+#: that imported it from here. Behaviour is unchanged.
+from harness.episodes import (  # noqa: E402
+    BundleError,
+    PERIODIC_RE as _PERIODIC,
+    series_checkpoints,
+)
 
 #: Seconds to let the reset drop be absorbed before the posture is
 #: measured. 003 measured the machine settling for roughly a second; the
@@ -185,32 +198,6 @@ def measure(policy_path: Path, task: dict, model_xml: bytes, seeds: list[int],
     }
 
 
-#: ``<label>.NNNNNN.cxpolicy``. ``<label>.best.cxpolicy`` and the final
-#: ``<label>.cxpolicy`` carry no iteration and are not part of a series.
-_PERIODIC = re.compile(r"\.(\d{6})\.cxpolicy$")
-
-
-def series_checkpoints(run_dir: Path, stride: int) -> list[tuple[int, Path]]:
-    """Periodic checkpoints at ``stride``, plus the last one written.
-
-    The last is always included whatever its iteration: it is the newest
-    evidence about where the run is heading, and dropping it because 1750 is
-    not a multiple of 250 would silently truncate the trend at its most
-    informative end.
-    """
-    found: list[tuple[int, Path]] = []
-    for p in sorted(run_dir.glob("*.cxpolicy")):
-        m = _PERIODIC.search(p.name)
-        if m:
-            found.append((int(m.group(1)), p))
-    if not found:
-        raise SystemExit(f"no periodic checkpoints under {run_dir}")
-    found.sort()
-    keep = {it: p for it, p in found if stride <= 0 or it % stride == 0}
-    keep[found[-1][0]] = found[-1][1]
-    return sorted(keep.items())
-
-
 def trend(iters: list[int], duty: list[float]) -> dict:
     """Least-squares slope of duty against iteration, and the extrapolation.
 
@@ -270,7 +257,12 @@ def main() -> int:
     selected: list[tuple[int | None, Path]] = [(None, p)
                                                for p in (args.policy or [])]
     if args.series:
-        selected += series_checkpoints(args.series, args.stride)
+        try:
+            selected += series_checkpoints(args.series, args.stride)
+        except BundleError as exc:
+            # The refusal reads the same as it did when this function lived
+            # in this file: a message, not a traceback.
+            raise SystemExit(str(exc)) from None
 
     rows = []
     for iteration, p in selected:

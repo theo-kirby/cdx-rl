@@ -1,6 +1,7 @@
 """cdx-rl's drivers — the instruments ``MUJOCO.md`` §7 assumes exist.
 
-Four of the six specified in :doc:`DESIGN.md` are built:
+Four of the six specified in :doc:`DESIGN.md` are built, and two more that
+were not in the six:
 
 ``rebuild``
     get a project to a known state, and assert its digest is stable.
@@ -10,6 +11,10 @@ Four of the six specified in :doc:`DESIGN.md` are built:
     play every checkpoint in a run directory and choose by measured survival.
 ``capability``
     sweep the declared disturbance band and say what the task was asking.
+``steps``
+    did it STEP — and survive doing so. The conjunction, and a paired test.
+``capture``
+    render the episode to an MP4, with the per-motor servo load on it.
 
 ``measure`` and ``feasibility`` are not built. Both earn their keep only
 before a *new* dispatch, and nothing here dispatches anything but a CPU
@@ -21,6 +26,8 @@ Run them through the package's own entry point::
     uv run python -m harness supervise --run /home/theo/cadex-jobs/… --report-only
     uv run python -m harness compare --dir … --task …
     uv run python -m harness capability --policy … --task …
+    uv run python -m harness steps --dir … --task …
+    uv run python -m harness capture --dir … --iteration 1800 --seeds 4 --tile
 
 **Exit codes mirror Cadex's**, so a shell can act on them without reading
 prose: ``0`` fine, ``1`` infrastructure, ``2`` usage, ``3`` the engine refused

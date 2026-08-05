@@ -28,6 +28,11 @@ from harness.provenance import sha256_file
 #: point at 599 would be quietly out by one everywhere.
 TAG_RE = re.compile(r"\.(\d{4,})\.cxpolicy$")
 
+#: ``<label>.NNNNNN.cxpolicy``, exactly six digits. Stricter than
+#: :data:`TAG_RE` on purpose: ``<label>.best.cxpolicy`` and the final
+#: ``<label>.cxpolicy`` carry no iteration and are not part of a *series*.
+PERIODIC_RE = re.compile(r"\.(\d{6})\.cxpolicy$")
+
 
 class BundleError(RuntimeError):
     """The task bundle, the model or the policies do not line up."""
@@ -149,6 +154,40 @@ def discover_policies(run_dir: Path) -> list[dict[str, Any]]:
         })
     found.sort(key=lambda item: (item["iteration"], item["name"]))
     return found
+
+
+def series_checkpoints(run_dir: Path, stride: int) -> list[tuple[int, Path]]:
+    """Periodic checkpoints at ``stride``, plus the last one written.
+
+    The last is always included whatever its iteration: it is the newest
+    evidence about where the run is heading, and dropping it because 1750 is
+    not a multiple of 250 would silently truncate the trend at its most
+    informative end.
+
+    ``stride <= 0`` keeps every periodic checkpoint, which is how a caller
+    that wants to *select* one by iteration rather than plot a trend asks for
+    the full list.
+
+    **This lived in ``mechanisms/mg-legs/drivers/hazard15.py`` and moved here
+    when ``capture`` became its second caller.** It is pure — a glob, a
+    regular expression and a sort — and it stays in the module cdx-rl's own
+    venv can import, with ``hazard15`` re-exporting it under the trainer
+    interpreter. A third copy of this glob is exactly the drift
+    ``harness/_stats.py`` was created to stop.
+    """
+
+    found: list[tuple[int, Path]] = []
+    for path in sorted(Path(run_dir).glob("*.cxpolicy")):
+        match = PERIODIC_RE.search(path.name)
+        if match:
+            found.append((int(match.group(1)), path))
+    if not found:
+        raise BundleError(f"no periodic checkpoints under {run_dir}")
+    found.sort()
+    keep = {iteration: path for iteration, path in found
+            if stride <= 0 or iteration % stride == 0}
+    keep[found[-1][0]] = found[-1][1]
+    return sorted(keep.items())
 
 
 # ---------------------------------------------------------------------------
