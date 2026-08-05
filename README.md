@@ -49,19 +49,25 @@ and the per-box throughput — because **wall-clock numbers in these docs are
 | [`cloud.md`](cloud.md) | compute topology, and when to leave this box |
 | [`harness/DESIGN.md`](harness/DESIGN.md) | the drivers, specified |
 | [`mechanisms/mg-legs/`](mechanisms/mg-legs/) | the biped's authoring script, and its own drivers |
-| [`cadex-wishlist.md`](cadex-wishlist.md) | wants, captured rather than acted on |
+| [`cadex-wishlist.md`](cadex-wishlist.md) | thirteen things wanted from Cadex, and what each one cost |
+| [`cadex-engine-plan.md`](cadex-engine-plan.md) | the three that block research, scoped as PR specs |
 
 ## Ground rules
 
-`/home/theo/cadex` is **read-only** from here — no commits, no edits, no
-branch changes. `/home/theo/cadex-train-venv` is referenced and never
-rebuilt. `/home/theo/cadex-jobs` is a read-only input.
+**Never push to `theo-kirby/cadex`.** Cadex work happens in the PR clone at
+`/home/theo/cadex-prs` and reaches Cadex as **pull requests**, reviewed
+externally. `/home/theo/cadex` is the operator's working tree: leave it alone
+— no commits, no edits, no branch changes, no builds *there*.
 
-*Builds* were also on that list until 2026-08-03, when `sb9x` arrived with an
-unbuilt checkout and the operator lifted the rule for that box. It leaves the
-tree clean — everything a build writes (`.pixi`, `build/`) is gitignored, no
-tracked file is touched — but it is a deliberate exception, not a
-reinterpretation. `cloud.md` §1 has the recipe.
+`/home/theo/cadex-train-venv` is referenced and never rebuilt — its pins are
+what make hazard 15 a comparable measurement across every recorded run.
+`/home/theo/cadex-jobs` is a read-only input.
+
+Until 2026-08-05 this repository was read-only toward Cadex altogether and
+captured what it wanted in `cadex-wishlist.md`. Thirteen entries accumulated
+and three became the binding constraint on the research, ahead of the GPU, so
+the operator changed the policy. The wishlist stays as the record of what
+each gap cost.
 
 ## Status
 

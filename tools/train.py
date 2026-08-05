@@ -468,6 +468,13 @@ def dispatch_one(
         "--value-weight", repr(args.value_weight),
         "--initial-std", repr(args.initial_std),
     ]
+    # A warm start is a property of the RUN, not a hyperparameter: it names a
+    # file. The trainer keeps it out of the policy header's
+    # `hyperparameters` for the same reason and records the source's digest
+    # instead (ADR-124), so this passes the path through and lets the
+    # provenance be a digest at the far end.
+    if getattr(args, "init_from", ""):
+        command += ["--init-from", str(Path(args.init_from).expanduser().resolve())]
     if seed is not None:
         command += ["--seed", str(seed)]
 
@@ -753,6 +760,18 @@ def build_parser() -> argparse.ArgumentParser:
     tuning.add_argument("--entropy", type=float, default=RUN_200109["entropy"])
     tuning.add_argument("--value-weight", type=float, default=RUN_200109["value_weight"])
     tuning.add_argument("--initial-std", type=float, default=RUN_200109["initial_std"])
+    tuning.add_argument(
+        "--init-from",
+        default="",
+        metavar="POLICY",
+        help=(
+            "warm-start the actor from an existing .cxpolicy (ADR-124). Needs "
+            "a trainer that has the flag: `--require-trainer aacfa823...` "
+            "predates it. The policy must match the bundle's task and model "
+            "digests, its channels, its action table and --hidden, or the "
+            "trainer refuses before it forks."
+        ),
+    )
 
     parser.add_argument(
         "--cpu", action="store_true",

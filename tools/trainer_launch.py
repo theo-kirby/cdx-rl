@@ -5,10 +5,15 @@
 python tools/trainer_launch.py <trainer.py> [the trainer's own arguments…]
 ```
 
-``tools/train.py`` puts this in front of the trainer. It exists because
-``/home/theo/cadex`` is read-only from cdx-rl (``CLAUDE.md`` invariant 1), so
-the only place to set a process-wide interpreter option is *before* the
-trainer starts.
+``tools/train.py`` puts this in front of the trainer. It exists because a
+process-wide interpreter option has to be set *before* the trainer starts,
+and cdx-rl does not edit the trainer to do it.
+
+That was originally a hard constraint — cdx-rl was read-only toward Cadex.
+Since 2026-08-05 it could be a PR instead. It should not be: the cyclic GC is
+switched off here to work around a **jaxlib** fault, not a Cadex one, and
+baking a workaround for somebody else's bug into `cadex_train.py` would be
+the wrong place for it. A launcher is the honest shape. See ``cloud.md`` §1.
 
 **What it is for.** JAX builds enormous reference-cycle graphs while tracing,
 and a collection that lands mid-trace walks them. On sb9x that walk segfaults:

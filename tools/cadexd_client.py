@@ -27,7 +27,10 @@ relative path pinned against garbage collection, and that directory holds
 an ``outputs/`` subdirectory with the files themselves.
 :func:`accepted_attempt_dir` and :func:`accepted_artifacts` are that lookup.
 It is the smallest thing cdx-rl had to add to be able to work at all, and it
-is item one on ``cadex-wishlist.md``.
+is item one on ``cadex-wishlist.md`` — still **open**, and now a candidate
+PR rather than a permanent workaround. It is not the first one, because it
+costs a resolver cdx-rl already has rather than GPU hours; #12 and #11 are
+ahead of it.
 
 Usage::
 
@@ -66,6 +69,57 @@ READY_TIMEOUT_SECONDS = 180.0
 #: A modelling op can honestly take minutes. This cap is here to stop a
 #: wedged engine hanging a sweep forever, not to bound real work.
 DEFAULT_TIMEOUT_SECONDS = 900.0
+
+#: The **worker** budget, which is a different thing from the cap above and
+#: bit us on 2026-08-05.
+#:
+#: ``DEFAULT_TIMEOUT_SECONDS`` bounds how long *this client* waits for a
+#: reply. These two bound what the engine's isolated domain worker is allowed
+#: to spend, and they are applied as real ``setrlimit`` calls inside it
+#: (``cadex_domain_worker.py:_resource_limits``) — ``RLIMIT_CPU`` and
+#: ``RLIMIT_AS``.
+#:
+#: The engine's own defaults are 300 s and 6144 MB
+#: (``CadexEngineSettings.DEFAULT_SCRIPTED_TIMEOUT_SECONDS``). 300 s is
+#: generous for the toy assemblies in ``smoke.py`` and **not enough for
+#: ``mechanisms/mg-legs/script.py``**, which is a real machine: the first
+#: attempt to build it on sb1x burned 287 s and died on ``SIGXCPU``. What
+#: comes back is ``DOMAIN_WORKER_NO_RESULT`` with ``returncode: -24`` buried
+#: in a multi-kilobyte ``stdout`` of OCCT progress bars, which does not read
+#: like "you ran out of CPU seconds" at all. Signal 24 is ``SIGXCPU``; if a
+#: rebuild ever dies at a suspiciously round number of seconds, look here
+#: first.
+#:
+#: ``open_project`` takes these over the protocol
+#: (``cadexd.py`` → ``CadexEngineSettings.resolve_budgets``), so raising them
+#: is a cdx-rl-side call and needs no engine change. **Both must be positive
+#: or the engine silently ignores the pair and falls back to its
+#: preferences** — that is ``resolve_budgets``'s contract, not a bug.
+#:
+#: **Both numbers are raised, and the memory one is load-bearing.**
+#:
+#: The first version of this constant kept memory at the engine's own 6144 MB,
+#: reasoning that the run peaked at 228 MB so memory was never the constraint.
+#: That was right about memory and wrong about the limit: ``RLIMIT_AS`` caps
+#: *address space*, not resident memory, and MuJoCo's allocator and its plugin
+#: ``dlopen``s reserve far more virtual address space than they ever touch.
+#: Measured on sb1x, same script and a fresh project, changing only this:
+#:
+#:     6144 MB  -> SIGXCPU, never finishes (1787 s of CPU, ~80 % of it *system*
+#:                 time, RSS 218 MB, the engine's own memory_exceeded false)
+#:    32768 MB  -> succeeds in 8.2 s
+#:
+#: Roughly **500x**, and not a tuning preference: at 6144 the mg-legs build
+#: does not complete at all. Cadex's own suite shows it too -- two
+#: ``test_dynamics_collision`` tests fail on ``main`` with *"libelasticity.so:
+#: failed to map segment from shared object"* and pass when their
+#: ``open_project`` is given a larger budget. ``cadex-wishlist.md`` #14 is the
+#: upstream fix; this is cdx-rl not paying for it in the meantime.
+#:
+#: 1800 s is then ~200x the measured build rather than ~6x, which is fine: it
+#: is a runaway guard, not a schedule.
+DEFAULT_WORKER_CPU_SECONDS = 1800.0
+DEFAULT_WORKER_MEMORY_MB = 32768
 
 #: The assembly-domain exports cdx-rl cannot work without. An engine missing
 #: any of them is not a Cadex that can do reinforcement learning, and finding
@@ -238,9 +292,13 @@ class Engine:
         :func:`cdxrl_requires_dynamics` is the assertion that turns that into
         one loud failure at startup, and every driver should call it.
 
-        Re-staging the payload would fix this and is *not* cdx-rl's to do:
-        this repository is read-only toward the Cadex checkout, and
-        ``pixi run stage-engine`` writes into it. It is on the wishlist.
+        Re-staging the payload would fix this. Since 2026-08-05 cdx-rl has
+        its own clone at ``/home/theo/cadex-prs`` and *could* run
+        ``pixi run stage-engine`` there — the old objection, that it writes
+        into a checkout this repository is read-only toward, is gone. It
+        still has not, deliberately: the dev-tree route below is the one
+        every driver uses, and a second engine route to keep current is a
+        liability rather than a convenience. ``cadex-wishlist.md`` #2.
         """
 
         root = Path(str(checkout)).expanduser().resolve()
@@ -518,17 +576,40 @@ class CadexdClient:
 
     # -- the ops we actually use ------------------------------------------
 
-    def open_project(self, project_root: str | Path, *, restore: bool = True) -> dict[str, Any]:
+    def open_project(
+        self,
+        project_root: str | Path,
+        *,
+        restore: bool = True,
+        cpu_seconds: float = DEFAULT_WORKER_CPU_SECONDS,
+        memory_mb: int = DEFAULT_WORKER_MEMORY_MB,
+    ) -> dict[str, Any]:
         """Open (or create) a project root.
 
         cadexd does the ``mkdir(parents=True, exist_ok=True)`` itself, so this
         may name a directory that does not exist yet.
+
+        ``cpu_seconds`` and ``memory_mb`` are the *worker* budgets, resolved
+        once here and applied as ``setrlimit`` inside every isolated domain
+        worker for the life of the session. They default above the engine's
+        own 300 s because ``mg-legs`` does not fit in 300 s — see
+        :data:`DEFAULT_WORKER_CPU_SECONDS` for the measurement and for why
+        overrunning is so hard to read in the reply.
+
+        Both are sent together on purpose: ``resolve_budgets`` accepts the
+        caller's pair only when *both* are positive, and otherwise discards
+        both and uses the engine preferences. Sending one is the same as
+        sending neither, silently.
         """
 
         root = Path(str(project_root)).expanduser().resolve()
-        reply = self.checked(
-            "open_project", {"project_root": str(root), "restore": bool(restore)}
-        )
+        args: dict[str, Any] = {"project_root": str(root), "restore": bool(restore)}
+        if cpu_seconds > 0 and memory_mb > 0:
+            args["budgets"] = {
+                "timeout_seconds": float(cpu_seconds),
+                "memory_limit_mb": int(memory_mb),
+            }
+        reply = self.checked("open_project", args)
         self.project_root = root
         script = reply.get("script")
         if isinstance(script, Mapping):

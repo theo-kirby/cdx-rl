@@ -45,6 +45,10 @@ question is a 1.9 h continuation from `stand10.001700` and worth running
 immediately. Without it, it is the most expensive way to ask the least urgent
 question in the file.
 
+*Since 2026-08-05 #11 is a PR rather than a wish* — `cadex-engine-plan.md` §1
+is the spec, and experiment 005 is scoped to cost ~9.9 h without it and ~5 h
+with it.
+
 And the question it asks is about a policy family this experiment exists to
 show is **unbuildable**. Pushing that family further up a curve is not
 progress until the clamp result says whether the curve is worth climbing.
@@ -157,7 +161,10 @@ what the machine can *do*.
 Editing the bundle is therefore not a shortcut around the script — it is the
 **only** way to express this experiment, because the mechanism vocabulary
 cannot say "a joint that moves ±45° and a policy that may only ask for ±15°".
-That is now `cadex-wishlist.md` #12.
+That is now `cadex-wishlist.md` #12 — and since 2026-08-05 a PR against
+`/home/theo/cadex-prs` rather than a wish, specified in
+`cadex-engine-plan.md` §2. When it lands, regenerating this bundle from
+`script.py` and diffing the action table is what retires the workaround.
 
 004-B remains a claim about **committed bytes** rather than a re-derivable
 one, as 001 and 002 are for `stand-b2`. But the fix is upstream, not a task

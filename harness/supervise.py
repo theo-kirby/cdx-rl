@@ -462,7 +462,9 @@ def report(data: dict[str, Any]) -> None:
 def _stop(run_dir: Path, pid: int, reason: str, *, grace: float = 60.0) -> dict[str, Any]:
     """SIGTERM, timed away from the checkpoint writer.
 
-    There is no trainer-side early stop (wishlist #3), so stopping means
+    There is no trainer-side early stop (wishlist #3, and it stays there:
+    ADR-099 says you do not select the final iteration, and a reward-patience
+    stop selects exactly the wrong checkpoint), so stopping means
     signalling. Losing a half-written ``.cxpolicy`` is cheap; losing the
     run's last complete one is not — so before signalling, wait until the
     newest checkpoint file has stopped growing.

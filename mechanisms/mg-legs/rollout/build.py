@@ -48,6 +48,7 @@ be a different and also useful artifact (change ``seed=`` in ``script.py``).
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -64,9 +65,29 @@ from cadexd_client import (  # noqa: E402
 )
 
 HERE = Path(__file__).resolve().parent
-SCRIPT = HERE / "script.py"
-ASSET = HERE / "assets" / "stand10.001700.cxpolicy"
-PROJECT = REPO_ROOT / "projects" / "mg-legs-rollout.cadex"
+
+#: The arms this directory can bake. Each is (script, asset, project); the
+#: script names its policy by digest and ``main`` refuses if the two disagree.
+#:
+#: ``clamp25`` needs ADR-123's ``command_limits_degrees``, which merged on
+#: 2026-08-05 (`theo-kirby/cadex#1`). Before that the clamped bundle could
+#: only be produced by editing the derived task JSON by hand, which is why
+#: this arm did not exist.
+ARMS = {
+    "b8": (
+        HERE / "script.py",
+        HERE / "assets" / "stand10.001700.cxpolicy",
+        REPO_ROOT / "projects" / "mg-legs-rollout.cadex",
+    ),
+    "clamp25": (
+        HERE / "script-clamp25.py",
+        HERE / "assets" / "stand13.001800.cxpolicy",
+        REPO_ROOT / "projects" / "mg-legs-rollout-clamp25.cadex",
+    ),
+}
+DEFAULT_ARM = "b8"
+
+SCRIPT, ASSET, PROJECT = ARMS[DEFAULT_ARM]
 
 #: The **live** ``assembly.policy(...)`` call. Anchored to the start of a line
 #: because this project keeps every retired policy as a ``#``-prefixed record
@@ -81,6 +102,20 @@ POLICY_SHA = re.compile(r'sha256="([0-9a-f]{64})"')
 
 
 def main() -> int:
+    global SCRIPT, ASSET, PROJECT
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--arm", choices=sorted(ARMS), default=DEFAULT_ARM,
+        help=(
+            "b8: experiment 003 seed 2 iteration 1700, the unclamped hero. "
+            "clamp25: experiment 005's stand13.001800 -- the same 18/24 on "
+            "the conjunction with a quarter of the resting bracing."
+        ),
+    )
+    SCRIPT, ASSET, PROJECT = ARMS[parser.parse_args().arm]
     source = SCRIPT.read_text()
 
     # The digest in the script must be the digest of the bytes we are about to

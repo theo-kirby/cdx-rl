@@ -1,16 +1,43 @@
 # cadex-wishlist.md — things cdx-rl wants from Cadex
 
-**Captured, not acted on.** `/home/theo/cadex` is read-only from this
-repository: no commits, no file edits, no branch changes, no builds. When
-cdx-rl finds it wants something from Cadex, it is written down here and acted
-on somewhere else, by somebody with that repository open.
+**This file is no longer a queue. It is the record.**
 
-Each entry says what we hit, why the workaround is unsatisfying, and — where
-it matters — why the current behaviour might be *right* and this wish wrong.
-Cadex has 106 ADRs behind its current shape; several things that look like
-gaps are decisions.
+It was written under a policy that ended on 2026-08-05: cdx-rl was read-only
+toward Cadex, so when it wanted something it wrote the want down here and
+somebody else was supposed to act on it. Nobody did. Thirteen entries
+accumulated, and three of them became the binding constraint on the research
+— ahead of the GPU, which is the point at which a documentation practice has
+started costing more than it buys.
 
-Status is one of: **open**, **worked around**, **withdrawn**, **filed**.
+**The policy now: work in the PR clone at `/home/theo/cadex-prs` and submit
+pull requests.** Never push to `theo-kirby/cadex`; never touch the operator's
+tree at `/home/theo/cadex`. `cadex-engine-plan.md` scopes the blocking three
+as PR specs.
+
+**Why keep the file.** Two reasons, and neither is sentiment. Each entry
+records *what the gap actually cost* — measured, in hours and in wrong
+conclusions — which is the evidence a PR body needs and which nobody will
+reconstruct later. And several entries argue that the current behaviour is
+**right and the wish is wrong**; Cadex has 106 ADRs behind its shape and
+things that look like gaps are frequently decisions. #3 (no trainer-side
+early stop) is the clearest: ADR-099 says you do not select the final
+iteration, 001 measured survival against reward at −0.34 after the peak, and
+a PR "fixing" it would make the tool worse. Read the entry before opening
+anything.
+
+**Status is one of:**
+
+| status | means |
+|---|---|
+| **open** | Still wanted, no PR yet. Says what it costs. |
+| **PR #N** | A pull request is up against `theo-kirby/cadex`. Links it. |
+| **merged** | Landed upstream. Says at which commit, and what in cdx-rl can now be deleted. |
+| **worked around** | cdx-rl solved it locally and the workaround is fine. Not a PR candidate unless the workaround starts costing. |
+| **withdrawn** | We were wrong, or the current behaviour is a decision. Says why — this is the most valuable status in the file. |
+
+The old vocabulary had **filed**, which meant "written down here", which
+under the old policy meant nothing had happened. It is gone; entries that
+carried it are **open**.
 
 ---
 
@@ -64,7 +91,19 @@ Solving #1 would make this moot for most callers.
 
 ## 3. Trainer-side early stopping
 
-**Status: open. cdx-rl is building the workaround (a supervisor).**
+**Status: withdrawn — the current behaviour is right, and this wish was
+wrong.** cdx-rl built the supervisor and it belongs on this side.
+
+The entry stands as written below because the *observation* is accurate: the
+trainer computes `best_iteration` every iteration and keeps going regardless.
+What the entry got wrong was the conclusion. ADR-099 says you do not select
+the final iteration, and experiment 001 measured survival against
+`reward_per_step` at **r = +0.06** over a whole run and **−0.34** after its
+peak — so a reward-patience stop would reliably stop at the wrong place. 002
+confirmed it across three seeds. A trainer-side early stop keyed on the only
+scalar the trainer has would make Cadex worse; **do not open this PR.** What
+a supervisor must stop on is divergence, device and liveness, which are
+`harness/supervise.py`'s business and need nothing from the engine.
 
 `cadex_train.py` has `--iterations` and nothing else. There is no
 `--early-stop`, no patience, no `--max-iterations-without-improvement`. It
@@ -314,7 +353,20 @@ act on it while the run is still going rather than after it ends.
 
 ## 11. `--init-from`: start training from an existing policy
 
-**Status: open.** Blocks experiment **B9** outright.
+**Status: MERGED 2026-08-05** — [theo-kirby/cadex#2](https://github.com/theo-kirby/cadex/pull/2),
+landed on `main` at `75efe784` (ADR-124).
+*(Wishlist #11, GitHub PR #2 — the two numbering schemes are unrelated.)*
+**`training/cadex_train.py` is now `4c1f24f8bdf2368a…`, not `aacfa823…`** —
+every `--require-trainer aacfa823…` in these docs and in older run records
+now refers to a trainer that is one merge behind. `method.md` §8b's bridge
+run is the protocol for anything that must compare across it.
+**Experiment 005 already ran under `4c1f24f8…`**, which is what `main` now
+carries, so 005 needs no bridge.
+(`cadex-engine-plan.md` §1; body in `prs/11-train-init-from.md`.) Blocks
+experiment **B9** outright, and halves experiment 005: ~9.9 h without it,
+~5 h with. Not the first PR out — it changes `cadex_train.py`'s sha256 and so
+invalidates every downstream trainer pin, including `remote_train.sh`'s own
+check, which is fine under the new policy but wants #12 to land first.
 
 `cadex_train.py` has no resume and no initialise-from-policy option, so every
 run starts from a fresh network. Experiment 003's "what to do next" proposes
@@ -324,10 +376,13 @@ last — and that is the thing ADR-100 concluded was unavailable when it
 decided a curriculum could not be scheduled. It was right about the
 capability and the capability is one flag.
 
-**cdx-rl cannot add it.** `cadex_train.py` lives at
-`/home/theo/cadex/training/cadex_train.py`, inside the read-only tree, so
-invariant 1 forbids it. 003's README calls the change "contained", which is
-true of the diff and not of who is allowed to make it.
+**cdx-rl can now add it, and should.** This paragraph used to read *"cdx-rl
+cannot add it — `cadex_train.py` is inside the read-only tree, so invariant 1
+forbids it,"* and noted that 003's README calling the change "contained" was
+true of the diff and not of who was allowed to make it. That is no longer the
+constraint: the work happens in `/home/theo/cadex-prs` and lands as a PR.
+`cadex-engine-plan.md` §1 scopes it, including the four things that make it
+more than one flag.
 
 **Wanted:** `--init-from <policy.cxpolicy>`, loading the weights out of the
 container and into the initial network, leaving the optimiser state fresh.
@@ -357,7 +412,20 @@ invariant 3: read from it freely, write to it never.
 
 ## 12. Let a position actuator's action range be narrower than its joint
 
-**Status: open.** Forced experiment 004-B to edit a derived bundle.
+**Status: MERGED 2026-08-05** — [theo-kirby/cadex#1](https://github.com/theo-kirby/cadex/pull/1),
+landed on `main` at `cfa6640e` (ADR-123).
+*(Wishlist #12, GitHub PR #1 — the two numbering schemes are unrelated.)*
+**What this retires:** `experiments/004-ceiling-and-clamp/make_clamp_bundle.py`
+is no longer the only way to express the clamp. A `script.py` variant passing
+`command_limits_degrees` reproduces its action table on every number, all ten
+actuators; the only differing field is `source`, which now honestly says
+`command_limits_degrees`. Keep the script as the reproduction record of what
+004 actually ran.
+(`cadex-engine-plan.md` §2; body in `prs/12-position-command-range.md`.)
+Forced experiment 004-B to edit a derived
+bundle. It is ahead of #11 because it is smaller, touches no trainer, and is
+independently useful: it turns 004's result from a bundle hack into something
+reproducible from `script.py`.
 
 `_ACTION_SOURCES` maps `("position", "angular")` to `angle_limits_degrees`, so
 a position servo's action range *is* the joint's declared physical range. The
@@ -395,8 +463,30 @@ one property this project most wants to keep.
 
 ## 13. The pinned engine cannot build the mechanism its own experiments ran on
 
-**Status: open.** Makes `mechanisms/mg-legs/script.py` unbuildable on the only
-box that has a GPU.
+**Status: merged upstream — resolved 2026-08-05 by getting current.** No PR
+was needed; the kinds were already there and this clone could not see them.
+
+`centroidal_angular_momentum` / `mjSENS_SUBTREEANGMOM` landed in **`593f64e6`
+(ADR-116, 2026-08-03)** and `centre_of_mass_velocity` before it. Both are in
+`origin/main`. The old checkout could not see either because `06d1374b` was
+the newest object it had — which is why `git log --all -S…` came back empty
+and why this entry hedged between "not written yet" and "not fetched yet".
+**"Searched and not found" was a claim about one clone**, the same lesson the
+`script.py` recovery taught about machines.
+
+`mechanisms/mg-legs/script.py` now builds on sb1x. Preference-order item 1 —
+*"a statement of the earliest revision that has both"* — is answered: it is
+`593f64e6`, and the engine-only bump is safe because `training/` is
+byte-identical across the whole 15-commit range.
+
+Items 2 and 3 below (a build-time capability check, and `cadexd` reporting its
+observation vocabulary) are **still open and still worth a PR.** They are what
+would have turned this week's confusion into one clear line of output.
+
+**Two things the unblock did *not* fix**, both now separately tracked: the
+worker's default budgets refuse the build (#14 below), and the script's
+`assembly.policy` output fails a task-digest check for reasons that are
+cross-platform floating point rather than a real mismatch (#15).
 
 `script.py` declares two observation kinds its own comments number **ninth**
 and **tenth**:
@@ -441,6 +531,127 @@ was supposed to end, one step removed.
    modelling error rather than a version gap.
 3. **`cadexd` should report its observation vocabulary**, so a driver can
    refuse before it spends a build.
+
+## 14. The worker's default address-space cap makes a real assembly 500× slower
+
+**Status: open — the strongest PR candidate in this file**, because it is a
+measured pathology rather than a missing feature, and because at the default
+budgets Cadex cannot build a mechanism it shipped experiments for.
+
+`cadex_domain_worker.py::_resource_limits` applies the scripted budgets as
+real `setrlimit` calls: `RLIMIT_AS` from `memory_limit_mb`, `RLIMIT_CPU` from
+`timeout_seconds`, plus a hard-coded `RLIMIT_NOFILE` of 64. The engine's
+defaults are **300 s and 6144 MB**
+(`CadexEngineSettings.DEFAULT_SCRIPTED_*`).
+
+**Measured on sb1x, 2026-08-05.** Same script
+(`mechanisms/mg-legs/script.py` with its policy output removed), same fresh
+project, same engine at `b169a092`. The only variable is `memory_limit_mb`:
+
+| `RLIMIT_AS` | outcome | CPU used | RSS | `memory_exceeded` |
+|---|---|---|---|---|
+| 6144 MB (default) | `SIGXCPU` — never finishes | 107 s to hit a 120 s cap, and 1787 s to hit an 1800 s cap | 217 MB | `false` |
+| 32768 MB | **succeeds** | **8.2 s** | 218 MB | `false` |
+
+Two things make this worth fixing rather than working around:
+
+* **Memory is never the constraint.** RSS is ~218 MB against a 6 GB cap, and
+  the engine's own `memory_exceeded` flag stays `false`. What is scarce is
+  *address space*, not memory.
+* **The cost is system time, not work.** The failing runs spend ~80 % of
+  their CPU in the kernel — `user 6m20s / sys 23m40s` on the 1800 s run,
+  `user 29s / sys 1m31s` on the 120 s one — which is the signature of an
+  allocator retrying failed `mmap`s rather than of geometry being computed.
+  The same geometry takes 8 seconds when the cap is lifted, so the honest
+  ratio is ~500×.
+
+**Cadex's own test suite demonstrates it.** This is not a cdx-rl-shaped
+complaint. `pixi run test-engine` at `b169a092` on sb1x is **1507 passed, 2
+failed, 22 skipped**, and both failures are the same cap:
+
+```
+src/Mod/cadex/cadex_tests/test_dynamics_collision.py
+  test_a_real_concave_part_is_refused_with_the_numbers_in_it   FAILED
+  test_the_same_bracket_is_accepted_when_the_script_says_hull  FAILED
+
+error: …/mujoco/plugin/libelasticity.so: failed to map segment from
+       shared object
+```
+
+`_live_dynamics` (`:736`) calls `open_project` with no budgets, so those tests
+run at the 6144 MB default, and MuJoCo's plugin cannot `dlopen` — *"failed to
+map segment"* is an `mmap` refusal, the same mechanism as the slowdown above.
+Patching that one call to pass `memory_limit_mb: 32768` and re-running:
+**11 passed** (the probe was reverted; the clone is clean). Same code, same
+box, only the budget differs.
+
+That makes the fix upstream's rather than ours, and gives the PR a
+regression it can point at.
+
+**And the failure is unreadable.** It surfaces as `DOMAIN_WORKER_NO_RESULT`
+at stage `external_process` with `returncode: -24`, inside an `observed`
+blob whose `stdout` is several kilobytes of OCCT `Processing......` progress
+bars. Nothing says "CPU limit"; signal 24 is `SIGXCPU` and you have to know
+that. It reads like a hang or a crash.
+
+**Wanted, in preference order:**
+
+1. **Do not cap `RLIMIT_AS` from `memory_limit_mb`.** Address space is not
+   memory. If the intent is to stop a runaway script eating the box, cap RSS
+   (cgroups, or `RLIMIT_DATA`), or raise the default far above any plausible
+   working set.
+2. **Name the signal.** A worker killed by `SIGXCPU` or `SIGSEGV` should say
+   so in `failure_code` — `DOMAIN_WORKER_CPU_EXCEEDED` — rather than
+   `NO_RESULT` with the evidence buried in `observed.returncode`.
+3. **Defaults that fit a real mechanism.** 300 s is comfortable for the
+   assemblies in `smoke.py` and does not fit a ten-joint biped even once the
+   address-space pathology is gone.
+
+cdx-rl's side is done and is not a substitute for the fix: `open_project`
+sends both budgets (`tools/cadexd_client.py::DEFAULT_WORKER_*`), and
+`harness rebuild` exposes `--worker-cpu-seconds` / `--worker-memory-mb`.
+
+## 15. A task digest is not stable across platforms, and it gates policy replay
+
+**Status: open.** Cost: `script.py`'s own `assembly.policy` output cannot be
+rebuilt on the box that trained the policy.
+
+`mechanisms/mg-legs/script.py` declares
+`assembly.policy(stand, weights="stand10.cxpolicy", sha256=…)`. Rebuilding it
+on sb1x is refused:
+
+```
+policy output 'balance' was trained on a task bundle whose digest is
+'5572adf265aa51cb…', and the task it is declared against digests to
+'0b4d160cd436fd16…'.
+```
+
+The refusal is **correct in principle** — ADR-level reasoning that a policy is
+only meaningful for the task it was trained on, and the correction text says
+so well. It is **wrong in this instance**, and the reason is worth recording
+because it is not a mechanism change at all.
+
+Diffing the generated bundle against the committed `tasks/stand-b8/`:
+
+* the **task JSON differs in exactly one line**, and that line is the
+  embedded MJCF `sha256`;
+* the **MJCF differs in exactly one line** — the pelvis inertial `pos`
+  x-component, `5.10066e-11` (built on the macOS laptop) against
+  `5.10087e-11` (sb1x, Linux). That is **2.1 × 10⁻¹⁵ m**, on a quantity that
+  is mathematically **zero**: the machine is symmetric, so the pelvis centre
+  of mass sits on the plane, and both numbers are rounding noise around it.
+
+Mass, quaternion and diagonal inertia are bit-identical, as is every other
+line of the 14179-byte file. So a cross-platform ULP in a coordinate that
+should be zero propagates through two digests and refuses a valid policy.
+
+**Wanted:** not a looser check — the check is right. Either a documented
+statement that bundle digests are platform-specific (so a policy travels with
+its bundle and `tasks/` is the unit of provenance, which is what cdx-rl
+already does), or geometry output that is reproducible across platforms, or a
+`snap-to-zero` on inertial coordinates below a tolerance where the value is
+symmetry noise. The first is cheap and honest; the third is what a CAD kernel
+arguably owes a digest-based contract.
 
 ---
 

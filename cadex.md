@@ -1,12 +1,44 @@
 # cadex.md — Cadex, for an agent with no prior context
 
 Everything below was executed on `sb1x` on 2026-08-02 against Cadex at
-`06d1374b`. Where a command is quoted, its real output is quoted with it.
-Where a claim contradicts a reasonable assumption, it says so.
+`06d1374b`, and re-checked on 2026-08-05 against `b169a092`. Where a command
+is quoted, its real output is quoted with it. Where a claim contradicts a
+reasonable assumption, it says so.
 
-**cdx-rl is read-only toward `/home/theo/cadex`.** No commits, no edits, no
-branch changes, no builds. Things we wish Cadex did go in
-[`cadex-wishlist.md`](cadex-wishlist.md).
+**cdx-rl works in the PR clone at `/home/theo/cadex-prs` and never pushes to
+`theo-kirby/cadex`.** Changes reach Cadex as pull requests, reviewed
+externally. `/home/theo/cadex` is the *operator's* working tree and stays
+untouched — it currently sits on `standing-policy` mid-thought, so even a
+fetch there would move somebody else's work.
+
+### Which revision this box drives, and how it got there
+
+On 2026-08-05 sb1x was moved from the old pin `06d1374b` to `origin/main`
+`b169a092`, **15 commits** later. Measured in the clone, not assumed:
+
+| question | answer |
+|---|---|
+| Does `origin/main` contain `06d1374b`? | **Yes.** |
+| Is `standing-policy` still a live divergent line? | **No** — `git rev-list --count origin/main..origin/standing-policy` is **0**. Its tip `5b77121a` (ADR-112) is an ancestor of `main`, so `main` is the right PR base. |
+| Do the observation kinds `script.py` needs exist upstream? | **Yes** — `centroidal_angular_momentum` / `mjSENS_SUBTREEANGMOM` landed in `593f64e6` (ADR-116, 2026-08-03), and `560935bd` is in `main` too. They were never in the old clone, which is why `git log --all -S…` found nothing there. |
+| Did the trainer move? | **No.** `git rev-list --count 06d1374b..origin/main -- training/` is **0**; `training/cadex_train.py` is `aacfa823…` at both ends. |
+| Engine delta | 39 files, +7342 lines under `src/Mod/cadex/`, all Python. The only native changes in the range are under `shell/source/blender` — the GUI, which headless cdx-rl never loads. `src/Mod/cadex/CMakeLists.txt` moved only to add three `.py` files to an install list. |
+
+Getting current was a **clone plus a config change**, never a pull into the
+operator's tree:
+
+```bash
+git clone git@github.com:theo-kirby/cadex.git /home/theo/cadex-prs
+cd /home/theo/cadex-prs
+pixi install && pixi run setup-engine && pixi run build-engine
+```
+
+then `CADEX_REPO` and `CADEX_ENGINE_DEV_TREE` point at the clone. The build
+took ~5 minutes on sb1x's 32 threads — the rattler package cache was already
+warm and `pixi.lock` is byte-identical to the operator's tree, so nothing was
+downloaded. Afterwards `tools/smoke.py` is **13/13**, and
+`/home/theo/cadex` is still `06d1374b`, still on `standing-policy`, still
+clean.
 
 ---
 
@@ -200,8 +232,12 @@ it falls back to the development tree and works.
 `CadexdClient.require_dynamics()` asserts the surface in one round trip.
 Call it right after `open_project`, in every driver.
 
-Re-staging the payload would fix this properly and is **not cdx-rl's to do** —
-it writes into the Cadex checkout. It is on the wishlist.
+Re-staging the payload would fix this properly. It used to be "not cdx-rl's to
+do" because it writes into the Cadex checkout; since 2026-08-05 cdx-rl has its
+own clone and *could* run `pixi run stage-engine` there. It has not, because
+the dev-tree route is the one every driver uses and a second engine route to
+keep current is a liability rather than a convenience. `cadex-wishlist.md` #2
+carries the entry.
 
 ## 5. The project store, and finding an artifact
 
@@ -416,7 +452,12 @@ Training panel read.
 
 **There is no early stop and no `--max-iterations-without-improvement`.**
 That absence is why the training supervisor is cdx-rl's first real
-contribution, and it is on the wishlist.
+contribution. It is deliberate on Cadex's side — ADR-099 says you do not
+select the final iteration, and a reward-patience stop would select exactly
+the wrong checkpoint (experiment 001 measured the correlation at **−0.34**
+after the reward peak). So the supervisor stops on divergence, device and
+liveness and never on reward, and that stays in cdx-rl rather than becoming a
+PR. `cadex-wishlist.md` #7.
 
 The trainer proves its own **witness** before writing each file and prints
 the margin. *If that margin is under 100×, stop and read MUJOCO.md hazard 13

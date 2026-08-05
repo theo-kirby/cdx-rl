@@ -38,6 +38,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from cadexd_client import (  # noqa: E402
+    DEFAULT_WORKER_CPU_SECONDS,
+    DEFAULT_WORKER_MEMORY_MB,
     CadexdClient,
     CadexdError,
     Engine,
@@ -107,7 +109,12 @@ def run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     client = CadexdClient(engine)
     try:
         client.start()
-        opened = client.open_project(project_root)
+        opened = client.open_project(
+            project_root,
+            cpu_seconds=args.worker_cpu_seconds,
+            memory_mb=args.worker_memory_mb,
+        )
+        payload["worker_budgets"] = dict(opened.get("budgets") or {})
         payload["opened_revision"] = client.revision
         # One round trip that turns a stale engine into a loud failure
         # instead of "assembly.mjcf is not defined" from inside a script.
@@ -243,6 +250,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Rebuild twice and assert the digest is identical.",
     )
     parser.add_argument("--engine", help="A staged engine payload root, overriding the environment.")
+    parser.add_argument(
+        "--worker-cpu-seconds",
+        type=float,
+        default=DEFAULT_WORKER_CPU_SECONDS,
+        help=(
+            "RLIMIT_CPU for the engine's isolated domain worker, in CPU "
+            "seconds (user+sys). The engine's own default is 300, which "
+            "mg-legs does not fit in. Overrun surfaces as "
+            "DOMAIN_WORKER_NO_RESULT with returncode -24 (SIGXCPU). "
+            f"Default {DEFAULT_WORKER_CPU_SECONDS:g}."
+        ),
+    )
+    parser.add_argument(
+        "--worker-memory-mb",
+        type=int,
+        default=DEFAULT_WORKER_MEMORY_MB,
+        help=(
+            "RLIMIT_AS for that worker, in MB. The engine's own default is "
+            "6144. Sent together with --worker-cpu-seconds because the "
+            "engine accepts the pair only when both are positive. "
+            f"Default {DEFAULT_WORKER_MEMORY_MB}."
+        ),
+    )
     parser.add_argument("--json", action="store_true", help="Emit the envelope.")
     return parser
 

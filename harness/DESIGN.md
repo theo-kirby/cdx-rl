@@ -459,7 +459,10 @@ stronger.
 ### Mechanics
 
 * **`SIGTERM`, and a grace period.** There is no trainer-side early stop
-  (wishlist #3), so stopping means signalling. Time it away from the
+  (wishlist #3 — deliberate, and not a PR: ADR-099 says you do not select the
+  final iteration, and 001 measured survival-vs-reward at −0.34 after the
+  peak, so a reward-patience stop would select the wrong checkpoint), so
+  stopping means signalling. Time it away from the
   checkpoint writer — read the `checkpoints` list and avoid the moment after
   a multiple of `--checkpoint-every`. Losing a half-written `.cxpolicy` is
   cheap; losing the run's last complete one is not.

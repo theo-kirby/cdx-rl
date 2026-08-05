@@ -367,12 +367,19 @@ There is no password variable and there will not be one. `ssh` has no
 non-interactive password path without `sshpass`, and a plaintext secret on
 disk is a worse thing to own than a path to a key file.
 
-> **ADR-104's guard is not optional.** Before dispatch:
-> `ssh <box> "cd <repo> && git log --oneline -1"`. A trainer that predates a
-> surface addition silently ignores the new fields while recording the new
-> algorithm string in the policy header, and nothing fails loudly.
-> `tools/smoke.py` records the commit on every run; on sb1x it is
-> `06d1374b`.
+> **ADR-104's guard is not optional, but check the digest rather than the
+> commit.** Before dispatch:
+> `ssh <box> "cd <repo> && sha256sum training/cadex_train.py"`. A trainer
+> that predates a surface addition silently ignores the new fields while
+> recording the new algorithm string in the policy header, and nothing fails
+> loudly.
+>
+> The commit alone is the noisier signal, measured twice: sb9x sat ten
+> commits ahead with a byte-identical trainer, and on 2026-08-05 sb1x moved
+> **15 commits** from `06d1374b` to `b169a092` with `training/` untouched —
+> `aacfa823…` at both ends. `tools/smoke.py` records the commit on every run;
+> on sb1x it is now `b169a092`. Pass `--require-trainer <sha256>` when a run
+> has to be comparable with a specific earlier one.
 
 ## 3. Run directories
 
@@ -523,7 +530,8 @@ extra machine is another place the "reload the model per episode" bug
 
 | | Path | Tracked? |
 |---|---|---|
-| Cadex checkout (engine, trainer, docs) | `/home/theo/cadex` | **read-only to cdx-rl** |
+| Cadex PR clone — the engine, trainer and docs cdx-rl drives | `/home/theo/cadex-prs` | git, `origin` on GitHub. **Branch and PR here; never push to `main`.** Built (`.pixi`, `build/` — both gitignored) |
+| Cadex — the *operator's* working tree | `/home/theo/cadex` | **do not touch**: not read for the engine, not fetched, not built |
 | Trainer venv | `/home/theo/cadex-train-venv` | referenced, never rebuilt |
 | Existing training runs | `/home/theo/cadex-jobs` | read-only input |
 | cdx-rl repo | `/home/theo/cdx-rl` | git, `origin` on GitHub |

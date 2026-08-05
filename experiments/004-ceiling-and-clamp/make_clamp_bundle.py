@@ -26,10 +26,20 @@ experiment: it removes reachable configurations for reasons unrelated to
 torque.
 
 There is no way to say "a joint that moves ±45° and a policy that may only
-command ±15°" in the mechanism vocabulary. That is `cadex-wishlist.md` #12.
-Until it exists, editing the derived bundle is the only expression of this
-experiment, and 004-B is a claim about committed bytes rather than a
-re-derivable one.
+command ±15°" in the mechanism vocabulary. That is `cadex-wishlist.md` #12,
+and since 2026-08-05 it is a PR against `/home/theo/cadex-prs` rather than a
+wish — `cadex-engine-plan.md` §2 is the spec. Until it lands, editing the
+derived bundle is the only expression of this experiment, and 004-B is a
+claim about committed bytes rather than a re-derivable one.
+
+**This script is the thing the PR has to reproduce.** When #12 lands,
+regenerate the clamped bundle from `script.py` and diff its action table
+against this script's output; a byte-identical table retires the workaround.
+One known difference to expect, and it is this script's semantics rather than
+the PR's: `_clamped_action` below takes `abs()` of both bounds and writes a
+**symmetric** ±cap, while the engine surface clamps each bound
+independently. That is a no-op for `stand-b8`, whose joint ranges are already
+symmetric, and it would not be for a mechanism with an asymmetric joint.
 
 Note what the cap does and does not do. The servo sees **error = command −
 actual**, so a joint displaced 45° while commanded −15° still presents 60° of

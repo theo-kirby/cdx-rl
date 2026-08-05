@@ -312,18 +312,56 @@ about one iteration.
 margin. If that margin is under 100×, stop and read hazard 13** rather than
 continuing.
 
-**8b. Check the box's checkout first** (ADR-104). `remote_train.sh` runs the
+**8b. Check the box's trainer first** (ADR-104). `remote_train.sh` runs the
 *box's own* copy of `training/cadex_train.py`, so a trainer that predates a
 surface addition silently ignores the new fields while recording the new
 algorithm string in the policy header, and nothing fails loudly.
 
 ```bash
-git -C /home/theo/cadex log --oneline -1
-# 06d1374b Refuse to dispatch to a box running a different trainer (ADR-104)
+sha256sum /home/theo/cadex-prs/training/cadex_train.py
+# aacfa82318e4e2399f65cf2ffe234504a288b586a178fc1dbe32e539a1fe7b24
+git -C /home/theo/cadex-prs log --oneline -1
+# b169a092 The wiring editor applies once, and then again (ADR-122)
 ```
 
-`tools/smoke.py` records this on every run. It is not optional after any
+`tools/smoke.py` records both on every run. It is not optional after any
 change to `EPISODE_VARIATION_ALGORITHM`.
+
+**Check the digest, not the commit.** Measured twice: sb9x ran ten commits
+ahead of the old pin with a byte-identical trainer, and sb1x's 2026-08-05
+move across **15 commits** left `training/` untouched. The commit is noisy in
+both directions — it changes when nothing relevant did, and in principle a
+trainer edit could ride an unrelated-looking commit.
+
+#### When the trainer *does* move: the bridge run
+
+Until 2026-08-05 the trainer was pinned to one digest indefinitely, and cdx-rl
+was read-only toward Cadex, so this question could not arise. Now that cdx-rl
+submits PRs — and `--init-from` (`cadex-engine-plan.md` §1) changes
+`cadex_train.py` by construction — it will.
+
+**The rule the method needs is that the trainer is constant within a
+comparison, not constant forever.** `--require-trainer <sha256>` is how you
+assert that for a specific comparison; it is not a standing pin on the
+repository.
+
+When the trainer moves under work that must still be compared across it, pay
+for a **bridge run**: one seed of an existing arm, retrained under the new
+trainer, scored against where the old one landed on the same metric and the
+same evaluation seeds. That converts *"we cannot compare across the
+boundary"* into *"we measured the offset, and here it is."* Budget it as real
+GPU time — for a `mg-legs` arm it is one full-length seed — and write the
+result beside the table it protects.
+
+Two things it must not be confused with. It is **not** a reproducibility
+check: this card is non-deterministic, and experiment 002 seed 0 already
+established that the same seed and the same trainer digest give **0 of 1500
+iterations bitwise identical** while still correlating at r = +0.9885. A
+bridge run therefore reports on *shape* — argmax location, survival at the
+best late checkpoint, hazard 15's mean fraction of rating — never on a value.
+And it does **not** license moving `cadex-train-venv`'s pins, which are
+invariant 2 and stay put: a MuJoCo bump moves the dynamics numerically, and
+hazard 15 is a torque read off those dynamics.
 
 ### 9. Ask what the task is asking, not just how the run went
 

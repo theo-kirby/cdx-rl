@@ -44,17 +44,38 @@ Three things live here and nowhere else:
 
 ## What cdx-rl is not
 
-**Not a place to develop Cadex.** `/home/theo/cadex` is read-only from here:
-no commits, no file edits, no branch changes, no builds. If cdx-rl finds it
-wants something from Cadex, that want is written down in
-[`cadex-wishlist.md`](cadex-wishlist.md) and acted on somewhere else, by
-somebody with that repository open.
+**Not a place to develop Cadex — but no longer forbidden to improve it.**
+Until 2026-08-05 this section read "read-only, full stop": wants went into
+[`cadex-wishlist.md`](cadex-wishlist.md) and were acted on somewhere else, by
+somebody with that repository open. Nobody had that repository open, thirteen
+entries accumulated, and three of them — the command range, the warm start,
+and an engine too old to build `script.py` — became the binding constraint on
+this research, ahead of the GPU. The policy was costing more than it bought.
 
-The boundary is not bureaucracy. Cadex has 106 ADRs of reasoning behind its
-current shape, and several of the things cdx-rl will find inconvenient are
+What cdx-rl does now: **work in the PR clone at `/home/theo/cadex-prs` and
+submit pull requests**, reviewed externally with the Cadex agents. Never push
+to `theo-kirby/cadex`, and never touch the operator's tree at
+`/home/theo/cadex`.
+
+**The original argument was right about something, and it survives as a
+discipline rather than a prohibition.** Cadex has 106 ADRs of reasoning behind
+its current shape, and several things cdx-rl finds inconvenient are
 load-bearing decisions rather than oversights — the absent `train` verb most
-of all. A research repository that starts patching its substrate stops being
-able to say which of its results came from the substrate.
+of all. A PR that "fixes" one of those is a misreading; read the ADR first.
+And the deeper worry — *a repository that patches its substrate stops being
+able to say which of its results came from the substrate* — is answered by
+recording the substrate, not by freezing it:
+
+* every run records the engine revision and the trainer digest
+  (`runtime.json`, `smoke.py`), so a result is always attributable;
+* the trainer must be **constant within a comparison**, not constant forever,
+  and when it moves a **bridge run** measures the offset (`method.md` §8b);
+* the MuJoCo pins do *not* move (invariant 2), because hazard 15 is a torque
+  read off those dynamics and it is the measurement that decides
+  buildability.
+
+Freezing the substrate never actually made results attributable. Recording it
+does, and it lets the blocking three get fixed.
 
 **Not a MuJoCo tutorial, and not a general RL library.** The scope is
 Cadex-authored mechanisms. If the answer to a question is "use a standard
@@ -218,31 +239,76 @@ cdx-rl has done its job when:
 5. **A result that came out of here can be built.** The script is the source
    of truth; the same script that trained the policy exports the STEP.
 
-### Criterion 5 is currently FAILING, and it is worth saying which way
+### Criterion 5, measured at last — and it mostly passes
 
-The other four are being worked towards. Criterion 5 has **regressed**, and
-nothing in the repository said so until now.
+The other four are being worked towards. Criterion 5 spent a week **failing
+for a reason nobody could test**: the engine on the box with the GPU could not
+build `script.py` at all, so "is `stand-b8` reproducible from source?" was an
+open question dressed as a claim. On 2026-08-05 the engine got current and the
+question got an answer.
+
+**`mechanisms/mg-legs/script.py` rebuilds `tasks/stand-b8/` on sb1x, and the
+entire discrepancy is one floating-point rounding artifact in a quantity that
+is mathematically zero.**
+
+```
+harness rebuild --project projects/mg-legs-nopolicy.cadex \
+    --script <script.py, policy output removed> --verify \
+    --worker-cpu-seconds 3300 --worker-memory-mb 32768
+# ok: true, verify.stable: true, 8.2 s
+```
+
+| | committed `tasks/stand-b8/` | rebuilt on sb1x |
+|---|---|---|
+| `model-model.xml` | 14179 B, `80eaa18f…` | 14179 B, `0fe04cfc…` |
+| `stand-task.json` | 30213 B, `5572adf2…` | 30213 B, `0b4d160c…` |
+
+Different digests, and the diff is **two lines total**. The task JSON's only
+difference is the MJCF digest it embeds — a consequence, not an independent
+change. The MJCF's only difference is the **pelvis** inertial `pos`
+x-component: `5.10066e-11` m as built on the macOS laptop against
+`5.10087e-11` m on sb1x, a gap of **2.1 × 10⁻¹⁵ m**. The machine is
+symmetric, so that coordinate is *zero*; both values are noise around it, and
+both sit 5 × 10⁻⁸ mm off the plane. Mass, quaternion and diagonal inertia are
+bit-identical, and so is every other line of the file.
+
+**So the honest status is:** reproducible in substance, not bit-identical
+across platforms, and the one difference is physically meaningless. That is a
+much better position than `stand-b2`, which remains a claim about committed
+bytes because its authoring revision is genuinely lost.
+
+**What it costs, and it is not nothing.** Cadex's digest chain is exact, so
+that one ULP propagates: `script.py`'s own `assembly.policy` output is
+*refused* on sb1x, because `stand10.cxpolicy` records the laptop's task digest
+and the rebuild produces Linux's. The refusal is correct in principle — a
+policy is only meaningful for the task it was trained on — and wrong here.
+`cadex-wishlist.md` #15 has the analysis. The practical consequence for now:
+**`tasks/` is the unit of provenance**, a policy travels with the bundle that
+trained it, and mechanism work builds with the policy output removed.
 
 Experiment 004's result — the ±25° command clamp — is the first policy this
-project has produced that a bench could plausibly hold. It is also **not
-reachable from `mechanisms/mg-legs/script.py`**, for two independent reasons,
-both already filed and neither yet fixed:
+project has produced that a bench could plausibly hold. It was also **not
+reachable from `mechanisms/mg-legs/script.py`**, for two independent reasons.
+As of 2026-08-05 one is fixed and the other is a PR:
 
-* **`cadex-wishlist.md` #12 — the clamp is a derived-bundle edit.** Under a
-  position action space an actuator's action range *is* its joint's limits;
-  the task JSON derives one from the other, so there is no way to say "the
-  policy may command ±25° of a ±45° joint" from the script. `stand-b8-clamp25`
-  was produced by editing the derived bundle, which means the artifact that
-  defines the winning policy is downstream of the source of truth rather than
-  generated by it.
-* **`cadex-wishlist.md` #13 — the pinned engine cannot build `script.py` at
-  all.** The mechanism was authored on the macOS laptop against a newer Cadex,
-  and the version gap means the script is committed-and-readable here but not
-  runnable here. So even a clamp expressible in the script could not be built
-  into a bundle on the training box.
+* **`cadex-wishlist.md` #13 — the pinned engine could not build `script.py`
+  at all. FIXED by getting current.** The mechanism was authored on the macOS
+  laptop against a newer Cadex; the version gap meant the script was
+  committed-and-readable here but not runnable here. The observation kinds it
+  needs (`centre_of_mass_velocity`, `centroidal_angular_momentum`) landed
+  upstream in `593f64e6` (ADR-116, 2026-08-03) and are in `origin/main`. The
+  engine now driven from `/home/theo/cadex-prs` has them.
+* **`cadex-wishlist.md` #12 — the clamp is a derived-bundle edit. OPEN, and
+  it is the first PR.** Under a position action space an actuator's action
+  range *is* its joint's limits; the task JSON derives one from the other, so
+  there is no way to say "the policy may command ±25° of a ±45° joint" from
+  the script. `stand-b8-clamp25` was produced by editing the derived bundle,
+  which means the artifact defining the winning policy is downstream of the
+  source of truth rather than generated by it. `cadex-engine-plan.md` §2 is
+  the spec.
 
 The consequence is concrete rather than theoretical: **the next mechanism
-experiment is foot geometry, and it is blocked on the engine, not on the
+experiment is foot geometry, and it was blocked on the engine, not on the
 GPU.** `script.py` §1232–1276 rules out the obvious alternative to
 restricting the policy — sizing the motor for the ~230 N·mm the policy wants.
 The centre of pressure cannot leave the sole, which reaches 45.5 mm ahead of
@@ -250,7 +316,31 @@ the ankle, so **past 2.581 N × 45.5 mm = 117 N·mm the foot rolls instead of
 pushing** (ADR-082); 86 N·mm was chosen partly to keep one ankle below that,
 because at MG90S stall a single ankle out-torques the footprint by 1.8× and
 **the machine could tip itself**. The torque budget is not raisable without a
-bigger foot, and the foot is a `script.py` edit.
+bigger foot.
+
+**And the foot is a script *parameter*, not a code edit** — measured
+2026-08-05, and it makes the experiment much cheaper than this section used to
+imply:
+
+```python
+foot_len=num(70, unit="mm", min=55, max=110, label="Foot length")   # script.py:60
+foot_w=num(40,  unit="mm", min=32, max=55,  label="Foot width")     # script.py:61
+```
+
+The 45.5 mm sole reach is `0.65 * p.foot_len` (`script.py:486`, `:1147`). At
+`foot_len=110` — the slider's own maximum, no geometry code touched — that
+becomes **2.581 N × 71.5 mm = 184.5 N·mm**, a **58 % larger torque budget**.
+Against clamp25's measured ~46 N·mm of resting bracing that is a lot of room.
+
+Two caveats to carry into that experiment. The 45.5 and 24.5 mm figures are
+**hard-coded in nine comment blocks** holding the reward and capture-point
+arithmetic (`script.py:1711, 2176, 2247, 2259, 2304, 2327, 2378, 2423, 2426`);
+moving `foot_len` silently invalidates every one, so they get fixed in the
+same commit or the next agent reads a stale number as ground truth. And
+`foot_h = 8.0` (`:136`) and the 0.35/0.65 heel/toe split are hard-coded
+constants that stay put. Mass, inertia and the support polygon all move
+together, so this is **a genuinely different machine** and nothing from 003 or
+004 transfers as a baseline.
 
 Worth stating plainly alongside the 004 result: holding the stance costs
 **2.39 N·mm** and the hand-written PD peaked at 4.5. Clamp25's settled mean of
@@ -270,4 +360,5 @@ health.
 | [`flywheel.md`](flywheel.md) | The graph, as it actually is |
 | [`cloud.md`](cloud.md) | Compute topology, and when to leave this box |
 | [`harness/DESIGN.md`](harness/DESIGN.md) | The drivers, specified |
-| [`cadex-wishlist.md`](cadex-wishlist.md) | Wants, captured rather than acted on |
+| [`cadex-wishlist.md`](cadex-wishlist.md) | Thirteen things wanted from Cadex, and what each one cost. The record; status is `open` / `PR #N` / `merged` / `worked around` / `withdrawn` |
+| [`cadex-engine-plan.md`](cadex-engine-plan.md) | The three that block research, scoped as PR specs |

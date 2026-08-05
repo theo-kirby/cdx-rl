@@ -14,13 +14,30 @@ touching anything.
 
 Four rules. The first two have cost real time when broken elsewhere.
 
-1. **Never modify `/home/theo/cadex`.** Read-only: no commits, no file edits,
-   no branch changes, **no builds** (`pixi run` writes into the tree). Things
-   we want from Cadex go in [`cadex-wishlist.md`](cadex-wishlist.md).
+1. **Never push to `theo-kirby/cadex`.** Work in the PR clone at
+   `/home/theo/cadex-prs`; changes reach Cadex as **pull requests**, reviewed
+   externally with the Cadex agents. `/home/theo/cadex` is the *operator's*
+   working tree — no commits, no file edits, no branch changes, no builds
+   there. The PR clone is yours to build in and is where `pixi run` belongs.
+
+   This replaced a stricter rule on 2026-08-05. cdx-rl used to be read-only
+   toward Cadex and captured wants in `cadex-wishlist.md` instead of fixing
+   them; thirteen accumulated and three of them became the binding constraint
+   on the research, ahead of the GPU. The wishlist is still the reproduction
+   record — see its preamble for the status vocabulary — but the disposition
+   of an entry is now a PR, not a wish.
 2. **Never rebuild `/home/theo/cadex-train-venv`.** Its exact pins —
    `mujoco==3.10.0`, `mujoco-mjx==3.10.0`, `jax==0.7.2`+cuda12,
    `numpy==2.5.1`, Python 3.12.3 — are what makes every recorded run
    reproducible. cdx-rl references it by path and never recreates it.
+
+   **This one survives rule 1's relaxation, and for a reason rather than
+   inertia.** A MuJoCo version moves the dynamics *numerically*, and hazard
+   15 — the measurement that decides whether a policy describes a buildable
+   machine — is a torque read off those dynamics. The work now queued moves
+   the mechanism (foot geometry) and the action bounds. Move the physics in
+   the same step and no result can be attributed to either. If the pins ever
+   do move, pay for a **bridge run** first: see `method.md` §8b.
 3. **Do not write to `/home/theo/cadex-jobs`.** It holds eight finished
    training runs. They are read-only inputs to experiment 001.
 4. **Do not run `flywheel update`** without asking. The CLI prints an update
@@ -39,8 +56,8 @@ Four rules. The first two have cost real time when broken elsewhere.
 | 4b | [`flywheel-conventions.md`](flywheel-conventions.md) | **How we use Flywheel: the tag vocabulary, the graph shape, how retractions work, and the ~4 KB node-body budget. Normative — read before writing any node.** |
 | 5 | [`cloud.md`](cloud.md) | Compute topology, GPU budgeting, and when bursting off-box is worth it (rarely). |
 | 6 | [`harness/DESIGN.md`](harness/DESIGN.md) | The drivers, specified. Five built, `measure` and `feasibility` deferred. |
-| 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Wants, captured rather than acted on. Thirteen. |
-| 8 | [`cadex-engine-plan.md`](cadex-engine-plan.md) | The three of those that are **costing research time**, scoped for hand-off to the Cadex dev repo. |
+| 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Thirteen things cdx-rl wanted from Cadex, with what each one cost. The reproduction record; status is now `open` / `PR #N` / `merged` / `worked around` / `withdrawn`. |
+| 8 | [`cadex-engine-plan.md`](cadex-engine-plan.md) | The three that were **costing research time**, scoped as PR specs against `/home/theo/cadex-prs`. |
 
 If you are about to design an experiment, `method.md` §"What a cdx-rl
 experiment must contain" is the checklist and
@@ -57,8 +74,8 @@ cdx-rl/
   flywheel.md          the graph — API, traps, current shape (descriptive)
   flywheel-conventions.md  how we use it — tags, structure, retractions (normative)
   cloud.md             compute topology
-  cadex-wishlist.md    wants, captured
-  cadex-engine-plan.md the blocking three, scoped for hand-off
+  cadex-wishlist.md    thirteen wants + what each cost — the record
+  cadex-engine-plan.md the blocking three, scoped as PR specs
 
   pyproject.toml       cdx-rl's own tooling deps (small, no mujoco, no jax)
   uv.lock
@@ -117,9 +134,18 @@ records the Cadex checkout commit. Run it before believing anything else.
 **Use the Cadex *checkout*, not the staged payload.**
 
 ```
-CADEX_ENGINE_DEV_TREE=/home/theo/cadex     ✅
-# CADEX_ENGINE_ROOT=…/build/engine/…       ❌ stale — no dynamics domain
+CADEX_ENGINE_DEV_TREE=/home/theo/cadex-prs  ✅  the PR clone, built here
+# CADEX_ENGINE_DEV_TREE=/home/theo/cadex    ❌ the operator's tree — hands off
+# CADEX_ENGINE_ROOT=…/build/engine/…        ❌ stale — no dynamics domain
 ```
+
+**It points at `/home/theo/cadex-prs` since 2026-08-05**, which is how sb1x
+got current: `origin/main` `b169a092`, 15 commits past the old `06d1374b`
+pin. `pixi install && pixi run setup-engine && pixi run build-engine` in that
+clone takes ~5 minutes on 32 threads (the rattler cache was warm and
+`pixi.lock` is byte-identical to the operator's tree, so nothing downloads).
+`dev_tree()` reads `src/Mod/cadex` from the *source*, so a PR branch's engine
+edits take effect with no reinstall.
 
 The payload at `build/engine/cadex-engine-0.0.0-linux-x64` was assembled
 2026-07-31 and predates the entire MuJoCo surface: no `CadexDynamics.py`, and
@@ -172,7 +198,11 @@ Other environment facts:
 | Flywheel | ✅ root `rapid-bar-6214`, **seventeen nodes including the root**, max depth 8. `solitary-salad-0490` is the seed-1 replication and has **two parents** — it confirms 004 and retracts part of 005. `white-cloud-2565` is 004, `small-recipe-2040` is 005 (both carry retraction banners where they earned them), `broken-cloud-4296` is 003 at four seeds, `winter-lake-9230` retires sb9x. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, **`steps`** — via `uv run python -m harness <driver>` |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
-| Mechanism | ✅ **`mg-legs` authoring script recovered and committed** |
+| Mechanism | ✅ **`mg-legs` authoring script recovered, committed, and — since 2026-08-05 — buildable on sb1x.** It rebuilds `tasks/stand-b8/` with a **two-line** diff: the pelvis CoM x-coordinate at `5.10066e-11` vs `5.10087e-11` m (a quantity that is mathematically zero), and the MJCF digest the task JSON embeds as a consequence. Reproducible in substance, not bit-identical across platforms |
+| Cadex | ✅ **PR clone at `/home/theo/cadex-prs`, built, on `origin/main` `b169a092`.** The operator's tree at `/home/theo/cadex` is untouched — still `06d1374b`, still `standing-policy`, still clean |
+| PRs | ✅ **both MERGED 2026-08-05.** [#1](https://github.com/theo-kirby/cadex/pull/1) ADR-123 (command range) at `cfa6640e`, [#2](https://github.com/theo-kirby/cadex/pull/2) ADR-124 (`--init-from`) at `75efe784`. `main` is now `75efe784` and sb1x drives it; smoke 13/13. Bodies in [`prs/`](prs/). **Mind the two numbering schemes:** these are *wishlist* #12 and #11, and GitHub numbered them 1 and 2 |
+| ⚠️ Trainer digest | **`training/cadex_train.py` is now `4c1f24f8bdf2368a…`.** The old `aacfa823…` that these docs and every pre-2026-08-05 run record pin is one merge behind. The update rule did **not** change — the flag is a verified no-op unused — but the digest did. `method.md` §8b has the bridge-run protocol. Experiment 005 already ran under `4c1f24f8…` |
+| Engine suite | `pixi run test-engine` in the PR clone is **1507 passed / 2 failed / 22 skipped on `main`** — the two failures are the `RLIMIT_AS` defect (wishlist #14), *not* a regression. Compare any branch against that baseline, not against zero |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
@@ -292,6 +322,47 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
 
 ### Things that will bite the next agent
 
+* **The engine's default worker budget makes `mg-legs` take 500× longer and
+  never finish, and the failure does not say so.** The isolated domain worker
+  runs under real `setrlimit`s
+  (`cadex_domain_worker.py::_resource_limits`): `RLIMIT_CPU` from
+  `timeout_seconds`, `RLIMIT_AS` from `memory_limit_mb`, defaults **300 s and
+  6144 MB**. Measured on sb1x 2026-08-05, same script and a fresh project,
+  changing only the memory cap:
+
+  | `RLIMIT_AS` | outcome | RSS |
+  |---|---|---|
+  | 6144 MB | `SIGXCPU`, never finishes (107 s against a 120 s cap; 1787 s against 1800) | 217 MB |
+  | 32768 MB | **succeeds in 8.2 s** | 218 MB |
+
+  **Memory is not the constraint** — RSS is 218 MB and the engine's own
+  `memory_exceeded` stays `false`. *Address space* is. The wasted time is
+  ~80 % **system** time (`user 6m20s / sys 23m40s`), which is an allocator
+  retrying failed `mmap`s, not geometry.
+
+  It surfaces as `DOMAIN_WORKER_NO_RESULT` at `external_process` with
+  `returncode: -24` buried in kilobytes of OCCT `Processing......` — nothing
+  mentions a limit, and signal 24 is `SIGXCPU`. **If a rebuild dies at a
+  suspiciously round number of seconds, look here first.**
+  `open_project` now sends both budgets and `harness rebuild` takes
+  `--worker-cpu-seconds` / `--worker-memory-mb`. **Both must be positive or
+  the engine discards the pair and silently uses its own** — that is
+  `resolve_budgets`'s contract. `cadex-wishlist.md` #14.
+* **A bundle digest is platform-specific, and it will refuse a valid policy.**
+  Rebuilding `script.py` on sb1x produces a task digesting to `0b4d160c…`
+  while `stand10.cxpolicy` records the laptop's `5572adf2…`, so
+  `assembly.policy` refuses. The refusal is right in principle and wrong here:
+  the whole difference is **2.1e-15 m** in the pelvis CoM x-coordinate, which
+  is zero by symmetry. Treat **`tasks/` as the unit of provenance** — a policy
+  travels with the bundle that trained it — and build mechanism variants with
+  the policy output removed. `cadex-wishlist.md` #15.
+* **"Not present in this clone" is not "not written."** `git log --all -S…`
+  found neither observation kind and the honest reading was ambiguous between
+  *"nobody wrote it"* and *"we never fetched it"*. It was the second: both
+  landed in `593f64e6` on 2026-08-03 and were sitting in `origin`. This is the
+  `script.py` lesson again one level down — **say which clone, not just which
+  machine, a negative covers.**
+
 * **A duty cycle is a THRESHOLD statistic, and a linear fit on one can
   predict 140 %.** Experiment 005's gate extrapolated resting duty to
   iteration 3600 and got **140.6 % for the unclamped control** — arithmetically
@@ -391,16 +462,31 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
 
   `stand-b2`'s `e3511559…` is *still* not reproducible — its authoring
   revision is between the two kept in `mechanisms/mg-legs/history/` — so 001
-  and 002 remain claims about committed bytes. `stand-b8` is reproducible
-  from source, which is the difference.
-* **Pin the trainer off this box**: `--require-trainer <sha256>`. ADR-104's
-  refusal lived only in `remote_train.sh`, which local dispatch never calls,
-  so `train.py` recorded the digest and checked nothing.
+  and 002 remain claims about committed bytes. **`stand-b8` now is
+  reproducible from source, and as of 2026-08-05 that is measured rather than
+  asserted**: the rebuild differs from the committed bundle in two lines, one
+  of which is a consequence of the other, and the root difference is 2.1e-15 m
+  in a coordinate that is zero by symmetry. See `concept.md`'s criterion 5.
+* **`--require-trainer <sha256>` is an assertion you opt into, not a standing
+  pin.** The flag, the digest in `runtime.json` and the pre-fork check all
+  stay — ADR-104's refusal lived only in `remote_train.sh`, which local
+  dispatch never calls, so `train.py` recorded the digest and checked
+  nothing, and that is fixed. What changed on 2026-08-05 is that there is no
+  longer one blessed digest the repository is pinned to forever. The rule the
+  method actually needs is that the trainer is **constant within a
+  comparison**, not constant for all time. Pass `--require-trainer` when a
+  run has to be comparable with a specific earlier one; when the trainer does
+  move, pay for a **bridge run** rather than declaring the boundary
+  uncrossable. `method.md` §8b has the protocol.
 * **A different Cadex commit is not automatically a different trainer.**
-  `sb9x` sits at `ae8da6a6`, ten commits past the pinned `06d1374b`, and
-  `--require-trainer aacfa823…` still passes: all ten are engine-side
-  (`src/Mod/cadex`) and `training/` is byte-identical. Check the digest, not
-  the commit — the commit is the noisier signal in both directions.
+  Measured twice. `sb9x` sat at `ae8da6a6`, ten commits past `06d1374b`, and
+  `--require-trainer aacfa823…` passed: all ten were engine-side
+  (`src/Mod/cadex`) and `training/` was byte-identical. On 2026-08-05 the
+  same held across the whole catch-up: `origin/main` is `b169a092`, **15
+  commits** past `06d1374b`, and `git rev-list --count 06d1374b..origin/main
+  -- training/` is **0** — `training/cadex_train.py` hashes to
+  `aacfa823…` at both ends. Check the digest, not the commit; the commit is
+  the noisier signal in both directions.
 * **On sb9x the trainer segfaults two ways, and one is still open.**
   `train.py` defaults three runtime settings on and records them in
   `runtime.json`; `cloud.md` §1 has the tables and the measurements. The
