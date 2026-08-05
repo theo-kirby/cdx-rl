@@ -35,7 +35,8 @@ Four rules. The first two have cost real time when broken elsewhere.
 | 1 | [`concept.md`](concept.md) | What cdx-rl is and is not. The thesis, the scope boundary, the success criteria. |
 | 2 | [`cadex.md`](cadex.md) | Cadex for an agent with no context: the CLI, the protocol, the project store, and **ten traps** — every one verified on this box. |
 | 3 | [`method.md`](method.md) | The research protocol. **Read before any GPU time.** Adapted from `MUJOCO.md` §7, with the measurement discipline made explicit. |
-| 4 | [`flywheel.md`](flywheel.md) | The graph as it actually is — no typed node kinds, mandatory six-key `repo_context`, full-snapshot commits. |
+| 4 | [`flywheel.md`](flywheel.md) | The graph as it actually is — the API surface, the measured traps, and a render of the current shape. **Descriptive.** |
+| 4b | [`flywheel-conventions.md`](flywheel-conventions.md) | **How we use Flywheel: the tag vocabulary, the graph shape, how retractions work, and the ~4 KB node-body budget. Normative — read before writing any node.** |
 | 5 | [`cloud.md`](cloud.md) | Compute topology, GPU budgeting, and when bursting off-box is worth it (rarely). |
 | 6 | [`harness/DESIGN.md`](harness/DESIGN.md) | The drivers, specified. Five built, `measure` and `feasibility` deferred. |
 | 7 | [`cadex-wishlist.md`](cadex-wishlist.md) | Wants, captured rather than acted on. Thirteen. |
@@ -53,7 +54,8 @@ cdx-rl/
   concept.md           what this is                     ← read 1st
   cadex.md             Cadex, verified, with the traps  ← read 2nd
   method.md            the research protocol            ← read 3rd
-  flywheel.md          the graph
+  flywheel.md          the graph — API, traps, current shape (descriptive)
+  flywheel-conventions.md  how we use it — tags, structure, retractions (normative)
   cloud.md             compute topology
   cadex-wishlist.md    wants, captured
   cadex-engine-plan.md the blocking three, scoped for hand-off
@@ -167,15 +169,15 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ root `rapid-bar-6214`, **fourteen nodes**; `white-cloud-2565` is 004 (the clamp curve, McNemar, and `stand12.001750` as `binary`), `small-recipe-2040` is 005's veto with all three hazard-15 series, `broken-cloud-4296` is 003 at four seeds + the hazard-15 retraction, `winter-lake-9230` retires sb9x |
+| Flywheel | ✅ root `rapid-bar-6214`, **seventeen nodes including the root**, max depth 8. `solitary-salad-0490` is the seed-1 replication and has **two parents** — it confirms 004 and retracts part of 005. `white-cloud-2565` is 004, `small-recipe-2040` is 005 (both carry retraction banners where they earned them), `broken-cloud-4296` is 003 at four seeds, `winter-lake-9230` retires sb9x. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, **`steps`** — via `uv run python -m harness <driver>` |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
 | Mechanism | ✅ **`mg-legs` authoring script recovered and committed** |
 | Experiment 000 | ✅ **all ten links pass**, end to end on CPU in 62 s |
 | Experiment 001 | ✅ Phases A and B measured and published; Phase C not run |
 | Experiment 002 | ✅ 3 of 4 seeds measured and published; the headline is **2 of 3**, seed 2 ties. Seed 3 not run |
-| Experiment 004 | ✅ **two arms, both `rc 0`.** The bracing was a **policy choice, not a dynamics requirement**: capping the command range cuts resting duty above 90 % of rating from **51.8 % → 13.5 % (±25°) → 0.2 % (±15°)**. **±25° is the operating point** — 15/24 against the control's 18/24, McNemar 4:1, **p = 0.375, indistinguishable** — while ±15° costs stepping decisively (5/24, 13:0, p = 0.0002). **n=1 in seeds**; `stand12` seed 1 dispatched 21:45Z |
-| Experiment 005 | ✅ **the run was never dispatched — its own CPU gate vetoed it, for 70 s of CPU instead of ~10 h of card.** Designed as a 3600-iteration extension of clamp25. Scoring `hazard15.py --series` across all three of 004's arms shows **bracing rises with training time in every one**: the command range sets the *rate* and the *plateau*, not whether it happens. **004's headline holds only at a fixed training budget.** ±25° sits at mean 54.6 % of rating and climbing +10 pp/1000 — the unclamped arm's operating point just before its own duty tripled to 55 % |
+| Experiment 004 | ✅ **two arms, both `rc 0`, and now TWO SEEDS — criterion 4 is met.** The bracing was a **policy choice, not a dynamics requirement**: capping the command range cuts resting duty above 90 % of rating from **51.8 % → 13.5 % (±25°) → 0.2 % (±15°)**. **±25° is the operating point** — 15/24 against the control's 18/24, McNemar 4:1, **p = 0.375, indistinguishable** — while ±15° costs stepping decisively (5/24, 13:0, p = 0.0002). **`stand12` seed 1 landed `rc 0` and replicates it exactly: 15/24 and 12.8 % duty against seed 2's 15/24 and 13.5 %** |
+| Experiment 005 | ⚠️ **the run was never dispatched — its own CPU gate vetoed it, for 70 s of CPU instead of ~10 h of card. RETRACTED IN PART.** Scoring `hazard15.py --series` across all three arms shows **bracing rises with training time in every one** — that survives two seeds. **The stated mechanism does not:** seed 2 has a climbing mean and flat duty, **seed 1 has the opposite** (flat mean −0.87, duty +8.09), and the pre-registered rule flips (38.7 % vs 21.1 % extrapolated). The veto now rests on the *direction* plus the rule's own seed-instability, not on the magnitude. Lesson: **a decomposition is a value, not a shape** |
 | Experiment 003 | ✅ **four seeds.** Best is seed 2's `001700` at 18/24. **Headroom past iteration 1200 is 3 of 3, p = 0.0391** — the runs stop mid-climb. **Hazard 15 does NOT dissolve: it replicates 3 of 3** at 73–91 % mean of rating |
 | sb9x | ⛔ **RETIRED from this project 2026-08-04** — reassigned to unrelated work. Do not dispatch to it. Its measurements stand; its capacity is gone. It crashed **2 of 2** full-length runs |
 

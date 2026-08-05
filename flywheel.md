@@ -224,11 +224,21 @@ Two mechanics worth knowing before you write a loop:
   node's revision, not the graph's. Read the number out of the error and
   retry; an unknown tag id is a **422**, listing what it did not recognise.
 
-Created on the cdx-rl root as of 2026-08-02: `type/insight`,
+Created on the cdx-rl root as of 2026-08-05, **fourteen tags**: `type/insight`,
 `type/empirical`, `type/decision`, `mechanism/pendulum`,
-`mechanism/stand-biped`, `task/stand`, `status/planned`, `status/measured`,
-`hazard/peak-regress`, `hazard/bracing`, `hazard/out-of-range`. Extend the
-namespaces as work arrives; do not invent a new namespace without a reason.
+`mechanism/stand-biped`, `task/stand`, `status/planned`, `status/provisional`,
+`status/measured`, `status/superseded` (`tag-e5429ae159fc`, added 2026-08-05),
+`hazard/peak-regress`, `hazard/bracing`, `hazard/out-of-range`,
+`hazard/action-space`. Extend the namespaces as work arrives; do not invent a
+new namespace without a reason.
+
+**What each `status/` value means, and when to apply it, is
+[`flywheel-conventions.md`](flywheel-conventions.md) §3** — that file is
+normative for policy, this one for mechanics. The short version:
+`provisional` = n=1 in *training* seeds; `superseded` = contains a retracted
+claim, read the banner. Both were under-used: `provisional` was defined on
+2026-08-02 and applied to nothing until 2026-08-05, while `broad-fire-8531`
+sat tagged `measured` with the words "One seed." in its own body.
 
 ### Markdown templates
 
@@ -408,24 +418,49 @@ Two consequences for cdx-rl:
   `compare --csv` exists separately, for spreadsheets, and must not be
   uploaded as a `table`.
 
-### The stage lease is about sixty seconds
+### The stage lease is about sixty seconds — and the heartbeat does NOT help
 
-`acquire_stage_lease` returns `expires_at` roughly 60 s out with a
-`heartbeat_interval_seconds` of 15. **A full-snapshot `commit_node` of a
-long node does not reliably fit inside one lease** — composing eight
-thousand characters of Markdown takes longer than the lease lasts, and the
-result is `409 stage lease missing or expired` after the work is done.
+> **Corrected 2026-08-05. This section previously recommended
+> `acquire → heartbeat → commit`, and that advice is wrong.**
+>
+> Measured on this box: `acquire_stage_lease` returned `expires_at`
+> **60 s** out. `heartbeat_stage_lease`, called immediately after, moved it to
+> **07:59:52 from 07:59:46 — six seconds, i.e. +15 s from *now*, not a fresh
+> 60.** The heartbeat *shortened* the remaining window. Two `commit_node`
+> calls failed with `409 stage lease missing or expired` before this was
+> understood, on `small-recipe-2040` and `broad-fire-8531`.
+>
+> `heartbeat_interval_seconds: 15` is the clue: the heartbeat grants 15 s,
+> which is how often you are expected to call it — not a lease renewal to the
+> original TTL.
 
-The reliable sequence is three calls:
+**A full-snapshot `commit_node` of a long node does not fit inside one lease**,
+and there is no call that extends it enough to matter. The working sequence is:
 
 ```
-acquire_stage_lease  →  heartbeat_stage_lease  →  commit_node
+read the node (core or full)  →  compose the ENTIRE payload  →  acquire  →  commit
 ```
 
-The heartbeat resets the clock to the moment *immediately before* the long
-generation, which is the only part that takes real time. Measured: two
-straight acquire-then-commit attempts on the same node both expired; both
-succeeded with the heartbeat in between.
+**Acquire as late as possible.** The gap between `acquire` and `commit` is
+exactly how long it takes to emit the payload, and that is the whole budget.
+
+**The design consequence is in [`flywheel-conventions.md`](flywheel-conventions.md)
+§6: keep node bodies under about 4 KB.** A ~9 KB body cannot be re-emitted in
+60 s, which makes it *uncorrectable* — 003 and 005 both had to be condensed
+before their retraction banners could be committed. Prior revisions are
+retained, so condensing is superseding rather than destroying; say so in the
+body and name the revision and repo path holding the full text.
+
+### Two more, found the same day
+
+* **`projection: "topology"` returns `content: ""` and `summary: ""`.** Never
+  stage a commit from a topology read — you would publish an empty body. Use
+  `core` or `full`.
+* **`commit_new_node` bumps every parent's revision.** A revision cached before
+  creating a child is stale, and `acquire_stage_lease` 409s with *"stale
+  committed revision"*. Re-read before acquiring.
+* **Tag assignment needs no lease at all** — only `expected_revision`. It is
+  the cheap, safe way to flag a node you cannot currently afford to rewrite.
 
 Rules that bite:
 
@@ -501,10 +536,12 @@ cdx-rl: reinforcement learning in Cadex | rapid-bar-6214
 ├── stand-task-20260802-200109: reward peaked at 598, episode length at ~1800 | restless-mode-0384
 │   └── 001 Phase A: the best checkpoint is iteration 1699 | bold-violet-5086
 │       ├── 001 Phase B: the task is in range; the bracing is the resting posture | mute-shadow-9769
-│       │   └── 003: the action space was the problem | broad-fire-8531
+│       │   └── 003 [RETRACTED IN PART]: the action space bought 17/24 | broad-fire-8531
 │       │       └── 003 at four seeds: headroom is real, hazard 15 never dissolved | broken-cloud-4296
 │       │           └── 004: the bracing was a POLICY choice; ±25° is the operating point | white-cloud-2565
-│       │               └── 005: the gate vetoed the run — bracing is a function of TRAINING TIME | small-recipe-2040
+│       │               ├── 005 [RETRACTED IN PART]: the gate vetoed the run | small-recipe-2040
+│       │               │   └── clamp25 seed 1 (second parent) | solitary-salad-0490
+│       │               └── clamp25 seed 1: 004 REPLICATES at 15/24, 005's mechanism does not | solitary-salad-0490
 │       └── 002: the reward peak is not the best checkpoint in 2 of 2 fresh seeds | holy-recipe-7414
 │           ├── 002 seed 3-of-4: the headline does not replicate — 2 of 3 | spring-unit-9051
 │           └── 003 (second parent) | broad-fire-8531
