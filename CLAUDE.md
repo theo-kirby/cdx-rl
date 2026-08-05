@@ -348,6 +348,25 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   `--worker-cpu-seconds` / `--worker-memory-mb`. **Both must be positive or
   the engine discards the pair and silently uses its own** — that is
   `resolve_budgets`'s contract. `cadex-wishlist.md` #14.
+* **The physics was bit-reproducible and the PICTURE was not — and MSAA was
+  why.** `harness capture`'s first five clips went onto the graph carrying an
+  `sha256` each, and re-rendering the same episode produced different bytes
+  every time: 190213 and 190524 for one 155-frame clip. Measured on sb1x
+  2026-08-05, in this order:
+
+  | | reproducible across processes? |
+  |---|---|
+  | the episode — `qpos` trace digest, step count, `661.734973725015` reward | **yes**, 3 of 3 |
+  | the raw frame stream out of `_capture.py` | **no** |
+  | …with `model.vis.quality.offsamples = 0` | **yes**, 3 of 3 |
+  | the encoded MP4, with `-threads 1` and `+bitexact` as well | **yes** |
+
+  Multisample resolve over translucent inertia boxes lands differently run to
+  run on this driver. libx264's frame threading was the *second* source and
+  was not the first — checking the encoder before checking the frames wasted
+  a pass. **A digest that changes when nothing changed is worse than no
+  digest**, so the driver turns MSAA off and encodes single-threaded, and the
+  jaggier edges are the price. Both settings are recorded in every sidecar.
 * **A bundle digest is platform-specific, and it will refuse a valid policy.**
   Rebuilding `script.py` on sb1x produces a task digesting to `0b4d160c…`
   while `stand10.cxpolicy` records the laptop's `5572adf2…`, so

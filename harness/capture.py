@@ -449,6 +449,21 @@ def encode(binary: Path, size: tuple[int, int], fps: int, slowmo: int,
     ``--slowmo N`` divides the *encoded* rate and drops nothing: every frame
     the renderer produced is in the file, played N times slower. Expressed as
     a rational so 50/3 stays exact.
+
+    **``-threads 1`` and ``+bitexact``, and they were paid for.** The first
+    five clips this driver published went onto the graph with an ``sha256`` in
+    their artifact metadata, and re-rendering them produced *different bytes*
+    — 190213 and 190524 for the same episode, back to back. The measurements
+    were identical (154 control steps, `collapsed`, the same ten per-motor
+    peaks, 30.323 % duty): the **episode** is deterministic and the **encode**
+    was not. libx264's frame threading lets rate control depend on thread
+    scheduling, and ``+bitexact`` stops the muxer stamping its own version
+    into the file, which would move the digest on an ffmpeg upgrade.
+
+    A digest that changes when nothing changed is worse than no digest, and
+    the whole point of publishing one is that a reader can check the bytes
+    against the claim. Single-threaded costs about a second on a 300-frame
+    clip, which is nothing against the ~2 s the whole capture takes.
     """
 
     width, height = size
@@ -459,7 +474,9 @@ def encode(binary: Path, size: tuple[int, int], fps: int, slowmo: int,
         "-video_size", f"{width}x{height}", "-framerate", f"{fps}/{slowmo}",
         "-i", "-",
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20",
-        "-preset", "medium", "-movflags", "+faststart",
+        "-preset", "medium", "-threads", "1",
+        "-flags:v", "+bitexact", "-fflags", "+bitexact",
+        "-movflags", "+faststart",
         str(destination),
     ]
     return subprocess.Popen(command, stdin=subprocess.PIPE)

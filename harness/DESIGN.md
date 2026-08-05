@@ -146,7 +146,19 @@ Five things about it are the substance rather than the plumbing.
    nothing can know how long to pad for, or what the termination reason is,
    until every episode has finished.
 
-6. **Every MP4 it records owes a Flywheel artifact, and the driver keeps the
+6. **The clip is bit-reproducible, and making it so cost two passes.** The
+   first five clips were published with an `sha256` each, and re-rendering
+   gave different bytes every time. The episode was never the problem — same
+   `qpos` trace digest, same 154 steps, same `661.734973725015` reward, three
+   of three. The frames were: **MSAA resolve over the translucent inertia
+   boxes** is nondeterministic on this driver, and libx264's frame threading
+   was a second source underneath it. `model.vis.quality.offsamples = 0`,
+   `-threads 1` and `+bitexact` fix both, at the cost of jaggier edges and
+   about two seconds. Worth it, because a digest that changes when nothing
+   changed is worse than no digest — and the digest is what a reader checks a
+   published clip against. Recorded in every sidecar as `viewer_offsamples`.
+
+7. **Every MP4 it records owes a Flywheel artifact, and the driver keeps the
    account.** `video/` is gitignored, so an unpublished clip is evidence on
    exactly one disk — invisible to success criterion 1's *"a graph node with
    artifacts"* and to criterion 4 outright. The driver cannot publish for

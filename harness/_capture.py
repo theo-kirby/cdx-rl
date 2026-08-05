@@ -113,6 +113,28 @@ VIEWER_FLAGS = ("mjVIS_INERTIA",)
 #: from the machine.
 HEADLIGHT = {"ambient": 0.32, "diffuse": 0.85, "specular": 0.30}
 
+#: Multisample anti-aliasing, **off, because it is the one thing that made
+#: the video irreproducible.**
+#:
+#: Measured on sb1x 2026-08-05, after five clips had already been published
+#: with an ``sha256`` in their artifact metadata. Re-rendering the same
+#: episode gave *different bytes* every time — 190213 and 190524 for one
+#: 155-frame clip. The cause was not the encoder and not the physics:
+#:
+#: * the episode is **bit-identical** across processes — same ``qpos`` trace
+#:   digest, same 154 steps, same ``661.734973725015`` reward, three of three;
+#: * the raw frame stream out of this worker was **not**;
+#: * with ``offsamples = 0`` it is, three of three, and the whole file with it.
+#:
+#: MSAA resolve over the translucent inertia boxes lands differently from run
+#: to run on this driver. The cost is jaggier edges; the gain is that the
+#: digest published beside a clip means something a reader can check. **A
+#: digest that changes when nothing changed is worse than no digest.**
+#:
+#: ``model.vis.quality`` is the visualiser's block, like ``model.vis
+#: .headlight`` above: no force, no pose, no digest of the model moves.
+OFFSCREEN_SAMPLES = 0
+
 #: Bars at or above this fraction of forcerange are drawn red. Hazard 15's
 #: own threshold — ``hazard15.py`` counts the frames above 90 % and calls the
 #: fraction the duty cycle — so the strip and the table are the same rule.
@@ -563,6 +585,7 @@ def run(spec: dict[str, Any]) -> dict[str, Any]:
                     "offwidth> clause to the MJCF: the digest it moves is the "
                     "one the policy and the task are bound by."
                 )
+            model.vis.quality.offsamples = OFFSCREEN_SAMPLES
             for channel, value in HEADLIGHT.items():
                 getattr(model.vis.headlight, channel)[:] = value
             data = mujoco.MjData(model)
@@ -614,6 +637,7 @@ def run(spec: dict[str, Any]) -> dict[str, Any]:
         "steps_per_frame": int(spec["steps_per_frame"]),
         "viewer_flags": list(VIEWER_FLAGS),
         "viewer_headlight": dict(HEADLIGHT),
+        "viewer_offsamples": OFFSCREEN_SAMPLES,
         "bracing_fraction": BRACING_FRACTION,
         "mujoco": mujoco.__version__,
         "episodes": [seat["summary"] for seat in seats],
