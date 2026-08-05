@@ -198,7 +198,7 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ root `rapid-bar-6214`, **seventeen nodes including the root**, max depth 8. `solitary-salad-0490` is the seed-1 replication and has **two parents** — it confirms 004 and retracts part of 005. `white-cloud-2565` is 004, `small-recipe-2040` is 005 (both carry retraction banners where they earned them), `broken-cloud-4296` is 003 at four seeds, `winter-lake-9230` retires sb9x. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
+| Flywheel | ✅ root `rapid-bar-6214`, **nineteen nodes including the root**. `crimson-morning-4644` is the replay pipeline and **retracts part of `sparkling-cherry-4343`** — that node said the real-solids path was "blocked on retraining … a GPU run rather than a pipeline", and it was three engine gaps and zero GPU-hours. Its eight artifacts are the two replay sets: policy `binary`, bundle `json`, MJCF `text`, manifest `json`, per §5's table. `sparkling-cherry-4343` carries the banner and `status/superseded`; max depth 9. `solitary-salad-0490` is the seed-1 replication and has **two parents** — it confirms 004 and retracts part of 005. `white-cloud-2565` is 004, `small-recipe-2040` is 005 (both carry retraction banners where they earned them), `broken-cloud-4296` is 003 at four seeds, `winter-lake-9230` retires sb9x. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, `steps`, `capture`, **`replay`** — via `uv run python -m harness <driver>`. `capture` renders a policy's own episode to an MP4 with the per-motor servo load along the bottom. **`replay` takes a trained result to the Mac and opens it on the real CAD solids, where a 0.6 N shove gets answered** — the first output of this repository that is a *project* rather than a number or a picture |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
 | Mechanism | ✅ **`mg-legs` authoring script recovered, committed, and — since 2026-08-05 — buildable on sb1x.** It rebuilds `tasks/stand-b8/` with a **two-line** diff: the pelvis CoM x-coordinate at `5.10066e-11` vs `5.10087e-11` m (a quantity that is mathematically zero), and the MJCF digest the task JSON embeds as a consequence. Reproducible in substance, not bit-identical across platforms |
@@ -409,6 +409,16 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   That last half is not decoration. A 0.4 mm bracket-plate change moves **no
   field of the task bundle at all** — same joints, same limits, same action
   table — and is caught only by the model comparison. Measured.
+* **I hand-wrote an artifact digest again, and again it was wrong.** The last
+  session shipped `stand10`'s sha256 truncated to 12 characters with a guessed
+  byte count, and wrote the lesson down. This one published a `script_sha256`
+  whose **first 12 characters were right and whose remaining 52 were invented**
+  — because 12 is what the driver *prints*, and the rest got filled in from
+  nowhere. A short prefix is more dangerous than an obvious blank: it looks
+  like a digest. Deleted the four artifacts and republished all eight from
+  `replay/ledger.json`'s machine-generated items, then verified every one
+  against disk. **The ledger exists so that no field is ever typed. Copy the
+  JSON it wrote; do not read a number off a table and retype it.**
 * **A surface can pass 52 unit tests and be unusable, and this one was.**
   ADR-134 shipped with `put_asset` still refusing `.json` and `.xml`, so the
   two files `trained_task=` needs could not reach `assets/`. The first
