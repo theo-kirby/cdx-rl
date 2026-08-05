@@ -639,9 +639,15 @@ def upload_items(set_dir: Path, manifest: dict[str, Any],
                  note: str | None = None) -> list[dict[str, Any]]:
     """The ``prepare_artifact_uploads`` items for one set's four files.
 
-    A ``.cxpolicy`` uploads as ``binary`` and a ``table`` must be JSON
-    (`flywheel.md` §5), so the bundle and the manifest go as ``table`` and the
-    MJCF — which is XML — goes as ``binary`` beside the weights.
+    The four types are `flywheel-conventions.md` §5's table, not a guess:
+
+    * a ``.cxpolicy`` is **``binary``** — the server refuses
+      ``cadex-policy-v1`` for ``checkpoint``;
+    * the MJCF is **``text``**, which is what §5 says the MJCF is. It is XML,
+      and ``binary`` would have been the lazy reading;
+    * the task bundle and the manifest are **``json``**. Not ``table``:
+      ``table`` is for a ``{columns, rows}`` payload and these are documents.
+      A ``table`` that is not one is refused at the PUT.
 
     The notes say what the bytes *mean*, which is §5's rule. What no driver can
     know is why this checkpoint, and that is what ``--note`` is for.
@@ -679,8 +685,8 @@ def upload_items(set_dir: Path, manifest: dict[str, Any],
     items = []
     for role, artifact_type, media in (
         ("policy", "binary", "application/octet-stream"),
-        ("task", "table", "application/json"),
-        ("model", "binary", "application/xml"),
+        ("task", "json", "application/json"),
+        ("model", "text", "application/xml"),
     ):
         entry = manifest[role]
         items.append({
@@ -693,9 +699,15 @@ def upload_items(set_dir: Path, manifest: dict[str, Any],
                          "sha256": str(entry["sha256"]),
                          "bytes": int(entry["bytes"])},
         })
+    # ``<label>-manifest.json``, not ``manifest.json``. The other three files
+    # are already named for the arm or for the run, and the manifest is the one
+    # that is not -- so publishing two sets in one batch put two artifacts
+    # called ``manifest.json`` in it. Measured, on the first batch assembled.
+    # ``local_files`` below is what keeps the artifact name and the file on disk
+    # from drifting apart now that they differ.
     items.append({
-        "artifact_type": "table",
-        "filename": "manifest.json",
+        "artifact_type": "json",
+        "filename": f"{label}-manifest.json",
         "media_type": "application/json",
         "title": f"{label} — replay manifest",
         "note": body,
@@ -704,6 +716,26 @@ def upload_items(set_dir: Path, manifest: dict[str, Any],
                      "bytes": (set_dir / "manifest.json").stat().st_size},
     })
     return items
+
+
+def local_files(set_dir: Path, manifest: dict[str, Any],
+                items: list[dict[str, Any]]) -> dict[str, str]:
+    """``{artifact filename: the path on disk to PUT}``.
+
+    Needed because one artifact name is deliberately **not** its filename: the
+    manifest is published as ``<label>-manifest.json`` so two sets can go up in
+    one batch. Whoever does the PUT reads this rather than assuming the two
+    agree, which they did until they didn't.
+    """
+
+    mapping = {
+        str(manifest[role]["file"]): str(set_dir / manifest[role]["file"])
+        for role in ROLES
+    }
+    for item in items:
+        if item["metadata"]["role"] == "manifest":
+            mapping[item["filename"]] = str(set_dir / "manifest.json")
+    return mapping
 
 
 def record(set_dir: Path, manifest: dict[str, Any],
@@ -718,6 +750,7 @@ def record(set_dir: Path, manifest: dict[str, Any],
         "set_dir": str(set_dir),
         "exported_utc": str(manifest.get("exported_utc") or ""),
         "upload_items": items,
+        "local_files": local_files(set_dir, manifest, items),
         # A re-export under the same label is a NEW set of bytes and owes a new
         # artifact, even if the old one was published: keeping the node id
         # would claim the graph holds these bytes when it holds others. Same
@@ -740,6 +773,54 @@ def pending(ledger: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     return [entry for entry in ledger["sets"].values()
             if not (entry.get("flywheel") or {}).get("node_id")
             and Path(entry["set_dir"]).is_dir()]
+
+
+def _label_of(entry: dict[str, Any]) -> str:
+    """A ledger entry's label, from the one item that carries it."""
+
+    for item in entry.get("upload_items") or []:
+        label = str((item.get("metadata") or {}).get("label") or "")
+        if label:
+            return label
+    return Path(str(entry.get("set_dir") or "")).name
+
+
+def batch_conflicts(entries: list[dict[str, Any]]) -> list[str]:
+    """Artifact filenames that more than one of ``entries`` would publish.
+
+    The bundle and the model are named for the **arm**, which is right for a
+    committed script's ``trained_task=`` and wrong for a batch: two sets of one
+    arm both call their bundle ``<arm>-task.json``. Named rather than assumed
+    away, because the first batch this driver assembled had two artifacts called
+    ``manifest.json`` in it and nothing said so.
+    """
+
+    seen: dict[str, int] = {}
+    for entry in entries:
+        for item in entry.get("upload_items") or []:
+            name = str(item.get("filename") or "")
+            seen[name] = seen.get(name, 0) + 1
+    return sorted(name for name, count in seen.items() if count > 1)
+
+
+def _batches(entries: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    """Group the outstanding sets into batches with no filename collisions.
+
+    Greedy and in ledger order, which is enough: a collision only happens
+    between two sets of one arm, and there are rarely more than a handful.
+    """
+
+    if not batch_conflicts(entries):
+        return [list(entries)]
+    batches: list[list[dict[str, Any]]] = []
+    for entry in entries:
+        for batch in batches:
+            if not batch_conflicts(batch + [entry]):
+                batch.append(entry)
+                break
+        else:
+            batches.append([entry])
+    return batches
 
 
 def print_pending() -> int:
@@ -768,12 +849,35 @@ def print_pending() -> int:
         print(f"  {entry['set_dir']}  {len(entry['upload_items'])} files, "
               f"{total / 1e3:.0f} kB")
     print()
-    print("items[] for flywheel_prepare_artifact_uploads:")
-    print(json.dumps(
-        [item for entry in outstanding for item in entry["upload_items"]],
-        indent=2,
-    ))
-    print()
+    # One batch is one ``finalize`` and one revision bump, so combining the
+    # outstanding sets is the cheap thing to do -- **unless two of them name a
+    # file the same way**, which two sets of one arm do: the bundle and the
+    # model are named for the arm, so `clamp25-task.json` collides with itself.
+    # Publishing that batch would put two artifacts with one name in it, and
+    # which bytes won would be the server's business rather than ours.
+    batches = _batches(outstanding)
+    if len(batches) > 1:
+        print(f"{len(batches)} SEPARATE batches — two of these sets name a "
+              f"file the same way (two sets of one arm share their bundle and "
+              f"model names), so they cannot go up together. Publish, "
+              f"finalize and --mark-published one at a time.\n")
+    for number, batch in enumerate(batches, start=1):
+        if len(batches) > 1:
+            print(f"--- batch {number} of {len(batches)}: "
+                  + ", ".join(sorted(_label_of(entry) for entry in batch))
+                  + " ---")
+        print("items[] for flywheel_prepare_artifact_uploads:")
+        print(json.dumps(
+            [item for entry in batch for item in entry["upload_items"]],
+            indent=2,
+        ))
+        print()
+        print("the bytes to PUT, by artifact filename — a manifest's two names "
+              "differ on purpose:")
+        for entry in batch:
+            for name, path in (entry.get("local_files") or {}).items():
+                print(f"  {name:<34} {path}")
+        print()
     print("Then PUT each file's RAW BYTES to its upload_url (expect 202), "
           "finalize the batch,\nand record it:")
     print("  uv run python -m harness replay --mark-published <node_id>")

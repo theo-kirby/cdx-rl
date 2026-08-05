@@ -486,22 +486,90 @@ def test_an_export_is_recorded_as_owing_a_node(scene) -> None:
     assert outstanding[0]["set_dir"] == str(set_dir)
 
 
-def test_four_items_go_up_and_a_table_is_json(scene) -> None:
-    """A ``table`` artifact on Flywheel must be JSON, and a ``.cxpolicy``
-    uploads as ``binary`` (flywheel.md §5). The MJCF is XML, so it is binary
-    too."""
+def test_the_four_artifact_types_are_the_conventions_table(scene) -> None:
+    """`flywheel-conventions.md` §5, not a guess.
+
+    A ``.cxpolicy`` is ``binary`` because the server refuses
+    ``cadex-policy-v1`` for ``checkpoint``; the MJCF is ``text``, which is what
+    §5 says the MJCF is even though it is XML and ``binary`` is the lazy
+    reading; and the two documents are ``json`` rather than ``table``, because
+    ``table`` is for a ``{columns, rows}`` payload and is refused at the PUT for
+    anything else. All four were wrong in the first version of this driver.
+    """
 
     set_dir, manifest = _export(scene)
     items = replay.upload_items(set_dir, manifest)
     by_role = {item["metadata"]["role"]: item for item in items}
     assert sorted(by_role) == ["manifest", "model", "policy", "task"]
-    assert by_role["task"]["artifact_type"] == "table"
-    assert by_role["manifest"]["artifact_type"] == "table"
     assert by_role["policy"]["artifact_type"] == "binary"
-    assert by_role["model"]["artifact_type"] == "binary"
+    assert by_role["model"]["artifact_type"] == "text"
+    assert by_role["task"]["artifact_type"] == "json"
+    assert by_role["manifest"]["artifact_type"] == "json"
     for role in ("policy", "task", "model"):
         assert by_role[role]["metadata"]["sha256"] == manifest[role]["sha256"]
         assert by_role[role]["metadata"]["bytes"] == manifest[role]["bytes"]
+
+
+def test_two_different_arms_publish_in_one_batch(scene) -> None:
+    """The normal case: b8 and clamp25 together, no name used twice.
+
+    Including the manifests, which is why they are published as
+    ``<label>-manifest.json`` — the other three files are named for the arm or
+    for the run and the manifest was not, so the first batch this driver
+    assembled had two artifacts called ``manifest.json`` in it.
+    """
+
+    # Different iterations as well as different arms, because two real arms are
+    # two different training runs and so two different .cxpolicy filenames.
+    first_dir, first = _export(scene, arm="b8", label="b8", iteration=1700)
+    second_dir, second = _export(scene, arm="clamp25", label="clamp25",
+                                 iteration=1800)
+    entries = [
+        {"upload_items": replay.upload_items(set_dir, manifest)}
+        for set_dir, manifest in ((first_dir, first), (second_dir, second))
+    ]
+    assert replay.batch_conflicts(entries) == []
+    names = [item["filename"] for entry in entries
+             for item in entry["upload_items"]]
+    assert "b8-manifest.json" in names and "clamp25-manifest.json" in names
+
+
+def test_two_sets_of_one_arm_cannot_go_up_together(scene) -> None:
+    """Because the bundle and the model are named for the arm.
+
+    That naming is right — a committed script's ``trained_task=`` has to be
+    stable across checkpoints — and it means two sets of one arm collide. The
+    driver splits them into separate batches rather than publishing a batch
+    with two artifacts under one name.
+    """
+
+    first_dir, first = _export(scene, label="one")
+    second_dir, second = _export(scene, label="two")
+    entries = [
+        {"upload_items": replay.upload_items(set_dir, manifest)}
+        for set_dir, manifest in ((first_dir, first), (second_dir, second))
+    ]
+    conflicts = replay.batch_conflicts(entries)
+    assert "clamp25-task.json" in conflicts
+    assert "clamp25-model.xml" in conflicts
+    # ...and the manifests do NOT collide, because they carry the label.
+    assert not any("manifest" in name for name in conflicts)
+    batches = replay._batches(entries)
+    assert len(batches) == 2
+    assert all(replay.batch_conflicts(batch) == [] for batch in batches)
+
+
+def test_the_ledger_maps_every_artifact_name_to_bytes_on_disk(scene) -> None:
+    """Because one name deliberately is not its filename any more."""
+
+    set_dir, manifest = _export(scene)
+    items = replay.upload_items(set_dir, manifest)
+    mapping = replay.local_files(set_dir, manifest, items)
+    for item in items:
+        path = Path(mapping[item["filename"]])
+        assert path.is_file(), item["filename"]
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == \
+            item["metadata"]["sha256"]
 
 
 def test_metadata_never_says_a_bare_seed(scene) -> None:
