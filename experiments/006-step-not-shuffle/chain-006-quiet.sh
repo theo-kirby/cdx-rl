@@ -101,8 +101,27 @@ dispatch() {
       --supervise \
       --detach >>"$LOG" 2>&1
     say "dispatch of seed ${seed} returned $?"
-    # `--detach` returns immediately; wait on the trainer itself.
-    sleep 30
+
+    # `--detach` returns immediately, so this has to wait on the TRAINER, not
+    # on the dispatcher. **A fixed `sleep 30` here is a race**: if the trainer
+    # takes longer than that to appear, the wait loop below sees nothing
+    # running, returns at once, and the next seed is dispatched CONCURRENTLY
+    # onto a single card. So the appearance is polled for, and a trainer that
+    # never appears aborts the chain rather than being treated as finished.
+    local waited=0
+    while [ "$waited" -lt 300 ]; do
+        pgrep -f trainer_launch.py >/dev/null 2>&1 && break
+        sleep 5
+        waited=$((waited + 5))
+    done
+    if ! pgrep -f trainer_launch.py >/dev/null 2>&1; then
+        say "ABORT: seed ${seed} dispatched but no trainer appeared in 300 s."
+        say "       Refusing to dispatch anything else — check ${LOG} and the"
+        say "       newest jobs/${LABEL}-s${seed}-* directory."
+        exit 1
+    fi
+    say "seed ${seed} trainer is up after ${waited} s"
+
     while pgrep -f trainer_launch.py >/dev/null 2>&1; do sleep 60; done
     say "seed ${seed} is no longer running"
 }
