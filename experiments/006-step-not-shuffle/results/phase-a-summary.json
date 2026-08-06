@@ -1,0 +1,282 @@
+{
+ "jitter_declared": {
+  "zero-action servo": {
+   "survived": 0,
+   "episodes": 12,
+   "cmd_delta_mean_deg": 0.0,
+   "cmd_delta_p95_deg": 0.0,
+   "cmd_reversals_per_s": 0.0,
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "sum_abs_qvel_mean_deg_s": 99.2009,
+   "sum_abs_qvel_rms_deg_s": 121.6102,
+   "sigma_recommended_deg_s": 79.2623,
+   "slip_speed_mean_mm_s": 5.6532,
+   "slip_mm_per_contact_s": {
+    "foot_l": 4.4338,
+    "foot_r": 6.9368
+   },
+   "per_joint": {
+    "hip_roll_l": 0.0613,
+    "hip_roll_r": 0.05499,
+    "hip_pitch_l": 0.07017,
+    "hip_pitch_r": 0.06839,
+    "knee_l": 0.14343,
+    "knee_r": 0.12411,
+    "ankle_l": 0.15938,
+    "ankle_r": 0.14359,
+    "ankle_roll_l": 0.08465,
+    "ankle_roll_r": 0.09
+   }
+  },
+  "stand13.001800.cxpolicy": {
+   "survived": 8,
+   "episodes": 12,
+   "cmd_delta_mean_deg": 21.72164,
+   "cmd_delta_p95_deg": 47.24916,
+   "cmd_reversals_per_s": 37.7981,
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "sum_abs_qvel_mean_deg_s": 1856.8983,
+   "sum_abs_qvel_rms_deg_s": 1911.6158,
+   "sigma_recommended_deg_s": 1935.7851,
+   "slip_speed_mean_mm_s": 40.9221,
+   "slip_mm_per_contact_s": {
+    "foot_l": 42.8976,
+    "foot_r": 38.9465
+   },
+   "per_joint": {
+    "hip_roll_l": 0.08756,
+    "hip_roll_r": 0.08956,
+    "hip_pitch_l": 0.18822,
+    "hip_pitch_r": 0.14616,
+    "knee_l": 0.15165,
+    "knee_r": 0.09344,
+    "ankle_l": 0.06622,
+    "ankle_r": 0.06204,
+    "ankle_roll_l": 0.05527,
+    "ankle_roll_r": 0.05987
+   }
+  },
+  "stand10.001700.cxpolicy": {
+   "survived": 9,
+   "episodes": 12,
+   "cmd_delta_mean_deg": 19.41365,
+   "cmd_delta_p95_deg": 50.0,
+   "cmd_reversals_per_s": 37.2782,
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "sum_abs_qvel_mean_deg_s": 1476.3533,
+   "sum_abs_qvel_rms_deg_s": 1548.6233,
+   "sigma_recommended_deg_s": 1495.1704,
+   "slip_speed_mean_mm_s": 43.6607,
+   "slip_mm_per_contact_s": {
+    "foot_l": 36.0067,
+    "foot_r": 51.2383
+   },
+   "per_joint": {
+    "hip_roll_l": 0.10754,
+    "hip_roll_r": 0.10782,
+    "hip_pitch_l": 0.13839,
+    "hip_pitch_r": 0.1427,
+    "knee_l": 0.10436,
+    "knee_r": 0.11476,
+    "ankle_l": 0.07266,
+    "ankle_r": 0.09313,
+    "ankle_roll_l": 0.05729,
+    "ankle_roll_r": 0.06135
+   }
+  }
+ },
+ "open_loop_frozen": {
+  "stand13.001800.cxpolicy": {
+   "closed_loop_rms_deg_s": 1872.6111,
+   "open_loop_rms_deg_s": 124.9462,
+   "quiet_headroom": 0.9333
+  },
+  "stand10.001700.cxpolicy": {
+   "closed_loop_rms_deg_s": 1538.5539,
+   "open_loop_rms_deg_s": 143.1647,
+   "quiet_headroom": 0.9069
+  }
+ },
+ "open_loop_replay": {
+  "stand13.001800.cxpolicy": {
+   "closed_loop_rms_deg_s": 1872.6111,
+   "open_loop_rms_deg_s": 1872.6111,
+   "quiet_headroom": 0.0
+  },
+  "stand10.001700.cxpolicy": {
+   "closed_loop_rms_deg_s": 1538.5539,
+   "open_loop_rms_deg_s": 1538.5539,
+   "quiet_headroom": 0.0
+  }
+ },
+ "capability_stand13": [
+  {
+   "scale": null,
+   "newtons_high": null,
+   "survived": 12,
+   "episodes": 12,
+   "survival": 1.0,
+   "termination_mix": {
+    "survived": 12
+   },
+   "final_tipped_mean": 0.0002856416473348825
+  },
+  {
+   "scale": null,
+   "newtons_high": null,
+   "survived": 12,
+   "episodes": 12,
+   "survival": 1.0,
+   "termination_mix": {
+    "survived": 12
+   },
+   "final_tipped_mean": 0.0003432005276695297
+  },
+  {
+   "scale": 0.0,
+   "newtons_high": 0.0,
+   "survived": 12,
+   "episodes": 12,
+   "survival": 1.0,
+   "termination_mix": {
+    "survived": 12
+   },
+   "final_tipped_mean": 0.0003432005276695297
+  },
+  {
+   "scale": 0.5,
+   "newtons_high": 0.4,
+   "survived": 12,
+   "episodes": 12,
+   "survival": 1.0,
+   "termination_mix": {
+    "survived": 12
+   },
+   "final_tipped_mean": 0.00043205934902953904
+  },
+  {
+   "scale": 1.0,
+   "newtons_high": 0.8,
+   "survived": 8,
+   "episodes": 12,
+   "survival": 0.6666666666666666,
+   "termination_mix": {
+    "collapsed": 3,
+    "survived": 8,
+    "tipped": 1
+   },
+   "final_tipped_mean": 0.047570748474880103
+  },
+  {
+   "scale": 1.5,
+   "newtons_high": 1.2,
+   "survived": 1,
+   "episodes": 12,
+   "survival": 0.08333333333333333,
+   "termination_mix": {
+    "collapsed": 8,
+    "survived": 1,
+    "tipped": 3
+   },
+   "final_tipped_mean": 0.11501653088234033
+  },
+  {
+   "scale": 2.0,
+   "newtons_high": 1.6,
+   "survived": 0,
+   "episodes": 12,
+   "survival": 0.0,
+   "termination_mix": {
+    "collapsed": 8,
+    "tipped": 4
+   },
+   "final_tipped_mean": 0.13478327887818725
+  },
+  {
+   "scale": 2.5,
+   "newtons_high": 2.0,
+   "survived": 0,
+   "episodes": 12,
+   "survival": 0.0,
+   "termination_mix": {
+    "collapsed": 4,
+    "tipped": 8
+   },
+   "final_tipped_mean": 0.14894613711175334
+  },
+  {
+   "scale": 3.0,
+   "newtons_high": 2.4,
+   "survived": 0,
+   "episodes": 12,
+   "survival": 0.0,
+   "termination_mix": {
+    "collapsed": 2,
+    "tipped": 10
+   },
+   "final_tipped_mean": 0.15860867690982156
+  }
+ ],
+ "steps_24seeds": {
+  "stand13.001800": {
+   "survived": 19,
+   "stepped": 23,
+   "both": 18,
+   "longest_step_mm_MAX": 50.13763703368143,
+   "longest_step_mm_MEDIAN_per_episode": 31.543403996283857,
+   "longest_step_mm_MEAN_per_episode": 31.827230574877433,
+   "surviving_and_stepping": 18,
+   "lifts_per_surviving_ep_mean": 9.31578947368421,
+   "steps_per_surviving_ep_mean": 5.526315789473684
+  },
+  "stand10.001700": {
+   "survived": 19,
+   "stepped": 21,
+   "both": 18,
+   "longest_step_mm_MAX": 127.07682473549993,
+   "longest_step_mm_MEDIAN_per_episode": 44.79204902257953,
+   "longest_step_mm_MEAN_per_episode": 52.67237728154107,
+   "surviving_and_stepping": 18,
+   "lifts_per_surviving_ep_mean": 6.473684210526316,
+   "steps_per_surviving_ep_mean": 3.6842105263157894
+  }
+ },
+ "hazard15": {
+  "stand13.001800.cxpolicy": {
+   "settled_mean_frac_of_rating": 0.5554,
+   "settled_duty_worst": 0.12683
+  },
+  "stand10.001700.cxpolicy": {
+   "settled_mean_frac_of_rating": 0.7037,
+   "settled_duty_worst": 0.39044
+  }
+ },
+ "mass_and_geometry": {
+  "robot_mass_kg": 0.302011,
+  "robot_weight_N": 2.96273,
+  "com_height_mm": 140.944362,
+  "omega0_rad_s": 8.34277728791794,
+  "xi_mm_per_newton": 47.626,
+  "script_py_roll_over_constant_N": 2.581,
+  "script_py_roll_over_budget_nmm": 117.0,
+  "corrected_roll_over_budget_nmm": 134.8,
+  "margins_from_com_mm": {
+   "forward_az90": 40.83,
+   "backward_az270": 29.17,
+   "lateral_az0": 50.0
+  },
+  "profile_declares_mm": {
+   "forward": 45.5,
+   "backward": 24.5,
+   "lateral": 50.0
+  },
+  "backward_step_boundary_N": 0.6124
+ },
+ "step_demand_fraction": {
+  "[0.30,0.80] shove": 0.174,
+  "[0.30,0.80] shove2": 0.058,
+  "[0.30,0.90] shove": 0.266,
+  "[0.30,1.20] shove": 0.478,
+  "[0.30,1.80] shove": 0.685
+ }
+}

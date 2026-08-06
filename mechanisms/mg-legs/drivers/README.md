@@ -26,6 +26,25 @@ each before running it.
 | `rebuild.py` | drives `cadexd` over NDJSON to accept a script |
 | `dispatch_b8.sh` | the run, with its hyperparameters and its pre-flight checks |
 | `install_checkpoint.py` | copy a policy into a project and rewrite the `assembly.policy` call |
+| `hazard15.py` | what torque the solver develops while a trained policy holds the machine up with **nothing pushing** |
+| `jitter.py` | **how still is it** — command jitter in degrees, joint `Σ\|q̇\|` in deg/s, sole slip, and centre of pressure |
+| `test_jitter.py` | `jitter.py`'s pure half, under **cdx-rl's own** interpreter: `uv run pytest` |
+
+**`hazard15.py` and `jitter.py` take cdx-rl's layout, not the laptop's** —
+they read `CADEX_ENGINE_DEV_TREE` and are run from the repository root under
+`/home/theo/cadex-train-venv/bin/python`, never `uv run`.
+
+**`jitter.py` is the one to copy the SHAPE of, not `hazard15.py`.** It keeps
+its statistics above a `# --- the half that needs the engine ---` divider and
+defers `import CadexDynamics` into a function, exactly as `harness/_steps.py`
+does — which is what makes `test_jitter.py` possible at all. `hazard15.py`
+imports the engine at module scope and has no test as a direct result.
+
+It fires on purpose before it is believed: `tools/fire_jitter_guard.py` plays
+a held pose, full-corner chatter and a smooth full-amplitude sweep through the
+same model, and requires that the sweep is **not** read as chatter. That is the
+separation a magnitude statistic alone cannot make, and it is why the
+sign-reversal rate is reported beside the magnitude rather than instead of it.
 
 ## What is worth reading before porting
 

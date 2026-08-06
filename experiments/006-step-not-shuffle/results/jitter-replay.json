@@ -1,0 +1,312 @@
+{
+ "driver": "jitter",
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11
+ ],
+ "task": "tasks/stand-b8-clamp25/stand-task.json",
+ "disturbance": "declared",
+ "open_loop": "replay",
+ "rows": [
+  {
+   "policy": "stand13.001800.cxpolicy",
+   "episodes": 12,
+   "survived": 8,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 21.72164,
+   "cmd_delta_p95_deg": 47.24916,
+   "cmd_delta_mean_deg_s": 1086.0818,
+   "cmd_delta_per_joint_deg": [
+    25.92984,
+    25.45405,
+    36.53355,
+    35.03264,
+    30.24538,
+    21.70239,
+    12.08832,
+    11.85949,
+    9.68419,
+    8.68652
+   ],
+   "cmd_reversals_per_s": 37.7981,
+   "cmd_reversals_per_joint_per_s": [
+    42.8021,
+    41.1424,
+    42.9619,
+    43.4704,
+    41.7958,
+    36.6993,
+    31.3132,
+    32.9737,
+    34.4957,
+    30.327
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 21.4475,
+   "qvel_abs_mean_deg_s": 185.6898,
+   "qvel_per_joint_mean_deg_s": [
+    162.5914,
+    166.3044,
+    349.5077,
+    271.4134,
+    281.5919,
+    173.5144,
+    122.9601,
+    115.1985,
+    102.6383,
+    111.1781
+   ],
+   "sum_abs_qvel_mean_deg_s": 1856.8983,
+   "sum_abs_qvel_rms_deg_s": 1911.6158,
+   "sum_abs_qvel_p95_deg_s": 2397.0925,
+   "whole_sum_abs_qvel_mean_deg_s": 1846.4638,
+   "sigma_recommended_deg_s": 1935.7851,
+   "sigma_samples": 2428,
+   "slip_speed_mean_mm_s": 40.9221,
+   "slip_speed_p95_mm_s": 115.4717,
+   "contact_seconds": {
+    "foot_l": 41.64,
+    "foot_r": 41.64
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 42.8976,
+    "foot_r": 38.9465
+   },
+   "qvel_share_per_joint": [
+    0.08756,
+    0.08956,
+    0.18822,
+    0.14616,
+    0.15165,
+    0.09344,
+    0.06622,
+    0.06204,
+    0.05527,
+    0.05987
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 2049,
+     "forward_max_mm": 33.251,
+     "backward_max_mm": -36.796,
+     "lateral_max_mm": 20.026,
+     "min_forward_margin_mm": -0.001,
+     "min_backward_margin_mm": -0.046,
+     "min_lateral_margin_mm": -0.026,
+     "frac_frames_within_2mm_of_edge": 0.53978
+    },
+    "foot_r": {
+     "frames": 2075,
+     "forward_max_mm": 33.255,
+     "backward_max_mm": -36.757,
+     "lateral_max_mm": 20.08,
+     "min_forward_margin_mm": -0.005,
+     "min_backward_margin_mm": -0.007,
+     "min_lateral_margin_mm": -0.08,
+     "frac_frames_within_2mm_of_edge": 0.55373
+    }
+   },
+   "open_loop_mode": "replay",
+   "closed_loop_rms_deg_s": 1872.6111,
+   "open_loop_rms_deg_s": 1872.6111,
+   "quiet_headroom": 0.0
+  },
+  {
+   "policy": "stand10.001700.cxpolicy",
+   "episodes": 12,
+   "survived": 9,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 19.41365,
+   "cmd_delta_p95_deg": 50.0,
+   "cmd_delta_mean_deg_s": 970.6823,
+   "cmd_delta_per_joint_deg": [
+    19.99401,
+    30.76846,
+    28.09573,
+    28.89149,
+    17.14277,
+    23.31581,
+    11.67508,
+    18.55355,
+    7.91145,
+    7.7881
+   ],
+   "cmd_reversals_per_s": 37.2782,
+   "cmd_reversals_per_joint_per_s": [
+    41.0637,
+    41.9954,
+    37.5943,
+    38.3461,
+    34.9208,
+    40.0711,
+    34.2946,
+    37.6629,
+    34.4488,
+    32.384
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 19.03901,
+   "qvel_abs_mean_deg_s": 147.6353,
+   "qvel_per_joint_mean_deg_s": [
+    158.7636,
+    159.1747,
+    204.3122,
+    210.6786,
+    154.0659,
+    169.4193,
+    107.2767,
+    137.5,
+    84.5855,
+    90.5766
+   ],
+   "sum_abs_qvel_mean_deg_s": 1476.3533,
+   "sum_abs_qvel_rms_deg_s": 1548.6233,
+   "sum_abs_qvel_p95_deg_s": 2262.3634,
+   "whole_sum_abs_qvel_mean_deg_s": 1476.0068,
+   "sigma_recommended_deg_s": 1495.1704,
+   "sigma_samples": 2452,
+   "slip_speed_mean_mm_s": 43.6607,
+   "slip_speed_p95_mm_s": 144.7508,
+   "contact_seconds": {
+    "foot_l": 43.66,
+    "foot_r": 44.1
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 36.0067,
+    "foot_r": 51.2383
+   },
+   "qvel_share_per_joint": [
+    0.10754,
+    0.10782,
+    0.13839,
+    0.1427,
+    0.10436,
+    0.11476,
+    0.07266,
+    0.09313,
+    0.05729,
+    0.06135
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 2180,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.768,
+     "lateral_max_mm": 20.036,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.018,
+     "min_lateral_margin_mm": -0.036,
+     "frac_frames_within_2mm_of_edge": 0.64495
+    },
+    "foot_r": {
+     "frames": 2196,
+     "forward_max_mm": 33.267,
+     "backward_max_mm": -36.75,
+     "lateral_max_mm": 20.008,
+     "min_forward_margin_mm": -0.017,
+     "min_backward_margin_mm": -0.0,
+     "min_lateral_margin_mm": -0.008,
+     "frac_frames_within_2mm_of_edge": 0.66393
+    }
+   },
+   "open_loop_mode": "replay",
+   "closed_loop_rms_deg_s": 1538.5539,
+   "open_loop_rms_deg_s": 1538.5539,
+   "quiet_headroom": 0.0
+  }
+ ]
+}

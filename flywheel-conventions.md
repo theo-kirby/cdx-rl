@@ -295,17 +295,22 @@ task exists, not before — an unassigned tag is the defect v1 had.
 that happened to use it. Otherwise it lands on nearly every research node and
 stops being a filter.
 
-> ### State as of 2026-08-06: 25 tags created, all 37 nodes assigned
+> ### State as of 2026-08-06: 26 tags created, all 38 nodes assigned
 >
-> **107 assignments over 32 nodes.** The five without tags are the **root and
+> **111 assignments over 33 nodes.** The five without tags are the **root and
 > the four lane nodes**, which are navigation rather than claims.
 >
-> **`status/planned` is defined and assigned to nothing, and that is the
-> answer, not a gap** — `type/protocol AND status/planned` is the in-flight
-> query, and nothing is in flight. All five protocol nodes are
-> `status/resolved` because every one has its result node. **The first node
-> written before the next dispatch takes `status/planned`, and that is the
-> whole point of the shape.**
+> **`status/planned` is no longer empty, and the shape worked as designed.**
+> It was defined and assigned to nothing for the whole of the restructure —
+> *"the first node written before the next dispatch takes it"* — and
+> `wandering-cell-5009` (**PROTOCOL 006**, `exp/006` `tag-a103163dda97`) is
+> that node. It was written, tagged and committed **before any of its 10
+> GPU-hours were spent**, and `type/protocol AND status/planned` now returns
+> exactly one row: what is in flight.
+>
+> That is the first time this graph **gated** anything rather than recording
+> it afterwards, which was §1's stated failure of v1. The other five protocol
+> nodes remain `status/resolved` because each has its result node.
 >
 > Ten tag ids worth having to hand: `type/protocol` `tag-0e83ecde05b4`,
 > `type/empirical` `tag-f346bf39f8b2`, `type/insight` `tag-1e073cba80d5`,

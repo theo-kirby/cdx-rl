@@ -1,0 +1,586 @@
+{
+ "driver": "jitter",
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11
+ ],
+ "task": "tasks/stand-b8-clamp25/stand-task.json",
+ "disturbance": "declared",
+ "open_loop": "off",
+ "rows": [
+  {
+   "policy": "zero-action servo",
+   "episodes": 12,
+   "survived": 0,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 0.0,
+   "cmd_delta_p95_deg": 0.0,
+   "cmd_delta_mean_deg_s": 0.0,
+   "cmd_delta_per_joint_deg": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "cmd_reversals_per_s": 0.0,
+   "cmd_reversals_per_joint_per_s": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 0.0,
+   "qvel_abs_mean_deg_s": 9.9201,
+   "qvel_per_joint_mean_deg_s": [
+    6.0809,
+    5.4549,
+    6.9607,
+    6.7841,
+    14.2282,
+    12.3118,
+    15.8111,
+    14.2446,
+    8.3969,
+    8.9278
+   ],
+   "sum_abs_qvel_mean_deg_s": 99.2009,
+   "sum_abs_qvel_rms_deg_s": 121.6102,
+   "sum_abs_qvel_p95_deg_s": 227.5467,
+   "whole_sum_abs_qvel_mean_deg_s": 143.4528,
+   "sigma_recommended_deg_s": 79.2623,
+   "sigma_samples": 180,
+   "slip_speed_mean_mm_s": 5.6532,
+   "slip_speed_p95_mm_s": 14.3916,
+   "contact_seconds": {
+    "foot_l": 3.6,
+    "foot_r": 3.42
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 4.4338,
+    "foot_r": 6.9368
+   },
+   "qvel_share_per_joint": [
+    0.0613,
+    0.05499,
+    0.07017,
+    0.06839,
+    0.14343,
+    0.12411,
+    0.15938,
+    0.14359,
+    0.08465,
+    0.09
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 180,
+     "forward_max_mm": -2.862,
+     "backward_max_mm": -36.748,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 36.112,
+     "min_backward_margin_mm": 0.002,
+     "min_lateral_margin_mm": 0.0,
+     "frac_frames_within_2mm_of_edge": 0.74444
+    },
+    "foot_r": {
+     "frames": 171,
+     "forward_max_mm": 2.652,
+     "backward_max_mm": -36.75,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 30.598,
+     "min_backward_margin_mm": 0.0,
+     "min_lateral_margin_mm": 0.0,
+     "frac_frames_within_2mm_of_edge": 0.70175
+    }
+   }
+  },
+  {
+   "policy": "stand12.001750.cxpolicy",
+   "episodes": 12,
+   "survived": 7,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 17.53488,
+   "cmd_delta_p95_deg": 44.32195,
+   "cmd_delta_mean_deg_s": 876.744,
+   "cmd_delta_per_joint_deg": [
+    21.84337,
+    15.50662,
+    19.98209,
+    34.33509,
+    14.94414,
+    30.28847,
+    10.81287,
+    11.64003,
+    8.33447,
+    7.66165
+   ],
+   "cmd_reversals_per_s": 36.4525,
+   "cmd_reversals_per_joint_per_s": [
+    39.0456,
+    37.6393,
+    38.6759,
+    41.4547,
+    34.7101,
+    39.4956,
+    32.2487,
+    33.8628,
+    31.9939,
+    35.3984
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 17.45664,
+   "qvel_abs_mean_deg_s": 152.233,
+   "qvel_per_joint_mean_deg_s": [
+    142.8533,
+    144.9786,
+    150.4963,
+    312.7351,
+    111.6207,
+    277.8269,
+    81.9109,
+    130.8556,
+    91.2135,
+    77.8394
+   ],
+   "sum_abs_qvel_mean_deg_s": 1522.3304,
+   "sum_abs_qvel_rms_deg_s": 1594.8387,
+   "sum_abs_qvel_p95_deg_s": 2068.3827,
+   "whole_sum_abs_qvel_mean_deg_s": 1529.8566,
+   "sigma_recommended_deg_s": 1630.6735,
+   "sigma_samples": 2136,
+   "slip_speed_mean_mm_s": 27.7983,
+   "slip_speed_p95_mm_s": 75.7216,
+   "contact_seconds": {
+    "foot_l": 38.26,
+    "foot_r": 39.2
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 31.3363,
+    "foot_r": 24.3451
+   },
+   "qvel_share_per_joint": [
+    0.09384,
+    0.09523,
+    0.09886,
+    0.20543,
+    0.07332,
+    0.1825,
+    0.05381,
+    0.08596,
+    0.05992,
+    0.05113
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 1906,
+     "forward_max_mm": 33.252,
+     "backward_max_mm": -36.755,
+     "lateral_max_mm": 20.012,
+     "min_forward_margin_mm": -0.002,
+     "min_backward_margin_mm": -0.005,
+     "min_lateral_margin_mm": -0.012,
+     "frac_frames_within_2mm_of_edge": 0.56348
+    },
+    "foot_r": {
+     "frames": 1959,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.763,
+     "lateral_max_mm": 20.035,
+     "min_forward_margin_mm": -0.0,
+     "min_backward_margin_mm": -0.013,
+     "min_lateral_margin_mm": -0.035,
+     "frac_frames_within_2mm_of_edge": 0.49566
+    }
+   }
+  },
+  {
+   "policy": "stand12.001750.cxpolicy",
+   "episodes": 12,
+   "survived": 8,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 19.04336,
+   "cmd_delta_p95_deg": 45.09677,
+   "cmd_delta_mean_deg_s": 952.1678,
+   "cmd_delta_per_joint_deg": [
+    16.36396,
+    18.85125,
+    35.41697,
+    35.67882,
+    21.59803,
+    15.39771,
+    9.08387,
+    16.75415,
+    6.81741,
+    14.47138
+   ],
+   "cmd_reversals_per_s": 37.821,
+   "cmd_reversals_per_joint_per_s": [
+    41.1811,
+    41.0136,
+    43.2866,
+    43.916,
+    39.7384,
+    32.7683,
+    29.8401,
+    36.8805,
+    30.4101,
+    39.1752
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 18.54061,
+   "qvel_abs_mean_deg_s": 157.3877,
+   "qvel_per_joint_mean_deg_s": [
+    103.1595,
+    106.0231,
+    333.5968,
+    281.3567,
+    158.4621,
+    153.3264,
+    93.4062,
+    133.4741,
+    79.9415,
+    131.1306
+   ],
+   "sum_abs_qvel_mean_deg_s": 1573.8768,
+   "sum_abs_qvel_rms_deg_s": 1617.3923,
+   "sum_abs_qvel_p95_deg_s": 2083.1444,
+   "whole_sum_abs_qvel_mean_deg_s": 1556.7994,
+   "sigma_recommended_deg_s": 1596.3404,
+   "sigma_samples": 2318,
+   "slip_speed_mean_mm_s": 36.1173,
+   "slip_speed_p95_mm_s": 107.9911,
+   "contact_seconds": {
+    "foot_l": 40.42,
+    "foot_r": 40.94
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 28.7542,
+    "foot_r": 43.3869
+   },
+   "qvel_share_per_joint": [
+    0.06554,
+    0.06736,
+    0.21196,
+    0.17877,
+    0.10068,
+    0.09742,
+    0.05935,
+    0.08481,
+    0.05079,
+    0.08332
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 2017,
+     "forward_max_mm": 33.262,
+     "backward_max_mm": -36.754,
+     "lateral_max_mm": 20.001,
+     "min_forward_margin_mm": -0.012,
+     "min_backward_margin_mm": -0.004,
+     "min_lateral_margin_mm": -0.001,
+     "frac_frames_within_2mm_of_edge": 0.47744
+    },
+    "foot_r": {
+     "frames": 2040,
+     "forward_max_mm": 33.255,
+     "backward_max_mm": -36.752,
+     "lateral_max_mm": 20.005,
+     "min_forward_margin_mm": -0.005,
+     "min_backward_margin_mm": -0.002,
+     "min_lateral_margin_mm": -0.005,
+     "frac_frames_within_2mm_of_edge": 0.60245
+    }
+   }
+  },
+  {
+   "policy": "stand13.001800.cxpolicy",
+   "episodes": 12,
+   "survived": 8,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 21.72164,
+   "cmd_delta_p95_deg": 47.24916,
+   "cmd_delta_mean_deg_s": 1086.0818,
+   "cmd_delta_per_joint_deg": [
+    25.92984,
+    25.45405,
+    36.53355,
+    35.03264,
+    30.24538,
+    21.70239,
+    12.08832,
+    11.85949,
+    9.68419,
+    8.68652
+   ],
+   "cmd_reversals_per_s": 37.7981,
+   "cmd_reversals_per_joint_per_s": [
+    42.8021,
+    41.1424,
+    42.9619,
+    43.4704,
+    41.7958,
+    36.6993,
+    31.3132,
+    32.9737,
+    34.4957,
+    30.327
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 21.4475,
+   "qvel_abs_mean_deg_s": 185.6898,
+   "qvel_per_joint_mean_deg_s": [
+    162.5914,
+    166.3044,
+    349.5077,
+    271.4134,
+    281.5919,
+    173.5144,
+    122.9601,
+    115.1985,
+    102.6383,
+    111.1781
+   ],
+   "sum_abs_qvel_mean_deg_s": 1856.8983,
+   "sum_abs_qvel_rms_deg_s": 1911.6158,
+   "sum_abs_qvel_p95_deg_s": 2397.0925,
+   "whole_sum_abs_qvel_mean_deg_s": 1846.4638,
+   "sigma_recommended_deg_s": 1935.7851,
+   "sigma_samples": 2428,
+   "slip_speed_mean_mm_s": 40.9221,
+   "slip_speed_p95_mm_s": 115.4717,
+   "contact_seconds": {
+    "foot_l": 41.64,
+    "foot_r": 41.64
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 42.8976,
+    "foot_r": 38.9465
+   },
+   "qvel_share_per_joint": [
+    0.08756,
+    0.08956,
+    0.18822,
+    0.14616,
+    0.15165,
+    0.09344,
+    0.06622,
+    0.06204,
+    0.05527,
+    0.05987
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 2049,
+     "forward_max_mm": 33.251,
+     "backward_max_mm": -36.796,
+     "lateral_max_mm": 20.026,
+     "min_forward_margin_mm": -0.001,
+     "min_backward_margin_mm": -0.046,
+     "min_lateral_margin_mm": -0.026,
+     "frac_frames_within_2mm_of_edge": 0.53978
+    },
+    "foot_r": {
+     "frames": 2075,
+     "forward_max_mm": 33.255,
+     "backward_max_mm": -36.757,
+     "lateral_max_mm": 20.08,
+     "min_forward_margin_mm": -0.005,
+     "min_backward_margin_mm": -0.007,
+     "min_lateral_margin_mm": -0.08,
+     "frac_frames_within_2mm_of_edge": 0.55373
+    }
+   }
+  }
+ ]
+}

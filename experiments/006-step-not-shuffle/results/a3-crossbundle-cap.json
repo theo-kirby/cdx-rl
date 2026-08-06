@@ -1,0 +1,81 @@
+{
+  "declared_newtons": [
+    {
+      "azimuth_high_deg": 330.0,
+      "azimuth_low_deg": 210.0,
+      "high": 0.9,
+      "label": "shove",
+      "low": 0.3,
+      "sustained": false
+    },
+    {
+      "azimuth_high_deg": 360.0,
+      "azimuth_low_deg": 0.0,
+      "high": 0.9,
+      "label": "shove2",
+      "low": 0.3,
+      "sustained": false
+    },
+    {
+      "azimuth_high_deg": 360.0,
+      "azimuth_low_deg": 0.0,
+      "high": 0.06,
+      "label": "wind",
+      "low": 0.0,
+      "sustained": true
+    }
+  ],
+  "driver": "capability",
+  "episodes_planned": 6,
+  "flatness": {
+    "any_informative": false,
+    "per_policy": []
+  },
+  "max_steps": 300,
+  "model": "/home/theo/cdx-rl/jobs/stand13-20260805-135926/model-model.xml",
+  "model_sha256": "80eaa18f6025d589796315fcad45bb70bf72e55da750864f60b5e0b3cc71fdb3",
+  "ok": false,
+  "policies": [
+    "/home/theo/cdx-rl/jobs/stand13-20260805-135926/stand13.001800.cxpolicy"
+  ],
+  "provenance": {
+    "cadex": {
+      "commit": "a40656ccab0a7d8b76995397f1b43c18000cf70d",
+      "dirty": false,
+      "short": "a40656cc",
+      "subject": "Merge pull request #5 from theo-kirby/cdxrl/travelling-provenance-assets"
+    },
+    "cdxrl": {
+      "commit": "e568aa5bc00d5bd56130c079becdd91572ca6c38",
+      "dirty": true,
+      "short": "e568aa5b",
+      "subject": "flywheel: the tag vocabulary is applied, not just declared"
+    },
+    "host": {
+      "hostname": "sb1x",
+      "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39"
+    },
+    "python": "3.12.3",
+    "timestamp_utc": "2026-08-06T10:24:25Z"
+  },
+  "scales": [
+    1.0
+  ],
+  "schema": "cdxrl-envelope-v1",
+  "seeds": 2,
+  "sweep": [],
+  "task": "/home/theo/cdx-rl/tasks/stand-b8-clamp25-shove090/stand-task.json",
+  "task_sha256": "11d122e1d4a36442e0dfedc78030a4e0f682138b3de970cb1e29ab585b809e8a",
+  "variants": [
+    "no-variation",
+    "reset-variation-only",
+    "scale-1.00"
+  ],
+  "verify_refused": [
+    {
+      "error": "DynamicsError: stand13.001800.cxpolicy was trained on a task bundle whose digest is '3d627ef4b9a509feed62a0a0f2e1f02a75965379c01ad8bf53f89a68a33712d8', and the task it is declared against digests to '11d122e1d4a36442e0dfedc78030a4e0f682138b3de970cb1e29ab585b809e8a'.",
+      "policy": "stand13.001800.cxpolicy"
+    }
+  ],
+  "wall_seconds": 0.12
+}

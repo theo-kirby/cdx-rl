@@ -1,0 +1,118 @@
+{
+  "schema": "cdxrl-envelope-v1",
+  "driver": "steps",
+  "ok": true,
+  "provenance": {
+    "timestamp_utc": "2026-08-06T10:24:25Z",
+    "cadex": {
+      "commit": "a40656ccab0a7d8b76995397f1b43c18000cf70d",
+      "short": "a40656cc",
+      "subject": "Merge pull request #5 from theo-kirby/cdxrl/travelling-provenance-assets",
+      "dirty": false
+    },
+    "cdxrl": {
+      "commit": "e568aa5bc00d5bd56130c079becdd91572ca6c38",
+      "short": "e568aa5b",
+      "subject": "flywheel: the tag vocabulary is applied, not just declared",
+      "dirty": true
+    },
+    "host": {
+      "hostname": "sb1x",
+      "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39"
+    },
+    "python": "3.12.3"
+  },
+  "task": "tasks/stand-b8-clamp25-shove090/stand-task.json",
+  "task_sha256": "11d122e1d4a36442e0dfedc78030a4e0f682138b3de970cb1e29ab585b809e8a",
+  "model": "/home/theo/cdx-rl/tasks/stand-b8-clamp25-shove090/model-model.xml",
+  "profile": "mg-legs",
+  "seeds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "metric": "stepped >= step_mm AND survived max_steps",
+  "significance_pp_2sigma": 70.7,
+  "results": {
+    "stand13.001800.cxpolicy": {
+      "episodes": 4,
+      "survived": 1,
+      "stepped": 4,
+      "both": 1,
+      "mean_control_steps": 181.0,
+      "max_steps": 300,
+      "lifts": 27,
+      "steps": 14,
+      "longest_step_mm": 57.80745683359953,
+      "terminations": {
+        "collapsed": 2,
+        "tipped": 1
+      }
+    }
+  },
+  "episodes": [
+    {
+      "schema": "cdxrl-steps-row-v1",
+      "row": "episode",
+      "id": "stand13.001800.cxpolicy:0",
+      "policy": "/home/theo/cdx-rl/jobs/stand13-20260805-135926/stand13.001800.cxpolicy",
+      "seed": 0,
+      "survived": false,
+      "termination": "collapsed",
+      "control_steps": 156,
+      "max_steps": 300,
+      "lifts": 4,
+      "steps": 2,
+      "longest_step_mm": 57.80745683359953,
+      "highest_lift_mm": 35.354104362710245
+    },
+    {
+      "schema": "cdxrl-steps-row-v1",
+      "row": "episode",
+      "id": "stand13.001800.cxpolicy:1",
+      "policy": "/home/theo/cdx-rl/jobs/stand13-20260805-135926/stand13.001800.cxpolicy",
+      "seed": 1,
+      "survived": true,
+      "termination": null,
+      "control_steps": 300,
+      "max_steps": 300,
+      "lifts": 10,
+      "steps": 4,
+      "longest_step_mm": 22.664591491249553,
+      "highest_lift_mm": 20.30616408373897
+    },
+    {
+      "schema": "cdxrl-steps-row-v1",
+      "row": "episode",
+      "id": "stand13.001800.cxpolicy:2",
+      "policy": "/home/theo/cdx-rl/jobs/stand13-20260805-135926/stand13.001800.cxpolicy",
+      "seed": 2,
+      "survived": false,
+      "termination": "collapsed",
+      "control_steps": 100,
+      "max_steps": 300,
+      "lifts": 9,
+      "steps": 7,
+      "longest_step_mm": 48.66503859047338,
+      "highest_lift_mm": 35.629425470869705
+    },
+    {
+      "schema": "cdxrl-steps-row-v1",
+      "row": "episode",
+      "id": "stand13.001800.cxpolicy:3",
+      "policy": "/home/theo/cdx-rl/jobs/stand13-20260805-135926/stand13.001800.cxpolicy",
+      "seed": 3,
+      "survived": false,
+      "termination": "tipped",
+      "control_steps": 168,
+      "max_steps": 300,
+      "lifts": 4,
+      "steps": 1,
+      "longest_step_mm": 13.991435584029496,
+      "highest_lift_mm": 20.70369561327735
+    }
+  ],
+  "errors": [],
+  "unpinned_drift": {}
+}

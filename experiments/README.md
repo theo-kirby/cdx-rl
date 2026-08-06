@@ -63,3 +63,4 @@ these sections; see [`../flywheel.md`](../flywheel.md) §4.
 | [`001-stand-biped`](001-stand-biped/) | separate "the policy is bad" from "the task is out of range" | Phases A and B measured |
 | [`002-seed-replication`](002-seed-replication/) | does 001's shape replicate across seeds? | 3 of 4 seeds measured |
 | [`003-position-action-space`](003-position-action-space/) | does a machine whose zero action *stands* learn what nine runs of one that falls over did not? | measured, imported, one seed |
+| [`006-step-not-shuffle`](006-step-not-shuffle/) | does costing joint velocity make the machine stand still, and what does that cost in stepping? | **§§1–7 pre-registered; Phase A measured, Phase B not dispatched** |

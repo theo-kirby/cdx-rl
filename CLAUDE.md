@@ -198,8 +198,9 @@ Other environment facts:
 | Environment | ✅ `uv` venv, `config/env`, smoke **13/13 on both sb1x and sb9x** |
 | Spine | ✅ `tools/cadexd_client.py`, `tools/smoke.py`, `tools/train.py` |
 | Docs | ✅ this set |
-| Flywheel | ✅ **v2 root `steep-pine-4944` = `91c66efb-66f3-48aa-b7c1-14bfe00bb09f`, THIRTY-SEVEN nodes, forked and restructured 2026-08-06.** Four lanes off the root — **research / instrument / substrate / platform** — replacing v1's single 9-node spine. Research is shaped **protocol → result → replication**, so ADR-097 is structural: a protocol node is written *before* dispatch and "what is in flight" is the query `type/protocol AND status/planned`. 55 artifacts carried, 40 edges, 4 multi-parent nodes, and **0 bodies over 4 KB** (v1 had 11, so eleven nodes could not be corrected inside a 60 s lease). New in v2 and absent from v1 entirely: the **five merged Cadex PRs**, the **driver register**, the **torque-instrument defect**, the **GPU ledger**, and **experiment 005-ceiling** — a finished 4.75 h run that had left no trace. **Tags: 25 created, 107 assignments over 32 nodes** — every node but the root and the four lanes. `status/planned` is deliberately empty: nothing is in flight, and that *is* the query's answer. There is **no `task/` namespace** — one task partitions nothing. `flywheel-conventions.md` §5 has the tag ids and the two mechanical traps (`create_node_tag` takes the **graph** revision and serialises; `set_node_tag_assignments` takes the **node's** and parallelises), §13 the per-node table. **v1 `rapid-bar-6214` is FROZEN and must not be deleted**: v2's artifact blobs are aliases into its storage. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
+| Flywheel | ✅ **v2 root `steep-pine-4944` = `91c66efb-66f3-48aa-b7c1-14bfe00bb09f`, THIRTY-EIGHT nodes, forked and restructured 2026-08-06.** Four lanes off the root — **research / instrument / substrate / platform** — replacing v1's single 9-node spine. Research is shaped **protocol → result → replication**, so ADR-097 is structural: a protocol node is written *before* dispatch and "what is in flight" is the query `type/protocol AND status/planned`. 55 artifacts carried, 40 edges, 4 multi-parent nodes, and **0 bodies over 4 KB** (v1 had 11, so eleven nodes could not be corrected inside a 60 s lease). New in v2 and absent from v1 entirely: the **five merged Cadex PRs**, the **driver register**, the **torque-instrument defect**, the **GPU ledger**, and **experiment 005-ceiling** — a finished 4.75 h run that had left no trace. **Tags: 26 created, 111 assignments over 33 nodes** — every node but the root and the four lanes. **`status/planned` is no longer empty and that is the shape working**: `wandering-cell-5009` (**PROTOCOL 006**, `a77afb3b-a4a7-5269-a125-37e26b3ca935`) was written, tagged and committed **before any of its 10 GPU-hours were spent**, so `type/protocol AND status/planned` now returns exactly one row — what is in flight. First time the graph gated a run rather than recording it after. There is **no `task/` namespace** — one task partitions nothing. `flywheel-conventions.md` §5 has the tag ids and the two mechanical traps (`create_node_tag` takes the **graph** revision and serialises; `set_node_tag_assignments` takes the **node's** and parallelises), §13 the per-node table. **v1 `rapid-bar-6214` is FROZEN and must not be deleted**: v2's artifact blobs are aliases into its storage. Conventions in [`flywheel-conventions.md`](flywheel-conventions.md) |
 | Drivers | ✅ `rebuild`, `supervise`, `compare`, `capability`, `steps`, `capture`, **`replay`** — via `uv run python -m harness <driver>`. `capture` renders a policy's own episode to an MP4 with the per-motor servo load along the bottom. **`replay` takes a trained result to the Mac and opens it on the real CAD solids, where a 0.6 N shove gets answered** — the first output of this repository that is a *project* rather than a number or a picture |
+| | ✅ **`mechanisms/mg-legs/drivers/jitter.py`, new 2026-08-06** — command jitter in **degrees**, joint `Σ\|q̇\|` in **deg/s**, sole slip, and centre of pressure against a box derived from the model's own geoms. `--zero-action` measures the servo floor; `--open-loop frozen` holds the setpoint at its settled mean and answers *"is this the policy or the servo"*, which no magnitude statistic can. Trainer venv, never `uv run`. Its pure half is tested (21 checks, no mujoco) and it fires on purpose via `tools/fire_jitter_guard.py` |
 | | ❌ `measure`, `feasibility` deferred *as harness drivers*; working mg-legs-specific ones are at `mechanisms/mg-legs/drivers/` |
 | Mechanism | ✅ **`mg-legs` authoring script recovered, committed, and — since 2026-08-05 — buildable on sb1x.** It rebuilds `tasks/stand-b8/` with a **two-line** diff: the pelvis CoM x-coordinate at `5.10066e-11` vs `5.10087e-11` m (a quantity that is mathematically zero), and the MJCF digest the task JSON embeds as a consequence. Reproducible in substance, not bit-identical across platforms |
 | Cadex | ✅ **PR clone at `/home/theo/cadex-prs`, built, on `origin/main` `b169a092`.** The operator's tree at `/home/theo/cadex` is untouched — still `06d1374b`, still `standing-policy`, still clean |
@@ -214,6 +215,7 @@ Other environment facts:
 | Experiment 005 | ⚠️ **the run was never dispatched — its own CPU gate vetoed it, for 70 s of CPU instead of ~10 h of card. RETRACTED IN PART.** Scoring `hazard15.py --series` across all three arms shows **bracing rises with training time in every one** — that survives two seeds. **The stated mechanism does not:** seed 2 has a climbing mean and flat duty, **seed 1 has the opposite** (flat mean −0.87, duty +8.09), and the pre-registered rule flips (38.7 % vs 21.1 % extrapolated). The veto now rests on the *direction* plus the rule's own seed-instability, not on the magnitude. Lesson: **a decomposition is a value, not a shape**. **RETRACTED A SECOND TIME 2026-08-06**: its last surviving premise — *bracing rises with training time in every arm* — was measured directly by 005-ceiling over 1850 further iterations and **it falls** (15.5 % → 12.6 %, −1.15 pp/1000). The veto was right to refuse the number it was given; it was wrong about the direction |
 | Experiment 005-ceiling | ✅ **`stand13`, 1850 warm-started iterations, seed 2, `rc 0`, 4.75 GPU-hours — and it had NO graph node until 2026-08-06.** The buildable arm **caught up**: 18/24 on the conjunction against 003 seed 2's 18/24, **paired McNemar 2:2, p = 1.000**, while stepping *more often* (23/24 vs 21/24) at **12.6 % resting duty against 51.8 %** — a 4.1× reduction. **Neither improvement is significant at 24 seeds** (late-vs-early p = 0.125; against its own start p = 0.508), and the pre-registered falsification did **not** fire, so no ceiling is established. One seed. Ran under trainer `4c1f24f8…`, which is now `main`'s |
 | Experiment 003 | ✅ **four seeds.** Best is seed 2's `001700` at 18/24. **Headroom past iteration 1200 is 3 of 3, p = 0.0391** — the runs stop mid-climb. **Hazard 15 does NOT dissolve: it replicates 3 of 3** at 73–91 % mean of rating |
+| Experiment 006 | ⏸ **§§1–7 pre-registered, Phase A measured on CPU, Phase B NOT dispatched.** *Does costing joint velocity make it stand still?* **The jitter is real and enormous: settled `Σ\|q̇\|` is 1522 and 1574 deg/s across both control seeds against the zero-action servo's 99** — 15–16×, and the raw trace is a **full-amplitude square wave** (+23.8 → −24.9 → +22.3 on a ±25° joint) at 37.8 reversals/s against a 50 /s ceiling. It is the **policy's setpoint, not the servo**: freezing the setpoint collapses it to 125 deg/s, **93 % headroom**. **The shuffling is real too** — the clamped arm takes **44 % more lifts and 50 % more step events, each 30 % shorter in median**, than the unclamped 003 arm at the same 18/24. **The band arm was VETOED by its own pre-flight** (below). One arm, `stand15` on `tasks/stand-b8-clamp25-quiet/` `5d8dd7c1…`, **two seeds, ~10 GPU-h**, control already paid for |
 | sb9x | ⛔ **RETIRED from this project 2026-08-04** — reassigned to unrelated work. Do not dispatch to it. Its measurements stand; its capacity is gone. It crashed **2 of 2** full-length runs |
 
 **Total GPU-hours: 39.66 measured in `jobs/` on sb1x**, plus ~7.3 off-box on sb9x (not independently verifiable here — those run directories are not in this repository).
@@ -328,6 +330,49 @@ it was** — three fresh seeds now, 48 evaluation seeds each:
   this card's non-determinism; claims about a *value* would not.
 
 ### Things that will bite the next agent
+
+* **`harness/profiles/mg-legs.json`'s three polygon numbers are in THREE
+  DIFFERENT FRAMES, and a load-bearing conclusion was drawn from treating them
+  as one.** Re-derived from the compiled model 2026-08-06: **45.5 / 24.5 are
+  measured from the *ankle bracket*** (the foot body sits 12.25 mm forward of
+  it, so in the foot's own frame the box is +33.25 / −36.75), and **50 is the
+  *double-support* half-width** while a single sole is only **±20 mm**. From
+  the **centre of mass** — the frame a capture point actually lives in — the
+  margins are **forward 40.83, backward 29.17, lateral 50.00**.
+
+  What it cost: `script.py:2448` sizes the disturbance band by using 24.5 as
+  the CoM-relative backward margin *and* by treating the whole ±60° shove arc
+  as facing it, and concludes **58 % of aimed draws demand a step**. Measured
+  against the real polygon it is **17.4 %** — the margin is 29.17 mm rather
+  than 24.5, and at ±60° off-axis it is **57.7 mm**, nearly double. The
+  profile now carries a `$FRAME_WARNING` and `jitter.py` derives the box from
+  the model instead. **ADR-107 one level down: say which frame, not just which
+  number.**
+* **`harness steps` keys `results` by the policy's BASENAME, so two seeds of
+  the same label in one invocation are silently SUMMED.** Scoring
+  `stand12-s2/stand12.001750.cxpolicy` and `stand12-s1/stand12.001750.cxpolicy`
+  together returns **`survived 36/24`**, and the impossible denominator is the
+  only tell — every other field is a plausible-looking sum. Score same-named
+  checkpoints in **separate invocations**. This is a third distinct way
+  `--policy` misbehaves, after the `nargs="*"` / `action="append"` split.
+* **A duty-cycle sweep is cheap and it will veto your plan — let it.**
+  Experiment 006 proposed raising the shove band to 1.8 N on capture-point
+  arithmetic. `harness capability --scales …` at 12 seeds, **70 s of CPU**,
+  put the incumbent's survival at **0 of 12** there and at 66.7 % at the
+  *current* 0.8 N top, so the ~50 % point the pre-registered rule asks for is
+  **0.914 N** — 14 % away, i.e. the band was already nearly optimally placed
+  and raising it was not a lever at all. The plan's number would have repeated
+  B3's measured collapse. **The arithmetic proposes; the sweep decides.**
+* **A σ rule can be pre-registered and still be dead on arrival, so check what
+  the kernel READS before dispatch.** 006's plan gave two rules for `quiet`'s
+  scale: `swirl_scale.py`'s median, and *"2× the zero-action servo"*. The
+  second gives σ ≈ 158 against a machine actually running at 1857 deg/s, so
+  the kernel reads `exp(−138) ≈ 0` everywhere the machine ever is — a constant
+  penalty, not a shaping term, which is the exact failure `swirl_scale.py`'s
+  docstring exists to prevent. The median rule gives σ = 1611 and reads
+  **0.996 / 0.368 / 0.779** at the servo floor, the control, and half the
+  control. Print the kernel's value at three known states before you train on
+  it.
 
 * **The engine's default worker budget makes `mg-legs` take 500× longer and
   never finish, and the failure does not say so.** The isolated domain worker

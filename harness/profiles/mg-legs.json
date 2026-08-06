@@ -35,6 +35,34 @@
     "forward": 45.5,
     "backward": 24.5,
     "lateral": 50.0,
-    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing."
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+
+    "$FRAME_WARNING": [
+      "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+      "treats them as one polygon around the centre of mass will be wrong.",
+      "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+      "Phase A):",
+      "",
+      "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+      "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+      "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+      "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+      "    60 mm apart. One sole is only +-20 mm wide.",
+      "",
+      "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+      "frame a capture point or a centre of pressure actually lives in, the",
+      "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+      "",
+      "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+      "band by treating 24.5 as the CoM-relative backward margin AND by",
+      "treating the whole +-60 deg shove arc as facing it, and reports that",
+      "58 % of aimed draws demand a step. Against the real polygon it is",
+      "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+      "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+      "",
+      "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+      "the model's own geoms and prints these declared numbers beside it,",
+      "labelled, rather than using them."
+    ]
   }
 }
