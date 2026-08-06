@@ -279,32 +279,52 @@ assignment. **Assignment needs no stage lease** — only `expected_revision`.
 | `status/` | `planned`, `provisional`, `measured`, `resolved`, `superseded` | where it stands |
 | `exp/` | `000`…`005` | which experiment — makes "everything 004 touched" a query |
 | `mechanism/` | `pendulum`, `stand-biped` | which machine |
-| `task/` | `stand`, … | which question of it |
 | `hazard/` | `bracing`, `peak-regress`, `out-of-range`, `action-space` | which `MUJOCO.md` hazard |
-| `criterion/` | `4`, `5` | which contested success criterion this bears on |
+| `criterion/` | `1`, `3`, `4`, `5` | which success criterion this bears on |
 
 `type/protocol`, `status/resolved`, `exp/` and `criterion/` are **new in v2**.
 `hazard/*` and `exp/*` are the two that earn their keep: they make *"show me
 everything where the mechanism turned out to be the limit"* and *"show me
 everything 004 touched"* queries rather than memory.
 
-> ### ⚠ State as of 2026-08-06: four tags created, none assigned
+**There is no `task/` namespace, deliberately.** v1 declared one and there has
+only ever been one task, so it would partition nothing. Add it the day a second
+task exists, not before — an unassigned tag is the defect v1 had.
+
+**`mechanism/` goes on a node whose SUBJECT is the machine**, not on every node
+that happened to use it. Otherwise it lands on nearly every research node and
+stops being a filter.
+
+> ### State as of 2026-08-06: 25 tags created, all 37 nodes assigned
 >
-> **Created on the v2 root:** `type/protocol` (`tag-0e83ecde05b4`),
-> `type/empirical` (`tag-f346bf39f8b2`), `type/insight` (`tag-1e073cba80d5`),
-> `status/provisional` (`tag-fd88c4893dc4`).
+> **107 assignments over 32 nodes.** The five without tags are the **root and
+> the four lane nodes**, which are navigation rather than claims.
 >
-> **Not yet created:** `type/decision`, the remaining four `status/` values,
-> and all of `exp/`, `mechanism/`, `task/`, `hazard/`, `criterion/`.
-> **Not yet assigned:** every node — all 37 currently have `tag_ids: []`.
+> **`status/planned` is defined and assigned to nothing, and that is the
+> answer, not a gap** — `type/protocol AND status/planned` is the in-flight
+> query, and nothing is in flight. All five protocol nodes are
+> `status/resolved` because every one has its result node. **The first node
+> written before the next dispatch takes `status/planned`, and that is the
+> whole point of the shape.**
 >
-> This is stated rather than glossed because **an unapplied vocabulary is the
-> exact defect v1 had**, and pretending otherwise would repeat it one level up.
-> The restructure spent its budget on topology, bodies and evidence, which are
-> the things that cannot be added later by a script. **Tagging can**: every
-> node id is in the table at the end of this file, `create_node_tag` needs only
-> the root's graph revision, and `set_node_tag_assignments` needs only the
-> node's own revision and **no stage lease**. It is the first thing to finish.
+> Ten tag ids worth having to hand: `type/protocol` `tag-0e83ecde05b4`,
+> `type/empirical` `tag-f346bf39f8b2`, `type/insight` `tag-1e073cba80d5`,
+> `type/decision` `tag-d9b8398d099c`, `status/planned` `tag-a56c74ef4bb4`,
+> `status/provisional` `tag-fd88c4893dc4`, `status/measured` `tag-16c006bf9f86`,
+> `status/resolved` `tag-afce4fb41a3d`, `status/superseded` `tag-180b590a48f6`,
+> `hazard/bracing` `tag-66f9b8e93d5d`. The rest come back on any `get_node`.
+>
+> **Two mechanical notes, both measured while doing this.** `create_node_tag`
+> takes the **graph** revision and bumps it by one per call, so creations are
+> strictly serial. `set_node_tag_assignments` takes the **node's own** revision
+> and touches nothing else, so assignments **parallelise safely** — the whole
+> assignment pass ran in batches of four with no conflict. A node's revision
+> is *also* moved by tag creation on the root, so **read revisions after the
+> last `create_node_tag`, not before.**
+>
+> The v1 defect this closes: `status/planned` was assigned to **zero** nodes
+> for four days and four of nineteen nodes carried **no tags at all**,
+> including the one that retracted the project's headline.
 
 ### `status/` carries real weight — use it precisely
 
@@ -566,7 +586,8 @@ Before writing a result node:
 - [ ] **Body under 4 KB**, using §3's skeleton
 - [ ] `## Provenance` names the commit, host, run directory and **GPU-hours**
 - [ ] `## Open` is present and says something real
-- [ ] `type/`, `status/`, `exp/`, `mechanism/`, `task/`, `hazard/` assigned
+- [ ] `type/` and `status/` assigned — **always both** — plus `exp/`,
+      `hazard/`, `criterion/` and `mechanism/` where they apply
 - [ ] **`status/provisional` if n=1 in training seeds** — and the parent
       protocol moved to `status/resolved`
 - [ ] Artifacts batched; `.cxpolicy` and `.mp4` as `binary`; **notes per
@@ -582,7 +603,9 @@ Root **`steep-pine-4944`** = `91c66efb-66f3-48aa-b7c1-14bfe00bb09f`.
 37 nodes, 55 artifacts, 40 edges, **0 bodies over 4 KB**, 4 multi-parent nodes.
 v1 (`rapid-bar-6214`) is frozen: 19 nodes, 21 edges, 11 bodies over 4 KB.
 
-Tags to assign, per node. `P` = parents.
+**Tags below are assigned on the graph as of 2026-08-06** — 107 assignments
+over 32 nodes; the root and the four lane nodes carry none by design. `P` =
+parents.
 
 | lane | slug | node_id | tags to assign |
 |---|---|---|---|
