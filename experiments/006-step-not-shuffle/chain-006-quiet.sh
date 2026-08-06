@@ -52,6 +52,23 @@ BUNDLE_SHA=5d8dd7c1dfe7be5d39d7b62fa4c80f29667b959c3c9c8827d47b2003b7fb7c01
 
 say() { echo "$(date -u +%FT%TZ)  $*" | tee -a "$LOG"; }
 
+# **`pgrep -f trainer_launch.py` IS TOO LOOSE, and it aborted this chain's
+# first launch.** `-f` matches the whole command line of every process, so any
+# shell, editor or grep that merely *mentions* the name counts as a running
+# trainer — the first launch died on `ABORT: a trainer is already running`
+# with an idle card, because the wrapper shell that started it had the string
+# in its own argv.
+#
+# `tools/train.py` builds the command as `<interpreter> <trainer_launch.py>
+# <cadex_train.py> …`, so anchoring at the interpreter is what distinguishes
+# the real thing from a mention of it. `cadex_train` is included because
+# `--child-gc` drops the shim and runs the trainer directly.
+#
+# Verified both ways before use: this pattern matches a venv python running
+# such a file and does NOT match a shell whose argv merely contains the name.
+TRAINER_RE='^[^ ]*/python[0-9.]* [^ ]*/(trainer_launch|cadex_train)\.py'
+trainer_running() { pgrep -f "$TRAINER_RE" >/dev/null 2>&1; }
+
 say "experiment 006 arm Q — two seeds of ${LABEL} on ${BUNDLE}"
 
 # --- refuse to start against a bundle that is not the pre-registered one ---
@@ -67,7 +84,7 @@ say "bundle digest matches the pre-registration: ${BUNDLE_SHA}"
 set -a; . ./config/env; set +a
 
 # One run at a time on this card.
-if pgrep -f trainer_launch.py >/dev/null 2>&1; then
+if trainer_running; then
     say "ABORT: a trainer is already running"
     exit 1
 fi
@@ -110,11 +127,11 @@ dispatch() {
     # never appears aborts the chain rather than being treated as finished.
     local waited=0
     while [ "$waited" -lt 300 ]; do
-        pgrep -f trainer_launch.py >/dev/null 2>&1 && break
+        trainer_running && break
         sleep 5
         waited=$((waited + 5))
     done
-    if ! pgrep -f trainer_launch.py >/dev/null 2>&1; then
+    if ! trainer_running; then
         say "ABORT: seed ${seed} dispatched but no trainer appeared in 300 s."
         say "       Refusing to dispatch anything else — check ${LOG} and the"
         say "       newest jobs/${LABEL}-s${seed}-* directory."
@@ -122,7 +139,7 @@ dispatch() {
     fi
     say "seed ${seed} trainer is up after ${waited} s"
 
-    while pgrep -f trainer_launch.py >/dev/null 2>&1; do sleep 60; done
+    while trainer_running; do sleep 60; done
     say "seed ${seed} is no longer running"
 }
 
