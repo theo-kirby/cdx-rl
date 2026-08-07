@@ -295,12 +295,27 @@ task exists, not before — an unassigned tag is the defect v1 had.
 that happened to use it. Otherwise it lands on nearly every research node and
 stops being a filter.
 
-> ### State as of 2026-08-07: 26 tags created, all 39 nodes assigned
+> ### State as of 2026-08-07 (later that day): 27 tags, all 42 nodes assigned
 >
-> **111 assignments over 33 nodes.** The five without tags are the **root and
-> the four lane nodes**, which are navigation rather than claims.
+> **125 assignments over 36 nodes** — the 111/33 above plus 007's three nodes
+> at 5, 6 and 3. `exp/007` is `tag-428ec366c661`.
 >
-> **`status/planned` has been through a full cycle and is empty again — which
+> **That leaves SIX untagged, and only five of them are the root and the lane
+> nodes.** The arithmetic was already off by one at 39/33 and nobody noticed;
+> it is carried forward here rather than papered over. **Which node is
+> untagged has not been identified** — `list_nodes` filtered to this graph is
+> the query, and it has not been run.
+>
+> **`status/planned` is occupied again, by `winter-math-2265` (PROTOCOL 007).**
+> Its Phase A is a CPU diagnostic that is already measured and has a result
+> child; its Phase B is a training arm that is **not written**. So the in-flight
+> query returns exactly one node, and what it means is *"a question is open and
+> no GPU has been committed to it"* — which is the state the tag is for.
+>
+> The paragraph below describes the **previous** cycle and is kept because it
+> is the first time the shape worked.
+>
+> **`status/planned` had been through a full cycle and was empty again — which
 > is the shape working, not a gap.** `wandering-cell-5009` (**PROTOCOL 006**,
 > `exp/006` `tag-a103163dda97`) took it on 2026-08-06, written and committed
 > **before any of its 9.67 GPU-hours were spent**; `soft-field-3236` is its
@@ -615,6 +630,17 @@ v1 (`rapid-bar-6214`) is frozen: 19 nodes, 21 edges, 11 bodies over 4 KB.
 over 32 nodes; the root and the four lane nodes carry none by design. `P` =
 parents.
 
+> **The table below stops at 2026-08-06 and the graph does not.** Five nodes
+> have been added since and **only the last three are listed** (at the end of
+> the table). **Experiment 006's two nodes were never added to it**:
+> `a77afb3b-a4a7-5269-a125-37e26b3ca935` (PROTOCOL 006) and
+> `a18471e1-150f-5f9b-a4fd-ddc413f4cd0e` (the 006 result). The graph now holds
+> **42 nodes** and **27 tags** (`exp/007` = `tag-428ec366c661`, created
+> 2026-08-07). Artifacts, edges and the over-4 KB count have **not** been
+> re-derived since 2026-08-06; the three 2026-08-07 bodies were written to the
+> 4 KB budget but were not independently measured. **This is the same drift the
+> GPU ledger has, for the same reason: nothing regenerates it.**
+
 | lane | slug | node_id | tags to assign |
 |---|---|---|---|
 | — | `steep-pine-4944` | `91c66efb-66f3-48aa-b7c1-14bfe00bb09f` | *(root — none)* |
@@ -654,6 +680,9 @@ parents.
 | res | `rapid-grass-1358` | `ab49f364-1681-47a3-a119-9125fcb4d572` | `type/protocol`, `status/resolved`, `exp/005` |
 | res | `young-bush-8065` | `b7a4d827-2413-40cf-95c9-2a295a4eb74b` | `type/empirical`, `status/provisional`, `exp/005`, `hazard/bracing`, `criterion/5` |
 | res | `odd-dust-3102` | `a940b58e-696d-4084-a416-3691d04c7537` | `type/insight`, `status/measured`, `criterion/5` — P: `spring-field-7039`, `bold-lab-1179` |
+| res | `winter-math-2265` | `9cf7c9ec-99df-5ca6-8550-5087e3a56237` | **PROTOCOL 007** — `type/protocol`, `status/planned`, `exp/007`, `hazard/bracing`, `criterion/5` — P: the 006 result |
+| res | `curly-hat-3297` | `f2442003-96bc-5bd5-991f-9806ed0f3d56` | 007 Phase A — `type/empirical`, `status/measured`, `exp/007`, `exp/006`, `hazard/bracing`, `criterion/5` — P: `winter-math-2265`. **1 artifact** (`audit-clamp25.json`, `table`) |
+| inst | `holy-art-8641` | `f3c62c98-8c06-52af-9e0b-96518dc1e210` | `reward_audit` — `type/insight`, `status/measured`, `exp/007` — P: `royal-brook-3544` (the driver register), `curly-hat-3297` |
 
 ### Evidence still owed, in priority order
 
