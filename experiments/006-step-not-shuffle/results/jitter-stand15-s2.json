@@ -1,0 +1,1213 @@
+{
+ "driver": "jitter",
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11
+ ],
+ "task": "tasks/stand-b8-clamp25/stand-task.json",
+ "disturbance": "declared",
+ "open_loop": "off",
+ "rows": [
+  {
+   "policy": "stand15.000250.cxpolicy",
+   "episodes": 12,
+   "survived": 2,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 2.0365,
+   "cmd_delta_p95_deg": 6.21558,
+   "cmd_delta_mean_deg_s": 101.8251,
+   "cmd_delta_per_joint_deg": [
+    1.15979,
+    1.0461,
+    1.37842,
+    2.9773,
+    2.86816,
+    2.3253,
+    3.71078,
+    2.79695,
+    1.00084,
+    1.10136
+   ],
+   "cmd_reversals_per_s": 16.4472,
+   "cmd_reversals_per_joint_per_s": [
+    17.2943,
+    13.2629,
+    17.3717,
+    18.185,
+    16.7669,
+    16.3172,
+    17.6578,
+    16.3258,
+    15.1927,
+    16.0974
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 2.19973,
+   "qvel_abs_mean_deg_s": 16.6291,
+   "qvel_per_joint_mean_deg_s": [
+    6.9396,
+    6.9151,
+    23.2914,
+    31.835,
+    23.7497,
+    18.6542,
+    23.5695,
+    14.1186,
+    8.8613,
+    8.3562
+   ],
+   "sum_abs_qvel_mean_deg_s": 166.2906,
+   "sum_abs_qvel_rms_deg_s": 225.2139,
+   "sum_abs_qvel_p95_deg_s": 504.9874,
+   "whole_sum_abs_qvel_mean_deg_s": 217.3151,
+   "sigma_recommended_deg_s": 119.4882,
+   "sigma_samples": 784,
+   "slip_speed_mean_mm_s": 4.4015,
+   "slip_speed_p95_mm_s": 13.0038,
+   "contact_seconds": {
+    "foot_l": 15.52,
+    "foot_r": 15.48
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 5.068,
+    "foot_r": 3.7332
+   },
+   "qvel_share_per_joint": [
+    0.04173,
+    0.04158,
+    0.14006,
+    0.19144,
+    0.14282,
+    0.11218,
+    0.14174,
+    0.0849,
+    0.05329,
+    0.05025
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 776,
+     "forward_max_mm": 33.245,
+     "backward_max_mm": -36.748,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 0.005,
+     "min_backward_margin_mm": 0.002,
+     "min_lateral_margin_mm": 0.0,
+     "frac_frames_within_2mm_of_edge": 0.27835
+    },
+    "foot_r": {
+     "frames": 774,
+     "forward_max_mm": 33.246,
+     "backward_max_mm": -36.749,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 0.004,
+     "min_backward_margin_mm": 0.001,
+     "min_lateral_margin_mm": 0.0,
+     "frac_frames_within_2mm_of_edge": 0.31395
+    }
+   },
+   "iteration": 250
+  },
+  {
+   "policy": "stand15.000500.cxpolicy",
+   "episodes": 12,
+   "survived": 2,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 3.93586,
+   "cmd_delta_p95_deg": 11.53949,
+   "cmd_delta_mean_deg_s": 196.793,
+   "cmd_delta_per_joint_deg": [
+    2.97591,
+    2.56596,
+    3.17549,
+    2.92496,
+    3.39884,
+    5.5338,
+    7.66526,
+    6.78635,
+    1.88036,
+    2.45168
+   ],
+   "cmd_reversals_per_s": 20.8108,
+   "cmd_reversals_per_joint_per_s": [
+    21.1083,
+    20.4707,
+    21.378,
+    22.047,
+    20.2372,
+    20.246,
+    19.6332,
+    20.4148,
+    23.5166,
+    19.0563
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 4.07864,
+   "qvel_abs_mean_deg_s": 33.8057,
+   "qvel_per_joint_mean_deg_s": [
+    18.79,
+    19.5535,
+    28.7495,
+    32.8342,
+    35.4828,
+    39.2518,
+    69.6984,
+    49.6579,
+    20.4773,
+    23.5612
+   ],
+   "sum_abs_qvel_mean_deg_s": 338.0567,
+   "sum_abs_qvel_rms_deg_s": 415.5585,
+   "sum_abs_qvel_p95_deg_s": 873.8115,
+   "whole_sum_abs_qvel_mean_deg_s": 385.3053,
+   "sigma_recommended_deg_s": 261.5053,
+   "sigma_samples": 815,
+   "slip_speed_mean_mm_s": 11.3657,
+   "slip_speed_p95_mm_s": 40.3233,
+   "contact_seconds": {
+    "foot_l": 15.86,
+    "foot_r": 15.38
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 10.9949,
+    "foot_r": 11.748
+   },
+   "qvel_share_per_joint": [
+    0.05558,
+    0.05784,
+    0.08504,
+    0.09713,
+    0.10496,
+    0.11611,
+    0.20617,
+    0.14689,
+    0.06057,
+    0.0697
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 793,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.75,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": 0.0,
+     "min_lateral_margin_mm": -0.0,
+     "frac_frames_within_2mm_of_edge": 0.43884
+    },
+    "foot_r": {
+     "frames": 769,
+     "forward_max_mm": 33.249,
+     "backward_max_mm": -36.749,
+     "lateral_max_mm": 20.004,
+     "min_forward_margin_mm": 0.001,
+     "min_backward_margin_mm": 0.001,
+     "min_lateral_margin_mm": -0.004,
+     "frac_frames_within_2mm_of_edge": 0.39402
+    }
+   },
+   "iteration": 500
+  },
+  {
+   "policy": "stand15.000750.cxpolicy",
+   "episodes": 12,
+   "survived": 3,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 3.95414,
+   "cmd_delta_p95_deg": 11.58518,
+   "cmd_delta_mean_deg_s": 197.7068,
+   "cmd_delta_per_joint_deg": [
+    4.01007,
+    3.35505,
+    2.54744,
+    3.65512,
+    3.64008,
+    5.17039,
+    5.4527,
+    7.11087,
+    2.8945,
+    1.70514
+   ],
+   "cmd_reversals_per_s": 21.6931,
+   "cmd_reversals_per_joint_per_s": [
+    20.0781,
+    26.0446,
+    24.6869,
+    21.5895,
+    21.984,
+    21.3414,
+    19.2623,
+    19.729,
+    21.0162,
+    21.1993
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 3.8224,
+   "qvel_abs_mean_deg_s": 34.7152,
+   "qvel_per_joint_mean_deg_s": [
+    27.2672,
+    27.9604,
+    27.9593,
+    33.7135,
+    38.5206,
+    43.5504,
+    47.9513,
+    55.9601,
+    29.0297,
+    15.2397
+   ],
+   "sum_abs_qvel_mean_deg_s": 347.1523,
+   "sum_abs_qvel_rms_deg_s": 442.4258,
+   "sum_abs_qvel_p95_deg_s": 984.6421,
+   "whole_sum_abs_qvel_mean_deg_s": 368.4416,
+   "sigma_recommended_deg_s": 256.0592,
+   "sigma_samples": 1063,
+   "slip_speed_mean_mm_s": 10.5844,
+   "slip_speed_p95_mm_s": 36.5666,
+   "contact_seconds": {
+    "foot_l": 19.92,
+    "foot_r": 20.46
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 10.2843,
+    "foot_r": 10.8765
+   },
+   "qvel_share_per_joint": [
+    0.07855,
+    0.08054,
+    0.08054,
+    0.09711,
+    0.11096,
+    0.12545,
+    0.13813,
+    0.1612,
+    0.08362,
+    0.0439
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 996,
+     "forward_max_mm": 33.249,
+     "backward_max_mm": -36.75,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 0.001,
+     "min_backward_margin_mm": 0.0,
+     "min_lateral_margin_mm": -0.0,
+     "frac_frames_within_2mm_of_edge": 0.44177
+    },
+    "foot_r": {
+     "frames": 1023,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.75,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.0,
+     "min_lateral_margin_mm": 0.0,
+     "frac_frames_within_2mm_of_edge": 0.37048
+    }
+   },
+   "iteration": 750
+  },
+  {
+   "policy": "stand15.001000.cxpolicy",
+   "episodes": 12,
+   "survived": 5,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 5.54655,
+   "cmd_delta_p95_deg": 16.84059,
+   "cmd_delta_mean_deg_s": 277.3273,
+   "cmd_delta_per_joint_deg": [
+    5.72792,
+    4.76299,
+    3.9302,
+    6.21041,
+    6.05363,
+    6.53945,
+    6.35534,
+    7.52164,
+    5.08599,
+    3.27789
+   ],
+   "cmd_reversals_per_s": 24.971,
+   "cmd_reversals_per_joint_per_s": [
+    24.7747,
+    28.5312,
+    25.4585,
+    28.3941,
+    24.5042,
+    23.1253,
+    23.198,
+    22.3997,
+    25.726,
+    23.5984
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 5.69699,
+   "qvel_abs_mean_deg_s": 44.8647,
+   "qvel_per_joint_mean_deg_s": [
+    28.045,
+    29.9169,
+    42.8949,
+    45.6378,
+    58.2066,
+    44.916,
+    54.7779,
+    58.7549,
+    57.4399,
+    28.0572
+   ],
+   "sum_abs_qvel_mean_deg_s": 448.6471,
+   "sum_abs_qvel_rms_deg_s": 590.6508,
+   "sum_abs_qvel_p95_deg_s": 1185.9777,
+   "whole_sum_abs_qvel_mean_deg_s": 484.1202,
+   "sigma_recommended_deg_s": 368.1609,
+   "sigma_samples": 1614,
+   "slip_speed_mean_mm_s": 14.0962,
+   "slip_speed_p95_mm_s": 46.6864,
+   "contact_seconds": {
+    "foot_l": 29.54,
+    "foot_r": 30.34
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 16.3138,
+    "foot_r": 11.937
+   },
+   "qvel_share_per_joint": [
+    0.06251,
+    0.06668,
+    0.09561,
+    0.10172,
+    0.12974,
+    0.10011,
+    0.1221,
+    0.13096,
+    0.12803,
+    0.06254
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 1476,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.751,
+     "lateral_max_mm": 20.006,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.001,
+     "min_lateral_margin_mm": -0.006,
+     "frac_frames_within_2mm_of_edge": 0.40379
+    },
+    "foot_r": {
+     "frames": 1517,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.751,
+     "lateral_max_mm": 20.002,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.001,
+     "min_lateral_margin_mm": -0.002,
+     "frac_frames_within_2mm_of_edge": 0.37047
+    }
+   },
+   "iteration": 1000
+  },
+  {
+   "policy": "stand15.001250.cxpolicy",
+   "episodes": 12,
+   "survived": 5,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 5.69127,
+   "cmd_delta_p95_deg": 17.45258,
+   "cmd_delta_mean_deg_s": 284.5636,
+   "cmd_delta_per_joint_deg": [
+    5.91098,
+    4.63444,
+    4.83953,
+    5.69047,
+    5.60023,
+    7.82738,
+    7.41746,
+    7.24616,
+    4.98028,
+    2.7658
+   ],
+   "cmd_reversals_per_s": 24.2163,
+   "cmd_reversals_per_joint_per_s": [
+    24.5651,
+    31.9804,
+    24.4382,
+    26.0311,
+    22.0755,
+    22.7787,
+    22.4247,
+    22.7504,
+    22.024,
+    23.0951
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 5.88519,
+   "qvel_abs_mean_deg_s": 46.021,
+   "qvel_per_joint_mean_deg_s": [
+    29.3694,
+    30.4365,
+    49.1961,
+    48.2247,
+    61.4768,
+    53.9312,
+    55.8102,
+    59.1554,
+    47.9461,
+    24.6639
+   ],
+   "sum_abs_qvel_mean_deg_s": 460.2103,
+   "sum_abs_qvel_rms_deg_s": 648.7522,
+   "sum_abs_qvel_p95_deg_s": 1452.345,
+   "whole_sum_abs_qvel_mean_deg_s": 496.3778,
+   "sigma_recommended_deg_s": 297.3504,
+   "sigma_samples": 1648,
+   "slip_speed_mean_mm_s": 14.4544,
+   "slip_speed_p95_mm_s": 50.1825,
+   "contact_seconds": {
+    "foot_l": 30.04,
+    "foot_r": 30.86
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 14.8417,
+    "foot_r": 14.0774
+   },
+   "qvel_share_per_joint": [
+    0.06382,
+    0.06614,
+    0.1069,
+    0.10479,
+    0.13358,
+    0.11719,
+    0.12127,
+    0.12854,
+    0.10418,
+    0.05359
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 1502,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.754,
+     "lateral_max_mm": 20.0,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.004,
+     "min_lateral_margin_mm": -0.0,
+     "frac_frames_within_2mm_of_edge": 0.31358
+    },
+    "foot_r": {
+     "frames": 1543,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.75,
+     "lateral_max_mm": 20.001,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.0,
+     "min_lateral_margin_mm": -0.001,
+     "frac_frames_within_2mm_of_edge": 0.48283
+    }
+   },
+   "iteration": 1250
+  },
+  {
+   "policy": "stand15.001500.cxpolicy",
+   "episodes": 12,
+   "survived": 6,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 6.8749,
+   "cmd_delta_p95_deg": 22.01865,
+   "cmd_delta_mean_deg_s": 343.7449,
+   "cmd_delta_per_joint_deg": [
+    5.98814,
+    7.81288,
+    8.82564,
+    6.93144,
+    6.55339,
+    11.57916,
+    5.61067,
+    7.19347,
+    4.59908,
+    3.6551
+   ],
+   "cmd_reversals_per_s": 28.1906,
+   "cmd_reversals_per_joint_per_s": [
+    30.1322,
+    35.7712,
+    30.9249,
+    27.4234,
+    24.4045,
+    30.2599,
+    25.3998,
+    26.4125,
+    23.3193,
+    27.858
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 7.31065,
+   "qvel_abs_mean_deg_s": 51.1394,
+   "qvel_per_joint_mean_deg_s": [
+    31.065,
+    32.4503,
+    68.4605,
+    55.9373,
+    69.2133,
+    81.0975,
+    48.3236,
+    55.6201,
+    37.326,
+    31.9002
+   ],
+   "sum_abs_qvel_mean_deg_s": 511.3936,
+   "sum_abs_qvel_rms_deg_s": 703.2655,
+   "sum_abs_qvel_p95_deg_s": 1423.6929,
+   "whole_sum_abs_qvel_mean_deg_s": 563.3274,
+   "sigma_recommended_deg_s": 380.9965,
+   "sigma_samples": 1809,
+   "slip_speed_mean_mm_s": 13.8756,
+   "slip_speed_p95_mm_s": 48.2657,
+   "contact_seconds": {
+    "foot_l": 33.82,
+    "foot_r": 34.0
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 13.3885,
+    "foot_r": 14.3601
+   },
+   "qvel_share_per_joint": [
+    0.06075,
+    0.06345,
+    0.13387,
+    0.10938,
+    0.13534,
+    0.15858,
+    0.09449,
+    0.10876,
+    0.07299,
+    0.06238
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 1691,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.752,
+     "lateral_max_mm": 20.001,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.002,
+     "min_lateral_margin_mm": -0.001,
+     "frac_frames_within_2mm_of_edge": 0.21407
+    },
+    "foot_r": {
+     "frames": 1699,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.753,
+     "lateral_max_mm": 20.035,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.003,
+     "min_lateral_margin_mm": -0.035,
+     "frac_frames_within_2mm_of_edge": 0.32254
+    }
+   },
+   "iteration": 1500
+  },
+  {
+   "policy": "stand15.001750.cxpolicy",
+   "episodes": 12,
+   "survived": 8,
+   "disturbance": "declared",
+   "settle_seconds": 1.0,
+   "control_interval_s": 0.02,
+   "cmd_delta_mean_deg": 5.81575,
+   "cmd_delta_p95_deg": 18.74178,
+   "cmd_delta_mean_deg_s": 290.7876,
+   "cmd_delta_per_joint_deg": [
+    5.63633,
+    5.0409,
+    7.32113,
+    8.60578,
+    6.88858,
+    8.35576,
+    4.69472,
+    4.57611,
+    4.27059,
+    2.76762
+   ],
+   "cmd_reversals_per_s": 29.262,
+   "cmd_reversals_per_joint_per_s": [
+    30.2099,
+    31.3382,
+    30.0547,
+    29.1756,
+    27.7608,
+    29.7153,
+    29.2086,
+    28.7522,
+    27.0096,
+    29.3948
+   ],
+   "cmd_reversal_ceiling_per_s": 50.0,
+   "whole_cmd_delta_mean_deg": 5.95225,
+   "qvel_abs_mean_deg_s": 46.6484,
+   "qvel_per_joint_mean_deg_s": [
+    22.1314,
+    23.6675,
+    73.5789,
+    64.4029,
+    76.6553,
+    55.6532,
+    51.1528,
+    40.8968,
+    37.5049,
+    20.8402
+   ],
+   "sum_abs_qvel_mean_deg_s": 466.484,
+   "sum_abs_qvel_rms_deg_s": 670.5182,
+   "sum_abs_qvel_p95_deg_s": 1388.8126,
+   "whole_sum_abs_qvel_mean_deg_s": 503.1155,
+   "sigma_recommended_deg_s": 352.4482,
+   "sigma_samples": 2230,
+   "slip_speed_mean_mm_s": 9.9109,
+   "slip_speed_p95_mm_s": 31.8824,
+   "contact_seconds": {
+    "foot_l": 42.16,
+    "foot_r": 42.8
+   },
+   "slip_mm_per_contact_s": {
+    "foot_l": 10.2874,
+    "foot_r": 9.54
+   },
+   "qvel_share_per_joint": [
+    0.04744,
+    0.05074,
+    0.15773,
+    0.13806,
+    0.16433,
+    0.1193,
+    0.10966,
+    0.08767,
+    0.0804,
+    0.04468
+   ],
+   "joints": [
+    "hip_roll_l",
+    "hip_roll_r",
+    "hip_pitch_l",
+    "hip_pitch_r",
+    "knee_l",
+    "knee_r",
+    "ankle_l",
+    "ankle_r",
+    "ankle_roll_l",
+    "ankle_roll_r"
+   ],
+   "sole_box_mm": {
+    "foot_l": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    },
+    "foot_r": {
+     "x": [
+      -20.0,
+      20.0
+     ],
+     "y": [
+      -36.75000000000001,
+      33.25
+     ]
+    }
+   },
+   "profile_support_polygon_mm": {
+    "forward": 45.5,
+    "backward": 24.5,
+    "lateral": 50.0,
+    "$comment": "Asymmetric front to back because the toe reaches forward and the heel does not. Measured off the sole and toe geoms of the export, not read off the drawing.",
+    "$FRAME_WARNING": [
+     "THESE THREE NUMBERS ARE NOT IN THE SAME FRAME, and a consumer that",
+     "treats them as one polygon around the centre of mass will be wrong.",
+     "Re-derived from the compiled model on sb1x, 2026-08-06 (experiment 006",
+     "Phase A):",
+     "",
+     "  * 45.5 / 24.5 are the sole's reach measured from the ANKLE BRACKET",
+     "    origin. The foot body sits 12.25 mm forward of it, so the same box",
+     "    in the FOOT's own frame is +33.25 forward / -36.75 back.",
+     "  * 50.0 is the DOUBLE-SUPPORT half-width -- the stance spans two feet",
+     "    60 mm apart. One sole is only +-20 mm wide.",
+     "",
+     "Measured from the CENTRE OF MASS at the `solved` keyframe, which is the",
+     "frame a capture point or a centre of pressure actually lives in, the",
+     "margins are:  forward 40.83, backward 29.17, lateral 50.00 mm.",
+     "",
+     "This cost a real conclusion. `script.py:2448` sizes the disturbance",
+     "band by treating 24.5 as the CoM-relative backward margin AND by",
+     "treating the whole +-60 deg shove arc as facing it, and reports that",
+     "58 % of aimed draws demand a step. Against the real polygon it is",
+     "17.4 %: the margin is 29.17 mm rather than 24.5, and at +-60 deg",
+     "off-axis it is 57.7 mm, nearly double. ADR-107 one level down.",
+     "",
+     "`mechanisms/mg-legs/drivers/jitter.py` derives the per-foot box from",
+     "the model's own geoms and prints these declared numbers beside it,",
+     "labelled, rather than using them."
+    ]
+   },
+   "cop": {
+    "foot_l": {
+     "frames": 2107,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.753,
+     "lateral_max_mm": 20.024,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.003,
+     "min_lateral_margin_mm": -0.024,
+     "frac_frames_within_2mm_of_edge": 0.44044
+    },
+    "foot_r": {
+     "frames": 2140,
+     "forward_max_mm": 33.25,
+     "backward_max_mm": -36.752,
+     "lateral_max_mm": 20.089,
+     "min_forward_margin_mm": 0.0,
+     "min_backward_margin_mm": -0.002,
+     "min_lateral_margin_mm": -0.089,
+     "frac_frames_within_2mm_of_edge": 0.14439
+    }
+   },
+   "iteration": 1750
+  }
+ ],
+ "qvel_trend": {
+  "slope_per_1000": 302.5219,
+  "intercept": 225.533086,
+  "first": 225.2139,
+  "last": 670.5182,
+  "n": 7,
+  "degenerate": false
+ }
+}

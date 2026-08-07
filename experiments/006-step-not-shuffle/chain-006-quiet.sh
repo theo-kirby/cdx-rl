@@ -203,13 +203,32 @@ for seed in (2, 1):
     base = CONTROL[seed]
     best = max((v.get("both", 0) for v in (s.get("results") or {}).values()),
                default=0)
-    duty = max(r["settled_duty_worst"] for r in h["rows"])
+
+    # **Q3 IS ABOUT THE OPERATING POINT, NOT THE WHOLE SERIES.** The first
+    # version took `max` over every checkpoint, which on seed 2 reads 21.36 %
+    # (an excursion at iteration 1400 it recovers from) against 0.98 % at the
+    # checkpoint anyone would actually use. That agreed with the protocol by
+    # luck. The series max is still printed, because a run whose duty spikes
+    # mid-training is worth seeing — it is just not what Q3 asks.
+    series = [r for r in h["rows"] if "iteration" in r]
+    at_op = max((r for r in series if r["iteration"] == 1750),
+                key=lambda r: r["iteration"], default=None)
+    duty = at_op["settled_duty_worst"] if at_op else max(
+        r["settled_duty_worst"] for r in h["rows"])
+    worst = max(series, key=lambda r: r["settled_duty_worst"]) if series else None
+
+    # A FALL is reported as a negative change. The first version printed
+    # `100*(1-q/base)`, which is POSITIVE for an improvement and reads as an
+    # increase next to a `->`.
     print(f"  seed {seed}:  settled sum|qdot| {q:8.2f} vs control {base:8.2f}"
-          f"  -> {100*(1-q/base):+6.1f} %   Q1 {'PASS' if q <= 0.6*base else 'FAIL'}")
+          f"  -> {100*(q/base-1):+6.1f} %   Q1 {'PASS' if q <= 0.6*base else 'FAIL'}")
     print(f"           conjunction {best}/24 vs control {CONJ[seed]}/24"
           f"           (Q2 needs the paired McNemar — read `harness steps`)")
-    print(f"           hazard15 duty {duty*100:5.2f} %"
-          f"                     Q3 {'PASS' if duty < 0.25 else 'FAIL'}")
+    print(f"           hazard15 duty {duty*100:5.2f} % at iteration 1750"
+          f"      Q3 {'PASS' if duty < 0.25 else 'FAIL'}")
+    if worst:
+        print(f"           (series worst {worst['settled_duty_worst']*100:5.2f} % "
+              f"at iteration {worst['iteration']} — NOT the criterion)")
 PY
 
 say "done. Sections 8 and 9 of the README are written from these files, by hand,"

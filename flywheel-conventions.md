@@ -295,22 +295,25 @@ task exists, not before — an unassigned tag is the defect v1 had.
 that happened to use it. Otherwise it lands on nearly every research node and
 stops being a filter.
 
-> ### State as of 2026-08-06: 26 tags created, all 38 nodes assigned
+> ### State as of 2026-08-07: 26 tags created, all 39 nodes assigned
 >
 > **111 assignments over 33 nodes.** The five without tags are the **root and
 > the four lane nodes**, which are navigation rather than claims.
 >
-> **`status/planned` is no longer empty, and the shape worked as designed.**
-> It was defined and assigned to nothing for the whole of the restructure —
-> *"the first node written before the next dispatch takes it"* — and
-> `wandering-cell-5009` (**PROTOCOL 006**, `exp/006` `tag-a103163dda97`) is
-> that node. It was written, tagged and committed **before any of its 10
-> GPU-hours were spent**, and `type/protocol AND status/planned` now returns
-> exactly one row: what is in flight.
+> **`status/planned` has been through a full cycle and is empty again — which
+> is the shape working, not a gap.** `wandering-cell-5009` (**PROTOCOL 006**,
+> `exp/006` `tag-a103163dda97`) took it on 2026-08-06, written and committed
+> **before any of its 9.67 GPU-hours were spent**; `soft-field-3236` is its
+> result child, and the protocol flipped to `status/resolved` when that
+> landed. **The first time this graph gated a run rather than recording it
+> afterwards**, which was §1's stated failure of v1.
 >
-> That is the first time this graph **gated** anything rather than recording
-> it afterwards, which was §1's stated failure of v1. The other five protocol
-> nodes remain `status/resolved` because each has its result node.
+> The result carries `status/measured` rather than `status/provisional`
+> because it **is** two training seeds — and note what that tag does and does
+> not assert here. Its headline (the fidget falls) replicated; its
+> *falsifier* (the bracing ceiling) fired on one seed of two. `status/measured`
+> says the claim is not a one-seed anecdote. It does not say the claim is
+> good news.
 >
 > Ten tag ids worth having to hand: `type/protocol` `tag-0e83ecde05b4`,
 > `type/empirical` `tag-f346bf39f8b2`, `type/insight` `tag-1e073cba80d5`,

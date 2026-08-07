@@ -498,8 +498,164 @@ Do not conclude "the machine cannot stand still".
 
 ## 8. What happened
 
-*Empty until the runs land. Nothing above this line may be edited afterwards.*
+Both seeds ran to completion on sb1x, 2026-08-06, **9.67 GPU-hours**
+(`stand15` s2 4.86 h, s1 4.80 h), both `iter 1799`, both `state done`, both
+with all 37 checkpoints. No crash, no salvage. Scored at the matched operating
+checkpoint **`001750`** — the same index the control is quoted at — on the
+common bundle `tasks/stand-b8-clamp25/`.
+
+### The four criteria
+
+| | seed 2 | seed 1 | |
+|---|---|---|---|
+| **Q1** settled Σ\|q̇\| | **466.5** vs 1522.3 → **−69.4 %** | **725.1** vs 1573.9 → **−53.9 %** | **PASS ×2** |
+| **Q2** conjunction, paired | 14/24 vs 15/24, 5 discordant (2/3), **p = 1.000** | 10/24 vs 15/24, 7 discordant (1/6), **p = 0.125** | **PASS ×2** |
+| **Q3** hazard15 duty > 90 % | **0.98 %** | **45.19 %** | **seed 2 PASS, seed 1 FAIL** |
+| **Q4** both seeds agree on Q1 | — | — | **PASS** |
+
+### Q1 — the kernel works, and it replicates
+
+| | control | arm Q | |
+|---|---|---|---|
+| settled Σ\|q̇\| seed 2 | 1522.33 | **466.48** | −69.4 % |
+| settled Σ\|q̇\| seed 1 | 1573.88 | **725.10** | −53.9 % |
+| command Δ per step, seed 2 | 17.535° | **5.816°** | −66.8 % |
+| reversals/s, seed 2 | 36.45 | **29.26** | −19.7 % |
+
+Both seeds clear the pre-registered 40 % bar. The zero-action servo floor is
+99.20 deg/s, so seed 2 closed **74 %** of the gap between the control and a
+machine with no network in it at all.
+
+### Q3 — and this is the finding
+
+**The bracing criterion does not replicate, and seed 1 fails it decisively.**
+At the operating checkpoint, 12 evaluation seeds, nothing pushing:
+
+| | settled mean % of rating | duty > 90 % |
+|---|---|---|
+| control s2 | 53.5 % | 13.88 % |
+| control s1 | 51.4 % | 13.28 % |
+| **arm Q seed 2** | **38.6 %** | **0.98 %** |
+| **arm Q seed 1** | **73.4 %** | **45.19 %** |
+
+Seed 2 got quiet *and* got **less** braced than the control on both statistics.
+Seed 1 got quiet by **bracing harder than the control** — 73.4 % of rating
+against 51.4 %, and a duty of 45.19 % against a 25 % ceiling.
+
+**It is not an artefact of the summary statistic, which was the first thing
+checked.** The chain reader takes the max over the whole checkpoint series, so
+the obvious suspicion was that it had caught an early-training excursion. It
+had not: seed 1's **worst checkpoint is 1750 itself**, and the duty is
+*climbing monotonically* into the end of the run —
+
+```
+seed 1 duty:  1500  5.4 %   1550  9.6 %   1600 11.0 %
+              1650 14.1 %   1700 28.2 %   1750 43.0 %      (6 eval seeds)
+seed 2 duty:  1500  6.9 %   1550  6.9 %   1600  1.3 %
+              1650 10.6 %   1700  5.3 %   1750  2.1 %
+```
+
+Seed 2's series max is 21.36 % at iteration **1400**, an excursion it recovers
+from. Seed 1's is its own endpoint. The two runs are doing different things.
+
+The Σ\|q̇\| series says the same thing in the quantity the kernel actually
+optimises — seed 1 is still *rising* where seed 2 has flattened:
+
+```
+seed 2 Σ|q̇|:  250 166  500 338  750 347  1000 449  1250 460  1500 511  1750 466
+seed 1 Σ|q̇|:  250 156  500 135  750 331  1000 338  1250 412  1500 696  1750 725
+```
+
+### Q2 — passes, and the point estimate is worth reading anyway
+
+Seed 1's conjunction is **10/24 against the control's 15/24**. The paired test
+gives **p = 0.125** on 7 discordant seeds split 1/6, so it clears the
+pre-registered `p > 0.05` bar — but the bar is a non-inferiority bar and the
+point estimate fell by a third. **The honest statement is that Q2 did not
+detect a loss at n = 24, not that there was none.**
+
+> **Which checkpoint the conjunction is quoted at changes the number, and §2
+> and §7 do not agree.** §2 specifies *"the best late checkpoint"*; Q1 in §7
+> specifies *"the same checkpoint index"* as the control. The table above uses
+> the **matched index 001750** throughout, so that every criterion is read off
+> one policy. Scored instead as best-over-series the conjunctions are **15/24
+> (seed 2)** and **13/24 (seed 1)** — both better, neither changing a verdict.
+> Reported both ways rather than picking the flattering one.
+
+Seed 1 also shows the "fewer and bigger" shape 006 was originally chasing, and
+in the arm that was not trying to buy it:
+
+| | control s1 | arm Q seed 1 |
+|---|---|---|
+| lifts per surviving episode | 8.33 | **3.72** |
+| median longest step | 31.57 mm | **37.18 mm** |
+
+Seed 2 is flat on both (5.74 vs 5.78 lifts; 30.72 vs 28.54 mm).
+
+---
 
 ## 9. What it means, and what it does not mean
 
-*Empty until §8 is written.*
+### What it means
+
+**A velocity kernel reliably reduces the fidget.** Q1 replicates at two seeds
+by 69.4 % and 53.9 %, on a quantity no existing reward term could see, sized by
+`swirl_scale.py`'s median rule off the control's own settled distribution. That
+part of the premise is confirmed: the ten `*_v` channels were already declared,
+the term cost one line, and it moved the thing it was pointed at.
+
+**How the policy pays for that quiet does NOT replicate, and that is the
+result.** Seed 2 paid with better posture — less bracing than the control on
+both statistics. Seed 1 paid with **more** bracing than the control. Same
+bundle, same digest, same hyperparameters, same trainer, same 1800 iterations;
+only the seed differs.
+
+That is mechanically unsurprising in hindsight and should have been
+pre-registered as a likely outcome: **`quiet` does not say how to be still.**
+Holding a joint still by not commanding motion and holding it still by
+stiffening against the servo are the same reading on `Σ|q̇|` and opposite
+readings on `actuator_force`. The kernel is degenerate with respect to the
+thing hazard 15 measures, and PPO found both basins from different seeds.
+
+**Q3 is a pre-registered falsifier and it fired.** §7 says *"a quieter machine
+bought with bracing fails the experiment — that is the whole point of the clamp
+holding."* One of two seeds did exactly that. **`quiet` as written is not
+adoptable into the reward.**
+
+### What it does not mean
+
+* **It does not mean the kernel is wrong** — it means it is *underspecified*.
+  A `quiet` term paired with something that sees torque (the existing `effort`
+  kernel is the obvious candidate, at 0.2 weight against `quiet`'s 0.3) may
+  well separate the two basins. That is a next experiment, not a conclusion.
+* **It does not mean seed 2's result is the real one and seed 1 is noise.**
+  With n = 2 there is no basis for preferring either. 002's lesson is exactly
+  this and it was the reason the second seed was made unconditional.
+* **It does not license quoting −69.4 %.** The two-seed range is **−69.4 % to
+  −53.9 %**, and the seed that fidgeted less is the seed that braced more.
+* **It says nothing about stepping**, which was 006's original subject before
+  Phase A vetoed the band arm. Seed 1's 8.33 → 3.72 lifts at a longer median
+  step is suggestive of exactly the fewer-and-bigger behaviour arm S was meant
+  to buy, but it arrives confounded with a bracing failure in a single seed and
+  should not be reported as a stepping finding.
+* **The control comparison crosses a trainer change** (`aacfa823…` →
+  `bb133b64…`, one docstring line), which is why every comparison above is
+  read through the paired test rather than a difference of point estimates.
+
+### Two defects in this experiment's own instruments, found while reading it
+
+1. **The chain's criteria reader printed a fall as `+69.4 %`.** It computes
+   `100 · (1 − q/base)`, which is positive for an improvement, and labels it
+   `->`. Read literally it says the jitter went *up*. No conclusion was drawn
+   from it — the sign was checked against the raw numbers — but a reader
+   arriving at the log alone would get it backwards.
+2. **It reads Q3 as the max over the whole checkpoint series** where §7 means
+   the operating point. On seed 2 those differ by 20 pp (21.36 % over the
+   series against 0.98 % at 1750) and the verdict happens to survive; on any
+   run with a mid-training excursion it would not. **Q3's verdict here is
+   unaffected** — seed 1's worst checkpoint is its operating checkpoint — but
+   the reader agrees with the protocol by luck rather than by construction.
+
+Both are fixed in `chain-006-quiet.sh` after the fact, and the fix is recorded
+here rather than silently applied, because the numbers in §8 were read off the
+**hand measurements at 12 seeds**, not off the chain's log.
