@@ -15,8 +15,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from reward_audit import (  # noqa: E402
-    SD_LIVE, SHARE_ACHIEVED, SHARE_DEAD,
-    classify, mean_sd, settle_index, shaping_shares, term_stats,
+    SD_LIVE, SHARE_ACHIEVED, SHARE_DEAD, ZERO_ACTION_LABEL,
+    check_labels_unique, classify, mean_sd, policy_label, settle_index,
+    shaping_shares, term_stats,
 )
 
 
@@ -153,3 +154,45 @@ def test_settle_index_refuses_a_non_positive_interval():
         settle_index(0.0, 1.0)
     with pytest.raises(ValueError):
         settle_index(-0.02, 1.0)
+
+
+# --- policy_label ----------------------------------------------------------
+# The defect these exist for: two seeds of one run label write the SAME
+# filename into different run directories, so a basename does not identify a
+# row. Both directions — the qualified label distinguishes them, and the bare
+# name does not.
+
+def test_policy_label_distinguishes_two_seeds_of_the_same_checkpoint():
+    s2 = Path("jobs/stand15-s2-20260806-131500/stand15.001750.cxpolicy")
+    s1 = Path("jobs/stand15-s1-20260806-180908/stand15.001750.cxpolicy")
+    assert s2.name == s1.name                       # the defect, stated
+    assert policy_label(s2) != policy_label(s1)     # and what fixes it
+    assert policy_label(s2) == "stand15-s2-20260806-131500/stand15.001750.cxpolicy"
+
+
+def test_policy_label_of_a_bare_filename_is_the_filename():
+    assert policy_label(Path("stand13.001800.cxpolicy")) == "stand13.001800.cxpolicy"
+
+
+def test_policy_label_of_none_is_the_zero_action_servo():
+    assert policy_label(None) == ZERO_ACTION_LABEL
+
+
+def test_policy_label_accepts_a_string_as_well_as_a_path():
+    assert policy_label("a/b.cxpolicy") == policy_label(Path("a/b.cxpolicy"))
+
+
+# --- check_labels_unique ---------------------------------------------------
+
+def test_check_labels_unique_passes_two_seeds_of_one_checkpoint():
+    paths = [None,
+             Path("jobs/stand15-s2-20260806-131500/stand15.001750.cxpolicy"),
+             Path("jobs/stand15-s1-20260806-180908/stand15.001750.cxpolicy")]
+    assert check_labels_unique(paths)[0] == ZERO_ACTION_LABEL
+
+
+def test_check_labels_unique_refuses_the_same_file_twice():
+    same = Path("jobs/stand13-20260805-135926/stand13.001800.cxpolicy")
+    with pytest.raises(SystemExit) as caught:
+        check_labels_unique([same, same])
+    assert "stand13.001800.cxpolicy" in str(caught.value)

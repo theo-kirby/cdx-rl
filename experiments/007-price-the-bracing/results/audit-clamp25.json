@@ -1,7 +1,11 @@
 {
+  "task": "/home/theo/cdx-rl/tasks/stand-b8-clamp25/stand-task.json",
+  "model": "/home/theo/cdx-rl/tasks/stand-b8-clamp25/model-model.xml",
   "rows": [
     {
       "policy": "zero-action servo",
+      "policy_path": null,
+      "run": null,
       "seeds": 12,
       "settle_seconds": 1.0,
       "settle_frames": 50,
@@ -210,7 +214,9 @@
       }
     },
     {
-      "policy": "stand12.001750.cxpolicy",
+      "policy": "stand12-s2-20260804-163759/stand12.001750.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand12-s2-20260804-163759/stand12.001750.cxpolicy",
+      "run": "stand12-s2-20260804-163759",
       "seeds": 12,
       "settle_seconds": 1.0,
       "settle_frames": 50,
@@ -421,7 +427,9 @@
       }
     },
     {
-      "policy": "stand12.001750.cxpolicy",
+      "policy": "stand12-s1-20260804-214522/stand12.001750.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand12-s1-20260804-214522/stand12.001750.cxpolicy",
+      "run": "stand12-s1-20260804-214522",
       "seeds": 12,
       "settle_seconds": 1.0,
       "settle_frames": 50,
@@ -631,7 +639,9 @@
       }
     },
     {
-      "policy": "stand15.001750.cxpolicy",
+      "policy": "stand15-s2-20260806-131500/stand15.001750.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand15-s2-20260806-131500/stand15.001750.cxpolicy",
+      "run": "stand15-s2-20260806-131500",
       "seeds": 12,
       "settle_seconds": 1.0,
       "settle_frames": 50,
@@ -842,7 +852,9 @@
       }
     },
     {
-      "policy": "stand15.001750.cxpolicy",
+      "policy": "stand15-s1-20260806-180908/stand15.001750.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand15-s1-20260806-180908/stand15.001750.cxpolicy",
+      "run": "stand15-s1-20260806-180908",
       "seeds": 12,
       "settle_seconds": 1.0,
       "settle_frames": 50,
@@ -1053,7 +1065,9 @@
       }
     },
     {
-      "policy": "stand13.001800.cxpolicy",
+      "policy": "stand13-20260805-135926/stand13.001800.cxpolicy",
+      "policy_path": "/home/theo/cdx-rl/jobs/stand13-20260805-135926/stand13.001800.cxpolicy",
+      "run": "stand13-20260805-135926",
       "seeds": 12,
       "settle_seconds": 1.0,
       "settle_frames": 50,

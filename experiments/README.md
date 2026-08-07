@@ -63,4 +63,8 @@ these sections; see [`../flywheel.md`](../flywheel.md) §4.
 | [`001-stand-biped`](001-stand-biped/) | separate "the policy is bad" from "the task is out of range" | Phases A and B measured |
 | [`002-seed-replication`](002-seed-replication/) | does 001's shape replicate across seeds? | 3 of 4 seeds measured |
 | [`003-position-action-space`](003-position-action-space/) | does a machine whose zero action *stands* learn what nine runs of one that falls over did not? | measured, imported, one seed |
-| [`006-step-not-shuffle`](006-step-not-shuffle/) | does costing joint velocity make the machine stand still, and what does that cost in stepping? | **§§1–7 pre-registered; Phase A measured, Phase B not dispatched** |
+| [`004-ceiling-and-clamp`](004-ceiling-and-clamp/) | can a *buildable* policy step, and is the bracing a dynamics requirement or a policy choice? | measured, two arms, two seeds — a policy choice; ±25° is the operating point |
+| [`005-training-time-budget`](005-training-time-budget/) | does the buildable policy keep climbing, and stay buildable? | **retracted twice** — the pre-flight gate vetoed its own dispatch, and 005-ceiling then refuted the surviving premise |
+| [`005-buildable-ceiling`](005-buildable-ceiling/) | where does the buildable policy top out? | measured — 1850 warm-started iterations; the clamped arm caught up (18/24 vs 18/24, p = 1.000) and no ceiling is established |
+| [`006-step-not-shuffle`](006-step-not-shuffle/) | does costing joint velocity make the machine stand still, and what does that cost in stepping? | **measured, two seeds.** The kernel replicates (−69.4 % / −53.9 % on `Σ\|q̇\|`); the bracing falsifier fires. Not adoptable as written |
+| [`007-price-the-bracing`](007-price-the-bracing/) | does the reward price bracing at the states the machine actually reaches? | **Phase A measured on CPU** — `effort` is live but trivially priced (0.69 % of budget separates 006's two basins). **Phase B not written** |

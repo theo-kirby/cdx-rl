@@ -24,6 +24,16 @@ sits *below* every resting state the machine actually visits, so `effort` lives
 on the far tail of its own Gaussian: cutting Σ|τ| by a third of the machine's
 resting load buys 0.030 reward out of a 5.3 budget.
 
+**Amended after the audit ran (2026-08-07): "far tail" overstates it, and this
+file's own classifier says so.** Over the settled window `effort` returns
+`sd_paid` of 0.020–0.032 against the 0.01 floor, so it classifies **`live`**,
+not `dead` — it has gradient. What the audit actually found is that the term
+is *priced trivially*: it collects 0.10–0.14 of its own weight where every
+other shaping term collects 0.47–0.99, it steers 2.5–3.0 % of the total
+spread against `capture`'s ~39 %, and it separates 006's two seeds — 0.98 %
+and 45.19 % resting duty — by **0.0368 of a 5.30 budget**. The sign is right;
+the magnitude is not. `experiments/007-price-the-bracing/README.md` §8.
+
 **The discipline that caught this in 006 was applied only to the NEW term.**
 `reward_standing.py` and `check_reward_pays.py` both check hazard 9 — that
 every term pays its weight *at the nominal pose*. A kernel can pass that and
@@ -138,6 +148,49 @@ def classify(stats: dict) -> str:
     return "middling"
 
 
+ZERO_ACTION_LABEL = "zero-action servo"
+
+
+def policy_label(policy_path) -> str:
+    """`<run dir>/<file>` — because a BASENAME does not identify a seed.
+
+    Two seeds of one label write the same filename into different run
+    directories: `stand15-s2-.../stand15.001750.cxpolicy` and
+    `stand15-s1-.../stand15.001750.cxpolicy`. Recording only `path.name`
+    leaves the seed readable from **row order and nothing else**, which is the
+    same defect `harness steps` has (it keys `results` by basename and
+    silently sums two seeds into `survived 36/24`). Here the rows stay
+    separate, so nothing is corrupted — but the record cannot be read without
+    the command that produced it, which is worse than it looks a week later.
+
+    ``None`` is the zero-action servo, which has no file.
+    """
+    if policy_path is None:
+        return ZERO_ACTION_LABEL
+    path = Path(policy_path)
+    parent = path.parent.name
+    return f"{parent}/{path.name}" if parent else path.name
+
+
+def check_labels_unique(policy_paths: list) -> list:
+    """Resolved labels, or `SystemExit` if two rows would carry the same one.
+
+    A run-qualified label collides only when the *same file* is passed twice,
+    which is always a mistake and never a comparison.
+    """
+    labels = [policy_label(p) for p in policy_paths]
+    seen, duplicated = set(), []
+    for label in labels:
+        if label in seen and label not in duplicated:
+            duplicated.append(label)
+        seen.add(label)
+    if duplicated:
+        raise SystemExit(
+            "two rows would carry the same label, so the table could not be "
+            f"read: {', '.join(duplicated)}. Pass each policy once.")
+    return labels
+
+
 def shaping_shares(stats_by_label: dict) -> dict:
     """Each term's share of the TOTAL spread — "who is steering".
 
@@ -185,12 +238,11 @@ def measure(policy_path, task: dict, model_xml: bytes, seeds: list,
 
     if policy_path is None:
         header = weights = None
-        row_label = "zero-action servo"
     else:
         container = cd.decode_policy(policy_path.read_bytes(),
                                      context=policy_path.name)
         header, weights = container["header"], container["weights"]
-        row_label = policy_path.name
+    row_label = policy_label(policy_path)
 
     played = (apply_variant(task, {"disturbance": False})
               if disturbance == "none" else task)
@@ -267,6 +319,11 @@ def measure(policy_path, task: dict, model_xml: bytes, seeds: list,
 
     return {
         "policy": row_label,
+        # The whole path as given, so a row can be re-run from the record
+        # alone. `policy` is what a table prints; this is what identifies it.
+        "policy_path": (None if policy_path is None
+                        else str(Path(policy_path).resolve())),
+        "run": (None if policy_path is None else Path(policy_path).parent.name),
         "seeds": len(seeds),
         "settle_seconds": settle_s,
         "settle_frames": settle,
@@ -328,12 +385,18 @@ def main(argv=None) -> int:
     seeds = list(range(args.seeds))
 
     selected = ([None] if args.zero_action else []) + list(args.policy)
+    check_labels_unique(selected)
     rows = [measure(p, task, model_xml, seeds,
                     settle_s=args.settle_seconds,
                     disturbance=args.disturbance) for p in selected]
 
     if args.json:
-        print(json.dumps({"rows": rows}, indent=2))
+        # The task is recorded because a policy may legitimately be scored
+        # under a bundle it was not trained on — 006 §4c — and the term list
+        # in this table is the SCORING bundle's, not the training one's.
+        print(json.dumps({"task": str(args.task.resolve()),
+                          "model": str(model_path.resolve()),
+                          "rows": rows}, indent=2))
     else:
         for row in rows:
             _print(row)
